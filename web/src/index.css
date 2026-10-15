@@ -1,0 +1,18 @@
+@import "./theme/tokens.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  background: var(--hs-color-surface-background);
+  color: var(--hs-color-ink-800);
+}
+
+:focus-visible {
+  outline: 3px solid var(--hs-color-primary-500);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+}

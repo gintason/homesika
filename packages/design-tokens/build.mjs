@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Generates platform theme files from tokens.json:
- *   web/src/theme/tokens.js + tokens.d.ts + tokens.css   (React + Tailwind)
+ *   web/src/theme/tokens.ts (ESM, app code) + tokens.cjs (Tailwind config) + tokens.css (CSS variables)
  *   mobile/src/theme/tokens.js + tokens.d.ts             (React Native + NativeWind)
  * `node build.mjs --check` fails if any generated file is out of date (used in CI).
  */
@@ -16,7 +16,9 @@ const { $meta, contrast, ...theme } = tokens;
 
 const HEADER = "// GENERATED from packages/design-tokens/tokens.json. Do not edit; run `npm run build` there.\n";
 
-const js = `${HEADER}/* eslint-disable */\nmodule.exports = ${JSON.stringify(theme, null, 2)};\n`;
+const json = JSON.stringify(theme, null, 2);
+const js = `${HEADER}/* eslint-disable */\nmodule.exports = ${json};\n`;
+const ts = `${HEADER}export const tokens = ${json} as const;\n\nexport type Tokens = typeof tokens;\nexport default tokens;\n`;
 const dts = `${HEADER}declare const tokens: ${JSON.stringify(theme, null, 2)
   .replace(/"([^"]+)":/g, (_, k) => (/^[A-Za-z_$][\w$]*$/.test(k) ? `${k}:` : `"${k}":`))
   .replace(/: (".*?"|-?\d+(\.\d+)?)(,?)$/gm, ": $1$3")};\nexport = tokens;\n`;
@@ -35,8 +37,8 @@ function cssVars() {
 }
 
 const outputs = {
-  "web/src/theme/tokens.js": js,
-  "web/src/theme/tokens.d.ts": dts,
+  "web/src/theme/tokens.ts": ts,
+  "web/src/theme/tokens.cjs": js,
   "web/src/theme/tokens.css": cssVars(),
   "mobile/src/theme/tokens.js": js,
   "mobile/src/theme/tokens.d.ts": dts,
