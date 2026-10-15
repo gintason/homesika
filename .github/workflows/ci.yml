@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: homesika
+          POSTGRES_USER: homesika
+          POSTGRES_PASSWORD: homesika
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U homesika" --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgres://homesika:homesika@localhost:5432/homesika
+      REDIS_URL: redis://localhost:6379/0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: backend/requirements/*.txt
+      - run: pip install -r requirements/dev.txt
+      - name: Lint and format
+        run: ruff check . && ruff format --check .
+      - name: Migrations are up to date
+        run: python manage.py makemigrations --check --dry-run
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
+      - name: Production deployment checks
+        run: python manage.py check --deploy --fail-level WARNING
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.production
+          DJANGO_SECRET_KEY: ci-only-${{ github.run_id }}-not-a-real-secret-key-for-deploy-checks-0123456789
+          DJANGO_ALLOWED_HOSTS: api.homesika.example
+          DJANGO_ADMIN_URL: ops-ci/
+      - name: Tests (Postgres + Redis)
+        run: pytest
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test -- --ci
+
+  design-tokens:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/design-tokens
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Generated theme files are in sync
+        run: npm run check
+      - name: WCAG contrast
+        run: npm test
