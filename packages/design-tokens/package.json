@@ -1,0 +1,12 @@
+{
+  "name": "@homesika/design-tokens",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Single source of truth for Homesika colours, type, spacing, radii, motion.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node build.mjs --check",
+    "test": "node --test"
+  }
+}

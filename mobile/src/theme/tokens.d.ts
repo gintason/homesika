@@ -1,0 +1,186 @@
+// GENERATED from packages/design-tokens/tokens.json. Do not edit; run `npm run build` there.
+declare const tokens: {
+  color: {
+    primary: {
+      "50": "#EEF4FB",
+      "100": "#D6E5F5",
+      "200": "#ADC9E9",
+      "300": "#7EA8D8",
+      "400": "#4F86C2",
+      "500": "#2A64A6",
+      "600": "#1F4A81",
+      "700": "#173C6C",
+      "800": "#0B2B63",
+      "900": "#071C42"
+    },
+    sky: {
+      "50": "#EEF7FB",
+      "100": "#D5ECF5",
+      "200": "#A8D8E8",
+      "300": "#80C0E0",
+      "400": "#5FA3CB",
+      "500": "#3E86B3",
+      "600": "#2C6A93",
+      "700": "#1F5276"
+    },
+    gold: {
+      "50": "#FAF6EC",
+      "100": "#F1E7CB",
+      "200": "#E3D09D",
+      "300": "#D2B878",
+      "400": "#C4A35A",
+      "500": "#A88A4E",
+      "600": "#8A6F38",
+      "700": "#6B5428"
+    },
+    ink: {
+      "300": "#C3CAD3",
+      "400": "#8A94A3",
+      "500": "#5F6B7A",
+      "600": "#4A5563",
+      "700": "#3A4450",
+      "800": "#2B333D",
+      "900": "#1B222A",
+      inverse: "#FFFFFF"
+    },
+    surface: {
+      background: "#F7F9FC",
+      card: "#FFFFFF",
+      muted: "#EEF2F7",
+      line: "#DCE3EC",
+      overlay: "#0B1A33B3"
+    },
+    success: {
+      "50": "#E7F6EF",
+      "500": "#13855F",
+      "700": "#0C5C41"
+    },
+    warning: {
+      "50": "#FEF4E6",
+      "500": "#B45309",
+      "700": "#8A3F06"
+    },
+    danger: {
+      "50": "#FDECEC",
+      "500": "#C8231F",
+      "700": "#991814"
+    },
+    emergency: {
+      base: "#D7261E",
+      pressed: "#A91B15",
+      glow: "#F8C9C6",
+      on: "#FFFFFF"
+    }
+  },
+  font: {
+    family: {
+      display: "Montserrat",
+      body: "Inter",
+      mono: "JetBrains Mono"
+    },
+    weight: {
+      regular: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700
+    },
+    size: {
+      xs: 12,
+      sm: 14,
+      base: 16,
+      lg: 18,
+      xl: 20,
+      "2xl": 24,
+      "3xl": 30,
+      "4xl": 36
+    },
+    lineHeight: {
+      xs: 16,
+      sm: 20,
+      base: 24,
+      lg: 28,
+      xl: 28,
+      "2xl": 32,
+      "3xl": 38,
+      "4xl": 44
+    }
+  },
+  space: {
+    "0": 0,
+    "1": 4,
+    "2": 8,
+    "3": 12,
+    "4": 16,
+    "5": 20,
+    "6": 24,
+    "8": 32,
+    "10": 40,
+    "12": 48,
+    "16": 64
+  },
+  radius: {
+    sm: 6,
+    md: 10,
+    lg: 14,
+    xl: 20,
+    pill: 999
+  },
+  shadow: {
+    sm: {
+      x: 0,
+      y: 1,
+      blur: 2,
+      color: "#0B2B631A",
+      elevation: 1
+    },
+    md: {
+      x: 0,
+      y: 4,
+      blur: 12,
+      color: "#0B2B6314",
+      elevation: 3
+    },
+    lg: {
+      x: 0,
+      y: 12,
+      blur: 32,
+      color: "#0B2B631F",
+      elevation: 8
+    }
+  },
+  motion: {
+    duration: {
+      fast: 120,
+      base: 200,
+      slow: 320
+    },
+    easing: {
+      standard: [
+        0.2,
+        0,
+        0,
+        1
+      ],
+      emphasized: [
+        0.3,
+        0,
+        0,
+        1
+      ]
+    }
+  },
+  size: {
+    touchTarget: 48,
+    panicButton: 132,
+    iconSm: 16,
+    iconMd: 20,
+    iconLg: 24
+  },
+  breakpoint: {
+    sm: 640,
+    md: 768,
+    lg: 1024,
+    xl: 1280
+  }
+};
+export = tokens;
