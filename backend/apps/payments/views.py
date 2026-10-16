@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
+from apps.core.idempotency import idempotent
 from apps.core.money import to_major
 from apps.orgs.permissions import OrgScopedMixin
 from apps.properties.views import OrgContextMixin
@@ -48,6 +49,7 @@ class SettlementAccountView(OrgScopedMixin, OrgContextMixin, generics.ListCreate
     def get_queryset(self):
         return SettlementAccount.objects.filter(organization=self.org).order_by("-created_at")
 
+    @idempotent
     def create(self, request, *args, **kwargs):
         s = self.get_serializer(data=request.data)
         s.is_valid(raise_exception=True)
@@ -80,6 +82,10 @@ class PaymentLinkViewSet(
         if self.request.query_params.get("status"):
             qs = qs.filter(status=self.request.query_params["status"])
         return qs.order_by("-created_at")
+
+    @idempotent
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         data = serializer.validated_data
@@ -123,6 +129,7 @@ class PaymentViewSet(
         return qs.order_by("-paid_at")
 
     @action(detail=False, methods=["post"])
+    @idempotent
     def manual(self, request, *args, **kwargs):
         s = ManualPaymentSerializer(data=request.data, context=self.get_serializer_context())
         s.is_valid(raise_exception=True)
@@ -177,6 +184,7 @@ class TenantPayView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     @extend_schema(request=TenantPaySerializer, responses={201: OpenApiTypes.OBJECT})
+    @idempotent
     def post(self, request):
         s = TenantPaySerializer(data=request.data)
         s.is_valid(raise_exception=True)

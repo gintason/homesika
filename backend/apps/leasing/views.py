@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from apps.core import audit
+from apps.core.idempotency import idempotent
 from apps.core.money import to_major
 from apps.orgs.permissions import OrgScopedMixin
 from apps.properties.views import OrgContextMixin
@@ -144,6 +145,10 @@ class ChargeViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
             if params.get(param):
                 qs = qs.filter(**{param: params[param]})
         return qs.order_by("due_date", "kind")
+
+    @idempotent
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         lease = serializer.validated_data["lease"]

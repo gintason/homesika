@@ -1,0 +1,4550 @@
+openapi: 3.0.3
+info:
+  title: Homesika API
+  version: 1.0.0
+paths:
+  /api/v1/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: 'New or reinstalled device: phone/email + PIN, then a code to prove
+        it''s really you.'
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginStart'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginStart'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginStart'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginStart'
+          description: ''
+  /api/v1/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: 'Sign this device out: blacklist the refresh token and forget the
+        device.'
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Logout'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Logout'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Logout'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Logout'
+          description: ''
+  /api/v1/auth/otp/resend/:
+    post:
+      operationId: auth_otp_resend_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTP'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTP'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTP'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OTP'
+          description: ''
+  /api/v1/auth/otp/verify/:
+    post:
+      operationId: auth_otp_verify_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Verify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Verify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Verify'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Verify'
+          description: ''
+  /api/v1/auth/pin-login/:
+    post:
+      operationId: auth_pin_login_create
+      description: 'Everyday login on a trusted device: PIN only.'
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PinLogin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PinLogin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PinLogin'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PinLogin'
+          description: ''
+  /api/v1/auth/pin/forgot/:
+    post:
+      operationId: auth_pin_forgot_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ForgotPin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ForgotPin'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForgotPin'
+          description: ''
+  /api/v1/auth/pin/setup/:
+    post:
+      operationId: auth_pin_setup_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PinSetup'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PinSetup'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PinSetup'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PinSetup'
+          description: ''
+  /api/v1/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: auth_register_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+          description: ''
+  /api/v1/me/:
+    get:
+      operationId: me_retrieve
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: me_partial_update
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/me/charges/:
+    get:
+      operationId: me_charges_list
+      description: 'My charges across all my landlords. Default: what I still owe;
+        ?all=1 for history.'
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChargeList'
+          description: ''
+  /api/v1/me/charges/{id}/:
+    get:
+      operationId: me_charges_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Charge'
+          description: ''
+  /api/v1/me/consents/:
+    get:
+      operationId: me_consents_list
+      description: 'NDPA: list my consents; POST grants one (e.g. location for safety
+        alerts).'
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Consent'
+          description: ''
+    post:
+      operationId: me_consents_create
+      description: 'NDPA: list my consents; POST grants one (e.g. location for safety
+        alerts).'
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Consent'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Consent'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Consent'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consent'
+          description: ''
+  /api/v1/me/consents/{purpose}/withdraw/:
+    post:
+      operationId: me_consents_withdraw_create
+      parameters:
+      - in: path
+        name: purpose
+        schema:
+          type: string
+        required: true
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/me/data-requests/:
+    get:
+      operationId: me_data_requests_list
+      description: 'NDPA: ask for a copy of my data, or for my account and data to
+        be deleted.'
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataRequest'
+          description: ''
+    post:
+      operationId: me_data_requests_create
+      description: 'NDPA: ask for a copy of my data, or for my account and data to
+        be deleted.'
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DataRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DataRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataRequest'
+          description: ''
+  /api/v1/me/leases/:
+    get:
+      operationId: me_leases_list
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MyLease'
+          description: ''
+  /api/v1/me/login-pin/:
+    post:
+      operationId: me_login_pin_create
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeLoginPIN'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangeLoginPIN'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangeLoginPIN'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeLoginPIN'
+          description: ''
+  /api/v1/me/pay/:
+    post:
+      operationId: me_pay_create
+      description: 'Tenant pays some of their charges in the app: creates a link per
+        landlord and opens checkout.'
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantPay'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TenantPay'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TenantPay'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/me/payments/:
+    get:
+      operationId: me_payments_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPaymentList'
+          description: ''
+  /api/v1/me/payments/{id}/receipt/:
+    get:
+      operationId: me_payments_receipt_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/me/transaction-pin/:
+    post:
+      operationId: me_transaction_pin_create
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionPIN'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TransactionPIN'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TransactionPIN'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionPIN'
+          description: ''
+  /api/v1/orgs/:
+    get:
+      operationId: orgs_list
+      description: Organizations I'm an active member of; POST creates one with me
+        as owner.
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Organization'
+          description: ''
+    post:
+      operationId: orgs_create
+      description: Organizations I'm an active member of; POST creates one with me
+        as owner.
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Organization'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Organization'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+          description: ''
+  /api/v1/orgs/{org_id}/:
+    get:
+      operationId: orgs_retrieve
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+          description: ''
+    patch:
+      operationId: orgs_partial_update
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganization'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganization'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganization'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+          description: ''
+  /api/v1/orgs/{org_id}/arrears/:
+    get:
+      operationId: orgs_arrears_retrieve
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/orgs/{org_id}/charges/:
+    get:
+      operationId: orgs_charges_list
+      description: Charges of the org. ?status=outstanding|paid|..., ?overdue=1, ?lease=,
+        ?tenant=, ?unit=.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChargeList'
+          description: ''
+    post:
+      operationId: orgs_charges_create
+      description: Charges of the org. ?status=outstanding|paid|..., ?overdue=1, ?lease=,
+        ?tenant=, ?unit=.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Charge'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Charge'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Charge'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Charge'
+          description: ''
+  /api/v1/orgs/{org_id}/charges/{id}/:
+    get:
+      operationId: orgs_charges_retrieve
+      description: Charges of the org. ?status=outstanding|paid|..., ?overdue=1, ?lease=,
+        ?tenant=, ?unit=.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this charge.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Charge'
+          description: ''
+  /api/v1/orgs/{org_id}/charges/{id}/waive/:
+    post:
+      operationId: orgs_charges_waive_create
+      description: Charges of the org. ?status=outstanding|paid|..., ?overdue=1, ?lease=,
+        ?tenant=, ?unit=.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this charge.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Charge'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Charge'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Charge'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Charge'
+          description: ''
+  /api/v1/orgs/{org_id}/dashboard/:
+    get:
+      operationId: orgs_dashboard_retrieve
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/orgs/{org_id}/expenses/:
+    get:
+      operationId: orgs_expenses_list
+      description: ?property=, ?category=, ?from=YYYY-MM-DD, ?to=YYYY-MM-DD
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedExpenseList'
+          description: ''
+    post:
+      operationId: orgs_expenses_create
+      description: ?property=, ?category=, ?from=YYYY-MM-DD, ?to=YYYY-MM-DD
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Expense'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Expense'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Expense'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+          description: ''
+  /api/v1/orgs/{org_id}/expenses/{id}/:
+    get:
+      operationId: orgs_expenses_retrieve
+      description: ?property=, ?category=, ?from=YYYY-MM-DD, ?to=YYYY-MM-DD
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this expense.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+          description: ''
+    put:
+      operationId: orgs_expenses_update
+      description: ?property=, ?category=, ?from=YYYY-MM-DD, ?to=YYYY-MM-DD
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this expense.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Expense'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Expense'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Expense'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+          description: ''
+    patch:
+      operationId: orgs_expenses_partial_update
+      description: ?property=, ?category=, ?from=YYYY-MM-DD, ?to=YYYY-MM-DD
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this expense.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedExpense'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedExpense'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedExpense'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+          description: ''
+    delete:
+      operationId: orgs_expenses_destroy
+      description: ?property=, ?category=, ?from=YYYY-MM-DD, ?to=YYYY-MM-DD
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this expense.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/orgs/{org_id}/leases/:
+    get:
+      operationId: orgs_leases_list
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Lease'
+          description: ''
+    post:
+      operationId: orgs_leases_create
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lease'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Lease'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Lease'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lease'
+          description: ''
+  /api/v1/orgs/{org_id}/leases/{id}/:
+    get:
+      operationId: orgs_leases_retrieve
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this lease.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lease'
+          description: ''
+    patch:
+      operationId: orgs_leases_partial_update
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this lease.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLease'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLease'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLease'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lease'
+          description: ''
+    delete:
+      operationId: orgs_leases_destroy
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this lease.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/orgs/{org_id}/leases/{id}/activate/:
+    post:
+      operationId: orgs_leases_activate_create
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this lease.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lease'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Lease'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Lease'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lease'
+          description: ''
+  /api/v1/orgs/{org_id}/leases/{id}/end/:
+    post:
+      operationId: orgs_leases_end_create
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this lease.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lease'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Lease'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Lease'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lease'
+          description: ''
+  /api/v1/orgs/{org_id}/members/:
+    get:
+      operationId: orgs_members_list
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Membership'
+          description: ''
+    post:
+      operationId: orgs_members_create
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Membership'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Membership'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Membership'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membership'
+          description: ''
+  /api/v1/orgs/{org_id}/members/{id}/:
+    patch:
+      operationId: orgs_members_partial_update
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMembership'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMembership'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMembership'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membership'
+          description: ''
+    delete:
+      operationId: orgs_members_destroy
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/orgs/{org_id}/payment-links/:
+    get:
+      operationId: orgs_payment_links_list
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPaymentLinkList'
+          description: ''
+    post:
+      operationId: orgs_payment_links_create
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentLink'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentLink'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentLink'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentLink'
+          description: ''
+  /api/v1/orgs/{org_id}/payment-links/{id}/:
+    get:
+      operationId: orgs_payment_links_retrieve
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this payment link.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentLink'
+          description: ''
+  /api/v1/orgs/{org_id}/payment-links/{id}/cancel/:
+    post:
+      operationId: orgs_payment_links_cancel_create
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this payment link.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentLink'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PaymentLink'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PaymentLink'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentLink'
+          description: ''
+  /api/v1/orgs/{org_id}/payments/:
+    get:
+      operationId: orgs_payments_list
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPaymentList'
+          description: ''
+  /api/v1/orgs/{org_id}/payments/{id}/:
+    get:
+      operationId: orgs_payments_retrieve
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this payment.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/orgs/{org_id}/payments/{id}/receipt/:
+    get:
+      operationId: orgs_payments_receipt_retrieve
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this payment.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/orgs/{org_id}/payments/manual/:
+    post:
+      operationId: orgs_payments_manual_create
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Payment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Payment'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: ''
+  /api/v1/orgs/{org_id}/properties/:
+    get:
+      operationId: orgs_properties_list
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Property'
+          description: ''
+    post:
+      operationId: orgs_properties_create
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Property'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Property'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Property'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+          description: ''
+  /api/v1/orgs/{org_id}/properties/{id}/:
+    get:
+      operationId: orgs_properties_retrieve
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this property.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+          description: ''
+    put:
+      operationId: orgs_properties_update
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this property.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Property'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Property'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Property'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+          description: ''
+    patch:
+      operationId: orgs_properties_partial_update
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this property.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProperty'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProperty'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProperty'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+          description: ''
+    delete:
+      operationId: orgs_properties_destroy
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this property.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/orgs/{org_id}/properties/{property_pk}/units/:
+    get:
+      operationId: orgs_properties_units_list
+      description: Units of one property (/properties/<property_pk>/units/) or of
+        the whole org (/units/).
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: property_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Unit'
+          description: ''
+    post:
+      operationId: orgs_properties_units_create
+      description: Units of one property (/properties/<property_pk>/units/) or of
+        the whole org (/units/).
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: property_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Unit'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Unit'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Unit'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unit'
+          description: ''
+  /api/v1/orgs/{org_id}/properties/{property_pk}/units/{id}/:
+    get:
+      operationId: orgs_properties_units_retrieve
+      description: Units of one property (/properties/<property_pk>/units/) or of
+        the whole org (/units/).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this unit.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: property_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unit'
+          description: ''
+    put:
+      operationId: orgs_properties_units_update
+      description: Units of one property (/properties/<property_pk>/units/) or of
+        the whole org (/units/).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this unit.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: property_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Unit'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Unit'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Unit'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unit'
+          description: ''
+    patch:
+      operationId: orgs_properties_units_partial_update
+      description: Units of one property (/properties/<property_pk>/units/) or of
+        the whole org (/units/).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this unit.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: property_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUnit'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUnit'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUnit'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unit'
+          description: ''
+    delete:
+      operationId: orgs_properties_units_destroy
+      description: Units of one property (/properties/<property_pk>/units/) or of
+        the whole org (/units/).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this unit.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: property_pk
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/orgs/{org_id}/settlement-accounts/:
+    get:
+      operationId: orgs_settlement_accounts_list
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SettlementAccount'
+          description: ''
+    post:
+      operationId: orgs_settlement_accounts_create
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettlementAccount'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SettlementAccount'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SettlementAccount'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettlementAccount'
+          description: ''
+  /api/v1/orgs/{org_id}/statements/:
+    get:
+      operationId: orgs_statements_retrieve
+      description: GET /orgs/{id}/statements/?month=2026-10[&property=][&export=csv]
+      parameters:
+      - in: query
+        name: export
+        schema:
+          enum:
+          - csv
+          type: string
+          minLength: 1
+        description: '* `csv` - csv'
+      - in: query
+        name: month
+        schema:
+          type: string
+          pattern: ^\d{4}-(0[1-9]|1[0-2])$
+          minLength: 1
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: property
+        schema:
+          type: string
+          format: uuid
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+            text/csv:
+              schema:
+                type: string
+          description: ''
+  /api/v1/orgs/{org_id}/tenants/:
+    get:
+      operationId: orgs_tenants_list
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tenant'
+          description: ''
+    post:
+      operationId: orgs_tenants_create
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tenant'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tenant'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tenant'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+          description: ''
+  /api/v1/orgs/{org_id}/tenants/{id}/:
+    get:
+      operationId: orgs_tenants_retrieve
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this tenant profile.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+          description: ''
+    put:
+      operationId: orgs_tenants_update
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this tenant profile.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tenant'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tenant'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tenant'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+          description: ''
+    patch:
+      operationId: orgs_tenants_partial_update
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this tenant profile.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTenant'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTenant'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTenant'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+          description: ''
+    delete:
+      operationId: orgs_tenants_destroy
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this tenant profile.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/orgs/{org_id}/units/:
+    get:
+      operationId: orgs_units_list
+      description: Units of one property (/properties/<property_pk>/units/) or of
+        the whole org (/units/).
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Unit'
+          description: ''
+    post:
+      operationId: orgs_units_create
+      description: Units of one property (/properties/<property_pk>/units/) or of
+        the whole org (/units/).
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Unit'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Unit'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Unit'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unit'
+          description: ''
+  /api/v1/orgs/{org_id}/units/{id}/:
+    get:
+      operationId: orgs_units_retrieve
+      description: Units of one property (/properties/<property_pk>/units/) or of
+        the whole org (/units/).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this unit.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unit'
+          description: ''
+    put:
+      operationId: orgs_units_update
+      description: Units of one property (/properties/<property_pk>/units/) or of
+        the whole org (/units/).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this unit.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Unit'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Unit'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Unit'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unit'
+          description: ''
+    patch:
+      operationId: orgs_units_partial_update
+      description: Units of one property (/properties/<property_pk>/units/) or of
+        the whole org (/units/).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this unit.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUnit'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUnit'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUnit'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unit'
+          description: ''
+    delete:
+      operationId: orgs_units_destroy
+      description: Units of one property (/properties/<property_pk>/units/) or of
+        the whole org (/units/).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this unit.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/pay/{reference}/:
+    get:
+      operationId: pay_retrieve
+      parameters:
+      - in: path
+        name: reference
+        schema:
+          type: string
+        required: true
+      tags:
+      - pay
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/pay/{reference}/checkout/:
+    post:
+      operationId: pay_checkout_create
+      parameters:
+      - in: path
+        name: reference
+        schema:
+          type: string
+        required: true
+      tags:
+      - pay
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/pay/{reference}/mock-complete/:
+    post:
+      operationId: pay_mock_complete_create
+      description: 'MOCK gateway only: the fake checkout page calls this to simulate
+        paying. 404 unless mock is enabled.'
+      parameters:
+      - in: path
+        name: reference
+        schema:
+          type: string
+        required: true
+      tags:
+      - pay
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/pay/{reference}/receipt/:
+    get:
+      operationId: pay_receipt_retrieve
+      parameters:
+      - in: path
+        name: reference
+        schema:
+          type: string
+        required: true
+      tags:
+      - pay
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/pay/{reference}/status/:
+    get:
+      operationId: pay_status_retrieve
+      description: 'Called when the payer returns from checkout: verifies now instead
+        of waiting for the webhook.'
+      parameters:
+      - in: path
+        name: reference
+        schema:
+          type: string
+        required: true
+      tags:
+      - pay
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+components:
+  schemas:
+    CategoryEnum:
+      enum:
+      - repairs
+      - utilities
+      - cleaning
+      - security
+      - agent_fee
+      - legal
+      - tax
+      - insurance
+      - other
+      type: string
+      description: |-
+        * `repairs` - Repairs and maintenance
+        * `utilities` - Utilities
+        * `cleaning` - Cleaning and waste
+        * `security` - Security
+        * `agent_fee` - Agent / management fee
+        * `legal` - Legal and professional
+        * `tax` - Taxes and levies
+        * `insurance` - Insurance
+        * `other` - Other
+    ChangeLoginPIN:
+      type: object
+      properties:
+        pin:
+          type: string
+          writeOnly: true
+          pattern: ^\d{6}$
+        pin_confirm:
+          type: string
+          writeOnly: true
+        current_pin:
+          type: string
+          pattern: ^\d{6}$
+      required:
+      - current_pin
+      - pin
+      - pin_confirm
+    ChannelEnum:
+      enum:
+      - sms
+      - email
+      type: string
+      description: |-
+        * `sms` - SMS
+        * `email` - Email
+    Charge:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        lease:
+          type: string
+          format: uuid
+        kind:
+          $ref: '#/components/schemas/ChargeKindEnum'
+        description:
+          type: string
+          maxLength: 160
+        period_start:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        period_end:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        due_date:
+          type: string
+          format: date
+        amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+        amount_paid:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+        balance:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ChargeStatusEnum'
+          readOnly: true
+        is_overdue:
+          type: boolean
+          readOnly: true
+        waived_reason:
+          type: string
+          readOnly: true
+        tenant_name:
+          type: string
+          readOnly: true
+          default: ''
+        unit_label:
+          type: string
+          readOnly: true
+        property_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - amount_paid
+      - balance
+      - created_at
+      - currency
+      - due_date
+      - id
+      - is_overdue
+      - kind
+      - lease
+      - period_end
+      - period_start
+      - property_name
+      - status
+      - tenant_name
+      - unit_label
+      - waived_reason
+    ChargeKindEnum:
+      enum:
+      - rent
+      - service_charge
+      - deposit
+      - dues
+      - other
+      type: string
+      description: |-
+        * `rent` - Rent
+        * `service_charge` - Service charge
+        * `deposit` - Caution deposit
+        * `dues` - Estate dues
+        * `other` - Other
+    ChargeStatusEnum:
+      enum:
+      - open
+      - part_paid
+      - paid
+      - waived
+      - void
+      type: string
+      description: |-
+        * `open` - Unpaid
+        * `part_paid` - Part paid
+        * `paid` - Paid
+        * `waived` - Waived
+        * `void` - Cancelled
+    Consent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        purpose:
+          $ref: '#/components/schemas/PurposeEnum'
+        version:
+          type: string
+          maxLength: 20
+        granted_at:
+          type: string
+          format: date-time
+          readOnly: true
+        withdrawn_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - granted_at
+      - id
+      - purpose
+      - version
+      - withdrawn_at
+    CurrencyEnum:
+      enum:
+      - NGN
+      - USD
+      - GBP
+      - EUR
+      - GHS
+      - KES
+      - ZAR
+      - XOF
+      - CAD
+      type: string
+      description: |-
+        * `NGN` - NGN
+        * `USD` - USD
+        * `GBP` - GBP
+        * `EUR` - EUR
+        * `GHS` - GHS
+        * `KES` - KES
+        * `ZAR` - ZAR
+        * `XOF` - XOF
+        * `CAD` - CAD
+    DataRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        kind:
+          $ref: '#/components/schemas/DataRequestKindEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DataRequestStatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - completed_at
+      - created_at
+      - id
+      - kind
+      - status
+    DataRequestKindEnum:
+      enum:
+      - export
+      - delete
+      type: string
+      description: |-
+        * `export` - Export my data
+        * `delete` - Delete my account and data
+    DataRequestStatusEnum:
+      enum:
+      - received
+      - in_progress
+      - completed
+      - rejected
+      type: string
+      description: |-
+        * `received` - Received
+        * `in_progress` - In progress
+        * `completed` - Completed
+        * `rejected` - Rejected (legal retention)
+    Expense:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        property:
+          type: string
+          format: uuid
+          nullable: true
+        property_name:
+          type: string
+          readOnly: true
+        unit:
+          type: string
+          format: uuid
+          nullable: true
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          readOnly: true
+        spent_on:
+          type: string
+          format: date
+        vendor:
+          type: string
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created_at
+      - currency
+      - id
+      - property_name
+      - spent_on
+    ForgotPin:
+      type: object
+      properties:
+        identifier:
+          type: string
+      required:
+      - identifier
+    GatewayEnum:
+      enum:
+      - paystack
+      - flutterwave
+      - mock
+      - manual
+      type: string
+      description: |-
+        * `paystack` - Paystack
+        * `flutterwave` - Flutterwave
+        * `mock` - Mock gateway (development only)
+        * `manual` - Recorded manually
+    Lease:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        unit:
+          type: string
+          format: uuid
+        unit_label:
+          type: string
+          readOnly: true
+        property_name:
+          type: string
+          readOnly: true
+        tenant:
+          type: string
+          format: uuid
+        tenant_name:
+          type: string
+          readOnly: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        rent_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+        rent_frequency:
+          $ref: '#/components/schemas/RentFrequencyEnum'
+        service_charge_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+        deposit_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/LeaseStatusEnum'
+          readOnly: true
+          default: draft
+        ended_on:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        notes:
+          type: string
+        balance:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+        activate:
+          type: boolean
+          writeOnly: true
+          default: false
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - balance
+      - created_at
+      - currency
+      - end_date
+      - ended_on
+      - id
+      - property_name
+      - rent_amount
+      - start_date
+      - status
+      - tenant
+      - tenant_name
+      - unit
+      - unit_label
+    LeaseStatusEnum:
+      enum:
+      - draft
+      - active
+      - ended
+      - terminated
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `active` - Active
+        * `ended` - Ended
+        * `terminated` - Terminated early
+    LoginStart:
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: Phone number or email
+        pin:
+          type: string
+          pattern: ^\d{6}$
+      required:
+      - identifier
+      - pin
+    Logout:
+      type: object
+      properties:
+        refresh:
+          type: string
+        device_id:
+          type: string
+          maxLength: 64
+      required:
+      - refresh
+    Membership:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        phone_number:
+          type: string
+          readOnly: true
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/MembershipStatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - phone_number
+      - role
+      - status
+    MembershipStatusEnum:
+      enum:
+      - active
+      - invited
+      - removed
+      type: string
+      description: |-
+        * `active` - Active
+        * `invited` - Invited (no account yet)
+        * `removed` - Removed
+    MyLease:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        unit_label:
+          type: string
+        property_name:
+          type: string
+        property_address:
+          type: string
+        landlord:
+          type: string
+        landlord_phone:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        rent_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+        rent_frequency:
+          $ref: '#/components/schemas/RentFrequencyEnum'
+        service_charge_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        status:
+          $ref: '#/components/schemas/LeaseStatusEnum'
+      required:
+      - end_date
+      - id
+      - landlord
+      - landlord_phone
+      - property_address
+      - property_name
+      - rent_amount
+      - service_charge_amount
+      - start_date
+      - unit_label
+    OTP:
+      type: object
+      properties:
+        challenge_id:
+          type: string
+        channel:
+          $ref: '#/components/schemas/ChannelEnum'
+      required:
+      - challenge_id
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        kind:
+          $ref: '#/components/schemas/OrganizationKindEnum'
+        country:
+          type: string
+          maxLength: 2
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        timezone:
+          type: string
+          maxLength: 40
+        phone_number:
+          oneOf:
+          - type: string
+            pattern: ^\+[1-9]\d{7,14}$
+            maxLength: 16
+          - type: string
+            maxLength: 0
+        email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        address:
+          type: string
+          maxLength: 255
+        rent_reminders_enabled:
+          type: boolean
+          description: Send tenants SMS reminders before and after rent is due.
+        my_role:
+          type: string
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - my_role
+      - name
+    OrganizationKindEnum:
+      enum:
+      - landlord
+      - agency
+      - estate
+      - platform
+      type: string
+      description: |-
+        * `landlord` - Landlord / property owner
+        * `agency` - Agency / property manager
+        * `estate` - Estate association
+        * `platform` - Homesika platform
+    PaginatedChargeList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Charge'
+    PaginatedExpenseList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Expense'
+    PaginatedPaymentLinkList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentLink'
+    PaginatedPaymentList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+    PatchedExpense:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        property:
+          type: string
+          format: uuid
+          nullable: true
+        property_name:
+          type: string
+          readOnly: true
+        unit:
+          type: string
+          format: uuid
+          nullable: true
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          readOnly: true
+        spent_on:
+          type: string
+          format: date
+        vendor:
+          type: string
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedLease:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        unit:
+          type: string
+          format: uuid
+        unit_label:
+          type: string
+          readOnly: true
+        property_name:
+          type: string
+          readOnly: true
+        tenant:
+          type: string
+          format: uuid
+        tenant_name:
+          type: string
+          readOnly: true
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        rent_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+        rent_frequency:
+          $ref: '#/components/schemas/RentFrequencyEnum'
+        service_charge_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+        deposit_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/LeaseStatusEnum'
+          readOnly: true
+          default: draft
+        ended_on:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        notes:
+          type: string
+        balance:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+        activate:
+          type: boolean
+          writeOnly: true
+          default: false
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedMembership:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        phone_number:
+          type: string
+          readOnly: true
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/MembershipStatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedOrganization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        kind:
+          $ref: '#/components/schemas/OrganizationKindEnum'
+        country:
+          type: string
+          maxLength: 2
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        timezone:
+          type: string
+          maxLength: 40
+        phone_number:
+          oneOf:
+          - type: string
+            pattern: ^\+[1-9]\d{7,14}$
+            maxLength: 16
+          - type: string
+            maxLength: 0
+        email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        address:
+          type: string
+          maxLength: 255
+        rent_reminders_enabled:
+          type: boolean
+          description: Send tenants SMS reminders before and after rent is due.
+        my_role:
+          type: string
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedProperty:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        kind:
+          $ref: '#/components/schemas/PropertyKindEnum'
+        address:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          maxLength: 80
+        state:
+          type: string
+          maxLength: 80
+        country:
+          type: string
+          maxLength: 2
+        notes:
+          type: string
+        is_archived:
+          type: boolean
+        unit_count:
+          type: integer
+          readOnly: true
+        occupied_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedTenant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          maxLength: 160
+        phone_number:
+          type: string
+        email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        occupation:
+          type: string
+          maxLength: 100
+        next_of_kin:
+          type: string
+          description: Name and phone (encrypted).
+        id_document:
+          type: string
+          description: ID type and number (encrypted).
+        notes:
+          type: string
+        has_app:
+          type: boolean
+          readOnly: true
+        active_lease:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedUnit:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        property:
+          type: string
+          format: uuid
+          readOnly: true
+        property_name:
+          type: string
+          readOnly: true
+        label:
+          type: string
+          description: e.g. Flat 2B, Shop 4
+          maxLength: 60
+        kind:
+          $ref: '#/components/schemas/UnitKindEnum'
+        bedrooms:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        default_rent_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          nullable: true
+        status:
+          $ref: '#/components/schemas/UnitStatusEnum'
+        meter_number:
+          type: string
+          description: Prepaid meter, for bills (Phase 3).
+          maxLength: 30
+        disco:
+          type: string
+          description: Electricity distribution company.
+          maxLength: 40
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        phone_number:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          nullable: true
+          title: Email address
+        first_name:
+          type: string
+          maxLength: 80
+        last_name:
+          type: string
+          maxLength: 80
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2
+          maxLength: 2
+        preferred_language:
+          $ref: '#/components/schemas/PreferredLanguageEnum'
+        is_phone_verified:
+          type: boolean
+          readOnly: true
+        is_email_verified:
+          type: boolean
+          readOnly: true
+        has_login_pin:
+          type: boolean
+          readOnly: true
+        has_transaction_pin:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        tenant:
+          type: string
+          format: uuid
+        tenant_name:
+          type: string
+          readOnly: true
+        gateway:
+          $ref: '#/components/schemas/GatewayEnum'
+        gateway_reference:
+          type: string
+          maxLength: 60
+        channel:
+          type: string
+          description: card, bank_transfer, ussd, cash...
+          maxLength: 30
+        amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+        unallocated_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        status:
+          $ref: '#/components/schemas/PaymentStatusEnum'
+        paid_at:
+          type: string
+          format: date-time
+        receipt_number:
+          type: string
+          readOnly: true
+        needs_review:
+          type: boolean
+        review_reason:
+          type: string
+          maxLength: 255
+        note:
+          type: string
+          maxLength: 255
+        applied_to:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          readOnly: true
+      required:
+      - amount
+      - applied_to
+      - gateway
+      - gateway_reference
+      - id
+      - paid_at
+      - receipt_number
+      - tenant
+      - tenant_name
+      - unallocated_amount
+    PaymentLink:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reference:
+          type: string
+          readOnly: true
+        tenant:
+          type: string
+          format: uuid
+        tenant_name:
+          type: string
+          readOnly: true
+        charges:
+          type: array
+          items:
+            type: string
+            format: uuid
+        amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          readOnly: true
+        description:
+          type: string
+          maxLength: 200
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PaymentLinkStatusEnum'
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+        gateway:
+          allOf:
+          - $ref: '#/components/schemas/GatewayEnum'
+          readOnly: true
+        url:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - charges
+      - created_at
+      - currency
+      - expires_at
+      - gateway
+      - id
+      - reference
+      - status
+      - tenant
+      - tenant_name
+      - url
+    PaymentLinkStatusEnum:
+      enum:
+      - pending
+      - paid
+      - expired
+      - cancelled
+      type: string
+      description: |-
+        * `pending` - Awaiting payment
+        * `paid` - Paid
+        * `expired` - Expired
+        * `cancelled` - Cancelled
+    PaymentStatusEnum:
+      enum:
+      - succeeded
+      - reversed
+      type: string
+      description: |-
+        * `succeeded` - Succeeded
+        * `reversed` - Reversed / refunded
+    PinLogin:
+      type: object
+      properties:
+        device_id:
+          type: string
+          maxLength: 64
+        device_secret:
+          type: string
+          maxLength: 128
+        pin:
+          type: string
+          pattern: ^\d{6}$
+      required:
+      - device_id
+      - device_secret
+      - pin
+    PinSetup:
+      type: object
+      properties:
+        pin:
+          type: string
+          writeOnly: true
+          pattern: ^\d{6}$
+        pin_confirm:
+          type: string
+          writeOnly: true
+        device_id:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{16,64}$
+        device_name:
+          type: string
+          default: ''
+          maxLength: 100
+        setup_token:
+          type: string
+      required:
+      - device_id
+      - pin
+      - pin_confirm
+      - setup_token
+    PreferredLanguageEnum:
+      enum:
+      - en
+      - pcm
+      - fr
+      type: string
+      description: |-
+        * `en` - English
+        * `pcm` - Nigerian Pidgin
+        * `fr` - Français
+    Property:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        kind:
+          $ref: '#/components/schemas/PropertyKindEnum'
+        address:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          maxLength: 80
+        state:
+          type: string
+          maxLength: 80
+        country:
+          type: string
+          maxLength: 2
+        notes:
+          type: string
+        is_archived:
+          type: boolean
+        unit_count:
+          type: integer
+          readOnly: true
+        occupied_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - address
+      - created_at
+      - id
+      - name
+      - occupied_count
+      - unit_count
+    PropertyKindEnum:
+      enum:
+      - block
+      - house
+      - compound
+      - commercial
+      - mixed
+      - other
+      type: string
+      description: |-
+        * `block` - Block of flats
+        * `house` - House / duplex
+        * `compound` - Compound (face-me-I-face-you)
+        * `commercial` - Commercial / shops
+        * `mixed` - Mixed use
+        * `other` - Other
+    PurposeEnum:
+      enum:
+      - terms
+      - privacy
+      - whatsapp
+      - marketing
+      - location
+      type: string
+      description: |-
+        * `terms` - Terms of service
+        * `privacy` - Privacy policy
+        * `whatsapp` - WhatsApp messages
+        * `marketing` - Marketing
+        * `location` - Location for safety alerts
+    Register:
+      type: object
+      description: Step 1 of sign-up. Nothing is created until the code is verified.
+      properties:
+        first_name:
+          type: string
+          maxLength: 80
+        last_name:
+          type: string
+          maxLength: 80
+        phone_number:
+          type: string
+        email:
+          oneOf:
+          - type: string
+            format: email
+          - type: string
+            maxLength: 0
+        preferred_language:
+          allOf:
+          - $ref: '#/components/schemas/PreferredLanguageEnum'
+          default: en
+        channel:
+          allOf:
+          - $ref: '#/components/schemas/ChannelEnum'
+          default: sms
+        accept_terms:
+          type: boolean
+      required:
+      - accept_terms
+      - first_name
+      - last_name
+      - phone_number
+    RentFrequencyEnum:
+      enum:
+      - monthly
+      - quarterly
+      - biannual
+      - annual
+      type: string
+      description: |-
+        * `monthly` - Monthly
+        * `quarterly` - Every 3 months
+        * `biannual` - Every 6 months
+        * `annual` - Yearly
+    RoleEnum:
+      enum:
+      - owner
+      - manager
+      - agent
+      - accountant
+      - estate_admin
+      - security
+      - viewer
+      type: string
+      description: |-
+        * `owner` - Owner
+        * `manager` - Manager
+        * `agent` - Agent
+        * `accountant` - Accountant
+        * `estate_admin` - Estate admin
+        * `security` - Security desk
+        * `viewer` - Viewer (read only)
+    SettlementAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        gateway:
+          allOf:
+          - $ref: '#/components/schemas/GatewayEnum'
+          readOnly: true
+        bank_code:
+          type: string
+          maxLength: 10
+        bank_name:
+          type: string
+          maxLength: 80
+        account_number:
+          type: string
+          writeOnly: true
+          pattern: ^\d{10}$
+        account_last4:
+          type: string
+          readOnly: true
+        account_name:
+          type: string
+          maxLength: 120
+        status:
+          allOf:
+          - $ref: '#/components/schemas/SettlementAccountStatusEnum'
+          readOnly: true
+        failure_reason:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - account_last4
+      - account_number
+      - bank_code
+      - created_at
+      - failure_reason
+      - gateway
+      - id
+      - status
+    SettlementAccountStatusEnum:
+      enum:
+      - active
+      - failed
+      - disabled
+      type: string
+      description: |-
+        * `active` - Active
+        * `failed` - Rejected by gateway
+        * `disabled` - Disabled
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          maxLength: 160
+        phone_number:
+          type: string
+        email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        occupation:
+          type: string
+          maxLength: 100
+        next_of_kin:
+          type: string
+          description: Name and phone (encrypted).
+        id_document:
+          type: string
+          description: ID type and number (encrypted).
+        notes:
+          type: string
+        has_app:
+          type: boolean
+          readOnly: true
+        active_lease:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - active_lease
+      - created_at
+      - full_name
+      - has_app
+      - id
+      - phone_number
+    TenantPay:
+      type: object
+      properties:
+        charges:
+          type: array
+          items:
+            type: string
+            format: uuid
+          minItems: 1
+        amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+      required:
+      - charges
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TransactionPIN:
+      type: object
+      description: Setting or changing the transaction PIN needs the login PIN (step-up).
+      properties:
+        login_pin:
+          type: string
+          writeOnly: true
+          pattern: ^\d{6}$
+        pin:
+          type: string
+          writeOnly: true
+          pattern: ^\d{4}$
+        pin_confirm:
+          type: string
+          writeOnly: true
+      required:
+      - login_pin
+      - pin
+      - pin_confirm
+    Unit:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        property:
+          type: string
+          format: uuid
+          readOnly: true
+        property_name:
+          type: string
+          readOnly: true
+        label:
+          type: string
+          description: e.g. Flat 2B, Shop 4
+          maxLength: 60
+        kind:
+          $ref: '#/components/schemas/UnitKindEnum'
+        bedrooms:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        default_rent_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          nullable: true
+        status:
+          $ref: '#/components/schemas/UnitStatusEnum'
+        meter_number:
+          type: string
+          description: Prepaid meter, for bills (Phase 3).
+          maxLength: 30
+        disco:
+          type: string
+          description: Electricity distribution company.
+          maxLength: 40
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - label
+      - property
+      - property_name
+    UnitKindEnum:
+      enum:
+      - flat
+      - room
+      - house
+      - shop
+      - office
+      - other
+      type: string
+      description: |-
+        * `flat` - Flat / apartment
+        * `room` - Room / self-contain
+        * `house` - Whole house
+        * `shop` - Shop
+        * `office` - Office
+        * `other` - Other
+    UnitStatusEnum:
+      enum:
+      - vacant
+      - occupied
+      - unavailable
+      type: string
+      description: |-
+        * `vacant` - Vacant
+        * `occupied` - Occupied
+        * `unavailable` - Unavailable (repairs etc.)
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        phone_number:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          nullable: true
+          title: Email address
+        first_name:
+          type: string
+          maxLength: 80
+        last_name:
+          type: string
+          maxLength: 80
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2
+          maxLength: 2
+        preferred_language:
+          $ref: '#/components/schemas/PreferredLanguageEnum'
+        is_phone_verified:
+          type: boolean
+          readOnly: true
+        is_email_verified:
+          type: boolean
+          readOnly: true
+        has_login_pin:
+          type: boolean
+          readOnly: true
+        has_transaction_pin:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - has_login_pin
+      - has_transaction_pin
+      - id
+      - is_email_verified
+      - is_phone_verified
+      - phone_number
+    Verify:
+      type: object
+      properties:
+        device_id:
+          type: string
+          pattern: ^[A-Za-z0-9_-]{16,64}$
+        device_name:
+          type: string
+          default: ''
+          maxLength: 100
+        challenge_id:
+          type: string
+        code:
+          type: string
+          pattern: ^\d{6}$
+      required:
+      - challenge_id
+      - code
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

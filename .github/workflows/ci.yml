@@ -47,6 +47,10 @@ jobs:
         run: python manage.py makemigrations --check --dry-run
         env:
           DJANGO_SETTINGS_MODULE: config.settings.test
+      - name: OpenAPI schema (docs/openapi.yaml) is up to date
+        run: python manage.py spectacular --file /tmp/openapi.yaml && diff -u ../docs/openapi.yaml /tmp/openapi.yaml
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
       - name: Production deployment checks
         run: python manage.py check --deploy --fail-level WARNING
         env:

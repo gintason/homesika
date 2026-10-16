@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core import audit
+from apps.core.idempotency import idempotent
 from apps.core.money import to_major
 from apps.orgs.permissions import OrgScopedMixin
 from apps.properties.views import OrgContextMixin
@@ -39,6 +40,10 @@ class ExpenseViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
         if p.get("to"):
             qs = qs.filter(spent_on__lte=p["to"])
         return qs.order_by("-spent_on", "-created_at")
+
+    @idempotent
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         expense = serializer.save(
