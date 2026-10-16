@@ -7,16 +7,39 @@
     "orientation": "portrait",
     "icon": "./assets/homesika-logo.jpg",
     "userInterfaceStyle": "light",
-    "ios": { "bundleIdentifier": "com.homesika.app", "supportsTablet": false },
-    "android": { "package": "com.homesika.app", "edgeToEdgeEnabled": true },
+    "ios": {
+      "bundleIdentifier": "com.homesika.app",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.homesika.app",
+      "edgeToEdgeEnabled": true
+    },
     "plugins": [
       "expo-router",
       "expo-font",
       [
         "expo-splash-screen",
-        { "image": "./assets/homesika-logo.jpg", "imageWidth": 220, "resizeMode": "contain", "backgroundColor": "#FFFFFF" }
+        {
+          "image": "./assets/homesika-logo.jpg",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF"
+        }
+      ],
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-sharing",
+      "expo-localization",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Homesika to use Face ID to unlock the app."
+        }
       ]
     ],
-    "experiments": { "typedRoutes": true }
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

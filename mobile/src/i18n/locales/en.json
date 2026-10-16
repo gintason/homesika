@@ -1,0 +1,213 @@
+{
+  "common": {
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "back": "Back",
+    "done": "Done",
+    "retry": "Try again",
+    "loading": "Loading…",
+    "optional": "Optional",
+    "close": "Close"
+  },
+  "tabs": {
+    "home": "Home",
+    "charges": "Charges",
+    "payments": "Payments",
+    "profile": "Profile"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "No internet connection. Check your data or Wi-Fi and try again.",
+    "offline": "You're offline. Showing what we last loaded.",
+    "loadFailed": "We couldn't load this.",
+    "attemptsLeft": "Attempts left: {{count}}.",
+    "codes": {
+      "network_error": "No internet connection. Check your data or Wi-Fi and try again.",
+      "server_error": "Something went wrong on our side. Please try again.",
+      "throttled": "Too many tries. Please wait a little and try again.",
+      "invalid_login_pin": "Incorrect PIN.",
+      "login_pin_locked": "Too many incorrect PIN attempts. Reset your PIN or try again later.",
+      "device_not_recognised": "Please sign in again on this phone.",
+      "otp_invalid": "That code is incorrect or has expired.",
+      "otp_attempts_exceeded": "Too many incorrect codes. Request a new one.",
+      "otp_resend_limited": "Please wait before requesting another code.",
+      "otp_delivery_failed": "We couldn't send the code right now. Try again, or use email instead.",
+      "setup_expired": "This step has expired. Please start again.",
+      "request_in_progress": "We're still processing your last request. Please wait a moment."
+    }
+  },
+  "welcome": {
+    "title": "Your rent, sorted",
+    "subtitle": "See what you owe, pay your landlord safely and keep every receipt in one place.",
+    "getStarted": "Create an account",
+    "haveAccount": "I already have an account"
+  },
+  "auth": {
+    "signUpTitle": "Create your account",
+    "signUpSubtitle": "Use the phone number your landlord has for you. We'll text you a code.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "phone": "Phone number",
+    "phoneHint": "e.g. 0801 234 5678",
+    "phoneInvalid": "Enter a valid Nigerian phone number.",
+    "acceptTerms": "I agree to the Homesika Terms and Privacy Policy",
+    "termsLink": "Read the Terms",
+    "privacyLink": "Read the Privacy Policy",
+    "signInTitle": "Welcome back",
+    "signInSubtitle": "Sign in on this phone with your phone number and 6-digit PIN.",
+    "noAccount": "New to Homesika? Create an account",
+    "haveAccount": "Already have an account? Sign in"
+  },
+  "otp": {
+    "title": "Enter the code",
+    "sentSms": "We sent a 6-digit code by SMS to {{destination}}.",
+    "sentEmail": "We sent a 6-digit code to {{destination}}.",
+    "codeLabel": "6-digit code, {{filled}} of 6 entered",
+    "resend": "Send a new code",
+    "resendIn": "Send a new code in {{seconds}}s",
+    "useEmail": "Send it to my email instead",
+    "sendCode": "Send code",
+    "sent": "New code sent."
+  },
+  "pin": {
+    "createTitle": "Create your PIN",
+    "createSubtitle": "6 digits you'll use to open Homesika. Don't use your birthday.",
+    "confirmTitle": "Enter it again",
+    "mismatch": "The PINs didn't match. Try again.",
+    "weak": "Choose a less predictable PIN (not 123456 or 111111).",
+    "enterTitle": "Enter your PIN",
+    "dots": "{{filled}} of {{length}} digits entered",
+    "delete": "Delete",
+    "forgotTitle": "Forgot your PIN?",
+    "forgotSubtitle": "Enter your phone number. We'll send a code so you can set a new PIN. Other phones will be signed out."
+  },
+  "lock": {
+    "title": "Welcome back",
+    "welcomeBack": "Welcome back, {{name}}",
+    "enterPin": "Enter your 6-digit PIN",
+    "forgotPin": "Forgot PIN?",
+    "notYou": "Not you?",
+    "switchTitle": "Use another account?",
+    "switchBody": "This phone will be unlinked. You'll need your phone number, PIN and a code to sign in again.",
+    "switchConfirm": "Unlink this phone",
+    "unlock": "Unlock with fingerprint or face",
+    "prompt": "Unlock Homesika",
+    "offerBioTitle": "Unlock faster?",
+    "offerBioBody": "Use your fingerprint or face instead of typing your PIN.",
+    "notNow": "Not now",
+    "useBio": "Turn on"
+  },
+  "home": {
+    "greeting": "Hello, {{name}}",
+    "myRent": "My rent",
+    "totalOwed": "Total you owe",
+    "overdue": "Overdue ({{count}}): {{amount}}",
+    "nextDue": "Next due",
+    "dueOn": "Due {{date}}",
+    "pay": "Pay {{amount}}",
+    "payLandlord": "Pay {{landlord}}",
+    "allPaid": "You're all paid up",
+    "allPaidBody": "No unpaid charges right now. We'll show new ones here.",
+    "notLinkedTitle": "Nothing to show yet",
+    "notLinkedBody": "Ask your landlord to add your number {{phone}} on Homesika. Your rent and charges will appear here once they do.",
+    "myHome": "My home",
+    "landlordLine": "Landlord: {{name}}",
+    "seePayments": "See payments and receipts"
+  },
+  "charges": {
+    "title": "Charges",
+    "select": "Select {{name}}",
+    "selected": "{{count}} selected · {{amount}}",
+    "payNow": "Pay {{amount}}",
+    "oneLandlord": "You can pay one landlord at a time. We've switched your selection to {{landlord}}.",
+    "groupTotal": "{{amount}} owed",
+    "empty": "No unpaid charges",
+    "emptyBody": "When your landlord adds rent or other charges, they'll show here.",
+    "due": "Due {{date}}",
+    "balance": "Balance",
+    "amount": "Amount",
+    "paid": "Paid so far",
+    "period": "Period",
+    "property": "Property",
+    "unit": "Unit",
+    "detailTitle": "Charge",
+    "payThis": "Pay {{amount}}",
+    "payPart": "Pay part of it",
+    "partAmount": "Amount to pay",
+    "partHint": "Up to {{amount}}",
+    "partInvalid": "Enter an amount between ₦1 and {{amount}}.",
+    "kind": {
+      "rent": "Rent",
+      "service_charge": "Service charge",
+      "deposit": "Caution deposit",
+      "dues": "Estate dues",
+      "other": "Other charge"
+    },
+    "status": {
+      "open": "Unpaid",
+      "part_paid": "Part paid",
+      "paid": "Paid",
+      "waived": "Waived",
+      "void": "Cancelled",
+      "overdue": "Overdue"
+    },
+    "dueDate": "Due date"
+  },
+  "pay": {
+    "starting": "Opening secure checkout…",
+    "checkingTitle": "Checking your payment",
+    "checkingBody": "This usually takes a few seconds.",
+    "successTitle": "Payment received",
+    "successBody": "Thank you. Your landlord has been paid.",
+    "receiptNumber": "Receipt {{number}}",
+    "processingTitle": "Still processing",
+    "processingBody": "We haven't got confirmation from the bank yet. If you were debited, it will show here automatically. Don't pay again.",
+    "notPaidTitle": "Payment not completed",
+    "notPaidBody": "This payment link has {{status}}. You were not charged. You can start again from Charges.",
+    "checkAgain": "Check again",
+    "backHome": "Back to home",
+    "viewPayments": "View payments",
+    "status": {
+      "expired": "expired",
+      "cancelled": "been cancelled"
+    }
+  },
+  "payments": {
+    "title": "Payments",
+    "empty": "No payments yet",
+    "emptyBody": "Payments you make, and ones your landlord records, will show here with receipts.",
+    "receipt": "Receipt",
+    "getReceipt": "Get receipt {{number}}",
+    "downloading": "Getting receipt…",
+    "receiptFailed": "We couldn't get the receipt. Try again.",
+    "noReceipt": "Receipt not ready yet",
+    "reversed": "Reversed",
+    "succeeded": "Paid",
+    "for": "For: {{items}}",
+    "loadMore": "Load more",
+    "end": "That's everything"
+  },
+  "profile": {
+    "title": "Profile",
+    "name": "Name",
+    "phone": "Phone",
+    "language": "Language",
+    "languageHint": "Choose the language for the app",
+    "biometrics": "Unlock with fingerprint or face",
+    "biometricsOn": "On",
+    "biometricsOff": "Off",
+    "signOut": "Sign out",
+    "signOutTitle": "Sign out of this phone?",
+    "signOutBody": "You'll need your phone number, PIN and a code to sign in again.",
+    "version": "Version {{version}}"
+  },
+  "language": {
+    "en": "English",
+    "pcm": "Pidgin"
+  },
+  "a11y": {
+    "selected": "selected",
+    "notSelected": "not selected",
+    "refresh": "Pull to refresh"
+  }
+}
