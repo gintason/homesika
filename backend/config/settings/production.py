@@ -19,6 +19,12 @@ SESSION_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = "DENY"
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
+# Render sets RENDER_EXTERNAL_HOSTNAME (e.g. homesika-api.onrender.com). TODO(verify) on first deploy.
+_render_host = env("RENDER_EXTERNAL_HOSTNAME", default="")
+if _render_host:
+    ALLOWED_HOSTS = [*ALLOWED_HOSTS, _render_host]  # noqa: F405
+    CSRF_TRUSTED_ORIGINS = [*CSRF_TRUSTED_ORIGINS, f"https://{_render_host}"]
+
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},  # S3-compatible in Phase 1
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},

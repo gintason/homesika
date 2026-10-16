@@ -1,0 +1,137 @@
+# Render Blueprint for Homesika STAGING (production = a copy with "-prod" names and live keys).
+#
+# TODO(verify): written from knowledge of Render's Blueprint spec; Render's own docs weren't
+# reachable from the build environment. When you create the Blueprint, Render validates this file
+# and lists any field it doesn't accept: send me the message and I'll fix it.
+#
+# Secrets marked `sync: false` are NOT stored here: Render asks you for them in its dashboard.
+
+envVarGroups:
+  - name: homesika-staging-shared
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.staging
+      - key: ENVIRONMENT
+        value: staging
+      - key: DJANGO_SECRET_KEY
+        generateValue: true          # Render generates a random value once
+      - key: FIELD_ENCRYPTION_KEYS
+        sync: false                  # paste: python -c "import os,base64;print(base64.b64encode(os.urandom(32)).decode())"
+      - key: SENTRY_DSN
+        sync: false
+      - key: TIME_ZONE
+        value: Africa/Lagos
+      - key: LOG_LEVEL
+        value: INFO
+
+databases:
+  - name: homesika-staging-db
+    databaseName: homesika
+    user: homesika
+    region: frankfurt                # closest Render region to Nigeria at time of writing; TODO(verify)
+    postgresMajorVersion: "16"
+    plan: basic-256mb                # TODO(verify) plan name in your Render dashboard
+
+services:
+  # Redis (Render "Key Value"): Celery queues, cache, Channels layer.
+  - type: keyvalue
+    name: homesika-staging-redis
+    region: frankfurt
+    plan: starter                    # TODO(verify) plan name
+    maxmemoryPolicy: noeviction      # queued jobs must never be evicted
+    ipAllowList: []                  # private: only Render services can connect
+
+  # API: Django + Channels (HTTP and WebSockets) served by Daphne.
+  - type: web
+    name: homesika-staging-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    region: frankfurt
+    plan: starter
+    healthCheckPath: /health/ready
+    preDeployCommand: python manage.py migrate --noinput   # runs once per deploy, before traffic switches
+    envVars:
+      - fromGroup: homesika-staging-shared
+      - key: SKIP_MIGRATIONS
+        value: "1"                   # preDeployCommand migrates; containers never race each other
+      - key: DATABASE_URL
+        fromDatabase:
+          name: homesika-staging-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: homesika-staging-redis
+          property: connectionString
+      - key: API_DOCS_ENABLED
+        value: "true"
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false                  # e.g. https://homesika-staging-web.onrender.com
+
+  # Background jobs: reminders, receipts, reconciliation, provider calls.
+  - type: worker
+    name: homesika-staging-worker
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    region: frankfurt
+    plan: starter
+    dockerCommand: celery -A config worker -l info -Q default
+    envVars:
+      - fromGroup: homesika-staging-shared
+      - key: SKIP_MIGRATIONS
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: homesika-staging-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: homesika-staging-redis
+          property: connectionString
+
+  # Scheduler: queues the periodic jobs (one instance only).
+  - type: worker
+    name: homesika-staging-beat
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    region: frankfurt
+    plan: starter
+    dockerCommand: celery -A config beat -l info
+    envVars:
+      - fromGroup: homesika-staging-shared
+      - key: SKIP_MIGRATIONS
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: homesika-staging-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: homesika-staging-redis
+          property: connectionString
+
+  # Web dashboard (static React build).
+  - type: web
+    name: homesika-staging-web
+    runtime: static
+    rootDir: web
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite                # single-page app: every path serves index.html
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+    envVars:
+      - key: VITE_API_URL
+        sync: false                  # e.g. https://homesika-staging-api.onrender.com
+
+# The alerts worker (Phase 5) is added here when panic alerts ship.

@@ -26,6 +26,7 @@ RUN DJANGO_SECRET_KEY=build DATABASE_URL=sqlite:////tmp/build.db python manage.p
 USER homesika
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD curl -fsS http://localhost:8000/health/live || exit 1
+    CMD curl -fsS http://localhost:${PORT:-8000}/health/live || exit 1
 ENTRYPOINT ["./docker/entrypoint.sh"]
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "--proxy-headers", "config.asgi:application"]
+# Render (and most hosts) pass the port in $PORT; 8000 locally.
+CMD ["sh", "-c", "exec daphne -b 0.0.0.0 -p ${PORT:-8000} --proxy-headers config.asgi:application"]

@@ -16,8 +16,7 @@
   gitignored. Secrets in staging and production live in the host's secret manager, never in
   the repo or the image.
 * **The same Docker image** is promoted from staging to production. Only env vars differ.
-* **Hosting is an open question:** e.g. DigitalOcean (Lagos-friendly latency via Frankfurt or
-  London), AWS `af-south-1` (Cape Town), or Render/Fly. Choose before the Phase 1 deploy.
+* **Hosting: Render** (decided 2026-10-16). `render.yaml` describes staging; see `docs/DEPLOY_RENDER.md`.
 * **Mobile:** EAS build profiles `development`, `preview` (pointing at staging) and
   `production`. `EXPO_PUBLIC_API_URL` is set per profile.
 * **Web:** `VITE_API_URL` per environment; built static files served from a CDN.
