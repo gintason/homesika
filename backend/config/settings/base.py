@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.notifications",
     "apps.orgs",
+    "apps.properties",
+    "apps.leasing",
 ]
 
 AUTH_USER_MODEL = "accounts.User"

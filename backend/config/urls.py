@@ -4,11 +4,15 @@ from django.urls import include, path
 
 from apps.accounts.urls import auth_urls, me_urls
 from apps.core import views as core_views
+from apps.leasing.urls import me_urls as my_leasing_urls
+from apps.leasing.urls import org_urls as leasing_org_urls
 
 api_v1 = [
     path("auth/", include(auth_urls)),
     path("me/", include(me_urls)),
+    path("me/", include(my_leasing_urls)),
     path("orgs/", include("apps.orgs.urls")),
+    path("orgs/<uuid:org_id>/", include(leasing_org_urls)),
 ]
 
 urlpatterns = [
