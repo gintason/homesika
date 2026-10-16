@@ -14,6 +14,7 @@ from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, permissions, serializers, status
 from rest_framework.response import Response
@@ -102,6 +103,7 @@ class RegisterView(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
     throttle_classes = [OTPRateThrottle]
 
+    @extend_schema(responses={201: OpenApiTypes.OBJECT})
     def post(self, request):
         s = self.get_serializer(data=request.data)
         s.is_valid(raise_exception=True)
@@ -123,6 +125,7 @@ class OTPResendView(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
     throttle_classes = [OTPRateThrottle]
 
+    @extend_schema(responses={200: OpenApiTypes.OBJECT})
     def post(self, request):
         s = self.get_serializer(data=request.data)
         s.is_valid(raise_exception=True)
@@ -137,6 +140,7 @@ class OTPVerifyView(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
     throttle_classes = [OTPRateThrottle]
 
+    @extend_schema(responses={200: OpenApiTypes.OBJECT})
     def post(self, request):
         s = self.get_serializer(data=request.data)
         s.is_valid(raise_exception=True)
@@ -181,6 +185,7 @@ class PinSetupView(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
     throttle_classes = [OTPRateThrottle]
 
+    @extend_schema(responses={200: OpenApiTypes.OBJECT, 201: OpenApiTypes.OBJECT})
     def post(self, request):
         s = self.get_serializer(data=request.data)
         s.is_valid(raise_exception=True)
@@ -207,6 +212,7 @@ class PinLoginView(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
     throttle_classes = [PinLoginRateThrottle]
 
+    @extend_schema(responses={200: OpenApiTypes.OBJECT})
     def post(self, request):
         s = self.get_serializer(data=request.data)
         s.is_valid(raise_exception=True)
@@ -237,6 +243,7 @@ class LoginStartView(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
     throttle_classes = [AuthRateThrottle]
 
+    @extend_schema(responses={201: OpenApiTypes.OBJECT})
     def post(self, request):
         s = self.get_serializer(data=request.data)
         s.is_valid(raise_exception=True)
@@ -254,6 +261,7 @@ class ForgotPinView(generics.GenericAPIView):
     permission_classes = [permissions.AllowAny]
     throttle_classes = [OTPRateThrottle]
 
+    @extend_schema(responses={201: OpenApiTypes.OBJECT})
     def post(self, request):
         s = self.get_serializer(data=request.data)
         s.is_valid(raise_exception=True)
@@ -284,6 +292,7 @@ class LogoutView(generics.GenericAPIView):
 
     serializer_class = LogoutSerializer
 
+    @extend_schema(responses={204: None})
     def post(self, request):
         s = self.get_serializer(data=request.data)
         s.is_valid(raise_exception=True)
@@ -312,6 +321,7 @@ class ChangeLoginPINView(generics.GenericAPIView):
     serializer_class = ChangeLoginPINSerializer
     throttle_classes = [PINRateThrottle]
 
+    @extend_schema(responses={204: None})
     def post(self, request):
         s = self.get_serializer(data=request.data)
         s.is_valid(raise_exception=True)
@@ -325,6 +335,7 @@ class TransactionPINView(generics.GenericAPIView):
     serializer_class = TransactionPINSerializer
     throttle_classes = [PINRateThrottle]
 
+    @extend_schema(responses={204: None})
     def post(self, request):
         s = self.get_serializer(data=request.data)
         s.is_valid(raise_exception=True)

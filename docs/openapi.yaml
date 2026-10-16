@@ -26,11 +26,12 @@ paths:
       - jwtAuth: []
       - {}
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginStart'
+                type: object
+                additionalProperties: {}
           description: ''
   /api/v1/auth/logout/:
     post:
@@ -54,12 +55,8 @@ paths:
       security:
       - jwtAuth: []
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Logout'
-          description: ''
+        '204':
+          description: No response body
   /api/v1/auth/otp/resend/:
     post:
       operationId: auth_otp_resend_create
@@ -85,7 +82,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OTP'
+                type: object
+                additionalProperties: {}
           description: ''
   /api/v1/auth/otp/verify/:
     post:
@@ -112,7 +110,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Verify'
+                type: object
+                additionalProperties: {}
           description: ''
   /api/v1/auth/pin-login/:
     post:
@@ -140,7 +139,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PinLogin'
+                type: object
+                additionalProperties: {}
           description: ''
   /api/v1/auth/pin/forgot/:
     post:
@@ -163,11 +163,12 @@ paths:
       - jwtAuth: []
       - {}
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ForgotPin'
+                type: object
+                additionalProperties: {}
           description: ''
   /api/v1/auth/pin/setup/:
     post:
@@ -194,7 +195,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PinSetup'
+                type: object
+                additionalProperties: {}
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
           description: ''
   /api/v1/auth/refresh/:
     post:
@@ -244,11 +253,12 @@ paths:
       - jwtAuth: []
       - {}
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Register'
+                type: object
+                additionalProperties: {}
           description: ''
   /api/v1/me/:
     get:
@@ -480,12 +490,8 @@ paths:
       security:
       - jwtAuth: []
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ChangeLoginPIN'
-          description: ''
+        '204':
+          description: No response body
   /api/v1/me/pay/:
     post:
       operationId: me_pay_create
@@ -584,12 +590,8 @@ paths:
       security:
       - jwtAuth: []
       responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionPIN'
-          description: ''
+        '204':
+          description: No response body
   /api/v1/orgs/:
     get:
       operationId: orgs_list
@@ -2980,6 +2982,13 @@ components:
         property_name:
           type: string
           readOnly: true
+        organization:
+          type: string
+          format: uuid
+          readOnly: true
+        organization_name:
+          type: string
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -2995,6 +3004,8 @@ components:
       - is_overdue
       - kind
       - lease
+      - organization
+      - organization_name
       - period_end
       - period_start
       - property_name

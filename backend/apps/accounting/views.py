@@ -26,6 +26,7 @@ class ExpenseViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
 
     queryset = Expense.objects.none()  # schema generation only; get_queryset() scopes to the org
     serializer_class = ExpenseSerializer
+    cursor_ordering = ("-spent_on", "-created_at")
     capability_scope = "expense"
 
     def get_queryset(self):

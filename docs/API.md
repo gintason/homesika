@@ -76,7 +76,7 @@ drf-spectacular at `/api/v1/schema/`, with docs at `/api/v1/docs/` (non-producti
 | GET | `/orgs/{org}/statements/?month=2026-10` | Monthly statement (+ PDF, AI summary later) |
 | GET | `/orgs/{org}/reports/rent-roll/`, `/arrears/` | Reports; CSV export |
 | GET | `/me/leases/`, `/me/charges/`, `/me/payments/` | Tenant view |
-| POST | `/me/charges/pay/` | Tenant starts payment for selected charges → gateway checkout |
+| POST | `/me/pay/` | Tenant starts payment for selected charges → gateway checkout |
 | GET | `/pay/{reference}/` (public) | Hosted payment-link landing (no login needed) |
 
 ## Module B: WhatsApp, listings, assistant [Phase 2]

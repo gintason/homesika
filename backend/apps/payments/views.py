@@ -1,7 +1,7 @@
 import json
 import logging
 
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -32,6 +32,8 @@ logger = logging.getLogger(__name__)
 
 
 def pdf_response(payment) -> HttpResponse:
+    if not hasattr(payment, "receipt"):
+        raise Http404("This payment has no receipt yet.")
     resp = HttpResponse(receipts.render(payment), content_type="application/pdf")
     resp["Content-Disposition"] = f'inline; filename="receipt-{payment.receipt.number}.pdf"'
     resp["Cache-Control"] = "private, no-store"
@@ -112,6 +114,7 @@ class PaymentViewSet(
 ):
     queryset = Payment.objects.none()  # schema generation only; get_queryset() scopes to the org
     serializer_class = PaymentSerializer
+    cursor_ordering = ("-paid_at", "-created_at")
     capability_scope = "payment"
     capabilities = {"manual": "payment.record"}
 
@@ -159,6 +162,7 @@ class PaymentViewSet(
 
 class MyPaymentsView(generics.ListAPIView):
     serializer_class = PaymentSerializer
+    cursor_ordering = ("-paid_at", "-created_at")
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):

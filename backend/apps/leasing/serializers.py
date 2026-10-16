@@ -123,6 +123,8 @@ class ChargeSerializer(serializers.ModelSerializer):
     tenant_name = serializers.CharField(source="tenant.full_name", read_only=True, default="")
     unit_label = serializers.CharField(source="unit.label", read_only=True)
     property_name = serializers.CharField(source="unit.property.name", read_only=True)
+    organization = serializers.UUIDField(source="organization_id", read_only=True)
+    organization_name = serializers.CharField(source="organization.name", read_only=True)
 
     class Meta:
         model = Charge
@@ -144,6 +146,8 @@ class ChargeSerializer(serializers.ModelSerializer):
             "tenant_name",
             "unit_label",
             "property_name",
+            "organization",
+            "organization_name",
             "created_at",
         )
         read_only_fields = (

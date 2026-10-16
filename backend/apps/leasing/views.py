@@ -122,6 +122,7 @@ class ChargeViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
 
     queryset = Charge.objects.none()  # schema generation only; get_queryset() scopes to the org
     serializer_class = ChargeSerializer
+    cursor_ordering = ("due_date", "created_at")
     capability_scope = "charge"
     capabilities = {
         "list": "tenant.view",
@@ -246,10 +247,13 @@ class MyChargesView(generics.ListAPIView):
     """My charges across all my landlords. Default: what I still owe; ?all=1 for history."""
 
     serializer_class = ChargeSerializer
+    cursor_ordering = ("due_date", "created_at")
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        qs = Charge.objects.filter(tenant__user=self.request.user).select_related("tenant", "unit__property")
+        qs = Charge.objects.filter(tenant__user=self.request.user).select_related(
+            "tenant", "unit__property", "organization"
+        )
         if self.request.query_params.get("all") != "1":
             qs = qs.filter(status__in=Charge.OUTSTANDING)
         return qs.exclude(status=Charge.Status.VOID).order_by("due_date")

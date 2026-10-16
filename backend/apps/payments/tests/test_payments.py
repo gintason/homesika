@@ -419,3 +419,24 @@ def test_platform_fee():
         assert services.platform_fee(100_000) == 1_500
         assert services.platform_fee(100_000_000) == 200_000
     assert services.platform_fee(100_000) == 0
+
+
+def test_tenant_charges_are_due_date_ordered_and_name_the_landlord(api_client, org, tenant):
+    me = make_user(phone=tenant.phone_number, first="Chidi")
+    user_registered.send(sender=None, user=me)
+    api_client.force_authenticate(me)
+    page = api_client.get(reverse("v1:my-charges"), {"page_size": 3}).json()
+    dates = [c["due_date"] for c in page["results"]]
+    assert dates == sorted(dates) and page["next"]
+    assert page["results"][0]["organization"] == str(org.pk)
+    assert page["results"][0]["organization_name"] == "Obi Properties"
+    nxt = api_client.get(page["next"]).json()
+    assert nxt["results"][0]["due_date"] >= dates[-1]
+
+
+def test_receipt_for_payment_without_receipt_is_404(auth_client, org, user, tenant):
+    p = services.record_manual_payment(
+        org=org, tenant=tenant, amount=NAIRA, channel="cash", paid_at=timezone.now(), by=user
+    )
+    Receipt.objects.filter(payment=p).delete()
+    assert auth_client.get(url("payment-receipt", org, p.pk)).status_code == 404
