@@ -3,6 +3,7 @@ Homesika settings shared by every environment. All configuration comes from envi
 variables (see .env.example); nothing secret lives in the repo.
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -27,13 +28,19 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third party
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "drf_spectacular",
     "django_celery_beat",
     "channels",
     # Homesika
     "apps.core",
+    "apps.accounts",
+    "apps.notifications",
+    "apps.orgs",
 ]
+
+AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -116,8 +123,44 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": env("THROTTLE_ANON", default="30/min"),
         "user": env("THROTTLE_USER", default="120/min"),
+        "auth": env("THROTTLE_AUTH", default="5/min"),
+        "otp": env("THROTTLE_OTP", default="10/min"),
+        "pin_login": env("THROTTLE_PIN_LOGIN", default="20/min"),
+        "pin": env("THROTTLE_PIN", default="10/hour"),
     },
+    "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardCursorPagination",
 }
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=env.int("JWT_ACCESS_MINUTES", default=10)),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=env.int("JWT_REFRESH_DAYS", default=7)),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": False,
+    "ALGORITHM": "HS512",
+    "SIGNING_KEY": env("JWT_SIGNING_KEY", default=SECRET_KEY),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+# Login PIN (6 digits), transaction PIN (4 digits) and one-time codes.
+LOGIN_PIN_MAX_ATTEMPTS = env.int("LOGIN_PIN_MAX_ATTEMPTS", default=5)
+LOGIN_PIN_LOCKOUT_MINUTES = env.int("LOGIN_PIN_LOCKOUT_MINUTES", default=30)
+TRANSACTION_PIN_MAX_ATTEMPTS = env.int("TRANSACTION_PIN_MAX_ATTEMPTS", default=5)
+TRANSACTION_PIN_LOCKOUT_MINUTES = env.int("TRANSACTION_PIN_LOCKOUT_MINUTES", default=30)
+PIN_SETUP_TOKEN_SECONDS = 15 * 60
+OTP_TTL_MINUTES = env.int("OTP_TTL_MINUTES", default=10)
+OTP_MAX_ATTEMPTS = 5
+OTP_RESEND_SECONDS = env.int("OTP_RESEND_SECONDS", default=60)
+OTP_MAX_SENDS = 5
+OTP_MAX_PER_HOUR = env.int("OTP_MAX_PER_HOUR", default=8)
+
+# SMS: "mock" (logs only, nothing sent) until a provider is configured; "termii" for real.
+SMS_PROVIDER = env("SMS_PROVIDER", default="mock")
+TERMII_API_KEY = env("TERMII_API_KEY", default="")
+TERMII_SENDER_ID = env("TERMII_SENDER_ID", default="Homesika")
+TERMII_CHANNEL = env("TERMII_CHANNEL", default="dnd")
+TERMII_BASE_URL = env("TERMII_BASE_URL", default="https://api.ng.termii.com")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Homesika <no-reply@homesika.com>")
+
 SPECTACULAR_SETTINGS = {"TITLE": "Homesika API", "VERSION": "1.0.0", "SERVE_INCLUDE_SCHEMA": False}
 
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])

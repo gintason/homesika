@@ -2,10 +2,13 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
+from apps.accounts.urls import auth_urls, me_urls
 from apps.core import views as core_views
 
 api_v1 = [
-    # Feature routes are added per phase (auth, orgs, properties, leasing, payments, ...).
+    path("auth/", include(auth_urls)),
+    path("me/", include(me_urls)),
+    path("orgs/", include("apps.orgs.urls")),
 ]
 
 urlpatterns = [
