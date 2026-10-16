@@ -23,6 +23,20 @@ envVarGroups:
         value: Africa/Lagos
       - key: LOG_LEVEL
         value: INFO
+      - key: WEB_APP_URL                # links in SMS point here (the public pay page)
+        value: https://homesika-staging-web.onrender.com
+      - key: SMS_PROVIDER
+        value: mock                    # change to "termii" once the sender ID is approved
+      - key: TERMII_API_KEY
+        sync: false
+      - key: PAYMENT_GATEWAYS
+        value: mock                    # change to "paystack,flutterwave" once TEST keys are set below
+      - key: PAYSTACK_SECRET_KEY
+        sync: false                    # sk_test_... on staging
+      - key: FLUTTERWAVE_SECRET_KEY
+        sync: false
+      - key: FLUTTERWAVE_WEBHOOK_HASH
+        sync: false
 
 databases:
   - name: homesika-staging-db

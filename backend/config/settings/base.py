@@ -7,6 +7,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import environ
+from celery.schedules import crontab
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 env = environ.Env()
@@ -40,6 +41,8 @@ INSTALLED_APPS = [
     "apps.orgs",
     "apps.properties",
     "apps.leasing",
+    "apps.payments",
+    "apps.accounting",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -129,6 +132,7 @@ REST_FRAMEWORK = {
         "otp": env("THROTTLE_OTP", default="10/min"),
         "pin_login": env("THROTTLE_PIN_LOGIN", default="20/min"),
         "pin": env("THROTTLE_PIN", default="10/hour"),
+        "pay": env("THROTTLE_PAY", default="30/min"),
     },
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardCursorPagination",
 }
@@ -163,7 +167,37 @@ TERMII_CHANNEL = env("TERMII_CHANNEL", default="dnd")
 TERMII_BASE_URL = env("TERMII_BASE_URL", default="https://api.ng.termii.com")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Homesika <no-reply@homesika.com>")
 
-SPECTACULAR_SETTINGS = {"TITLE": "Homesika API", "VERSION": "1.0.0", "SERVE_INCLUDE_SCHEMA": False}
+# Where links in SMS/WhatsApp point (the web app hosts the public pay page).
+WEB_APP_URL = env("WEB_APP_URL", default="http://localhost:5173")
+
+# Payments: gateways tried in this order (failover). "mock" moves no money and is refused in production.
+PAYMENT_GATEWAYS = env("PAYMENT_GATEWAYS", default="mock")
+PAYMENT_LINK_TTL_HOURS = env.int("PAYMENT_LINK_TTL_HOURS", default=72)
+# Homesika's fee per rent/dues payment (percent, capped; kobo). 0 = everything settles to the landlord.
+PLATFORM_FEE_PERCENT = env("PLATFORM_FEE_PERCENT", default="0")
+PLATFORM_FEE_CAP = env.int("PLATFORM_FEE_CAP", default=0)
+PAYSTACK_SECRET_KEY = env("PAYSTACK_SECRET_KEY", default="")
+PAYSTACK_BASE_URL = env("PAYSTACK_BASE_URL", default="https://api.paystack.co")
+FLUTTERWAVE_SECRET_KEY = env("FLUTTERWAVE_SECRET_KEY", default="")
+FLUTTERWAVE_WEBHOOK_HASH = env("FLUTTERWAVE_WEBHOOK_HASH", default="")
+FLUTTERWAVE_BASE_URL = env("FLUTTERWAVE_BASE_URL", default="https://api.flutterwave.com/v3")
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Homesika API",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    # Many models have a "status" field; give each choice set its own schema name.
+    "ENUM_NAME_OVERRIDES": {
+        "MembershipStatusEnum": "apps.orgs.models.Membership.Status",
+        "UnitStatusEnum": "apps.properties.models.Unit.Status",
+        "LeaseStatusEnum": "apps.leasing.models.Lease.Status",
+        "ChargeStatusEnum": "apps.leasing.models.Charge.Status",
+        "SettlementAccountStatusEnum": "apps.payments.models.SettlementAccount.Status",
+        "PaymentLinkStatusEnum": "apps.payments.models.PaymentLink.Status",
+        "PaymentStatusEnum": "apps.payments.models.Payment.Status",
+        "DataRequestStatusEnum": "apps.accounts.models.DataRequest.Status",
+    },
+}
 
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
 
@@ -174,8 +208,22 @@ CELERY_TASK_REJECT_ON_WORKER_LOST = True
 CELERY_TASK_DEFAULT_QUEUE = "default"
 # Panic-alert fan-out gets its own queue and workers so nothing can delay it (Phase 5).
 CELERY_TASK_ROUTES = {"apps.security.tasks.*": {"queue": "alerts"}}
+CELERY_TIMEZONE = TIME_ZONE  # beat crontabs below are Lagos time
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
-CELERY_BEAT_SCHEDULE: dict = {}
+CELERY_BEAT_SCHEDULE = {
+    "payments-reconcile-pending": {
+        "task": "apps.payments.tasks.reconcile_pending_links",
+        "schedule": 15 * 60.0,
+    },
+    "payments-daily-reconciliation": {
+        "task": "apps.payments.tasks.daily_reconciliation",
+        "schedule": crontab(hour=6, minute=7),
+    },
+    "payments-rent-reminders": {
+        "task": "apps.payments.tasks.send_rent_reminders",
+        "schedule": crontab(hour=9, minute=3),  # TIME_ZONE (Lagos): a sensible hour to receive an SMS
+    },
+}
 
 # AES-256-GCM keys for encrypted columns (base64 of 32 bytes; first key encrypts, all decrypt).
 FIELD_ENCRYPTION_KEYS = env.list("FIELD_ENCRYPTION_KEYS", default=[])

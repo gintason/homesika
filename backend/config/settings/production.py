@@ -1,6 +1,7 @@
 """Production: HTTPS only, hardened cookies and headers, Sentry, JSON logs."""
 
 import sentry_sdk
+from django.core.exceptions import ImproperlyConfigured
 
 from .base import *  # noqa: F403
 from .base import SENTRY_DSN, env
@@ -31,6 +32,10 @@ STORAGES = {
 }
 
 ENVIRONMENT = env("ENVIRONMENT", default="production")
+
+# The mock gateway moves no money: it must never be enabled in production.
+if ENVIRONMENT == "production" and "mock" in PAYMENT_GATEWAYS:  # noqa: F405
+    raise ImproperlyConfigured("PAYMENT_GATEWAYS must not include 'mock' in production.")
 if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,

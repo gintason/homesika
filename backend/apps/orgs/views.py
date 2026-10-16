@@ -57,6 +57,7 @@ class MemberViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
+    queryset = Membership.objects.none()  # schema generation only; get_queryset() scopes to the org
     serializer_class = MembershipSerializer
     capability_scope = "members"
     http_method_names = ["get", "post", "patch", "delete"]

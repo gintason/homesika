@@ -24,6 +24,9 @@ cryptography==50.0.2
 # Provider HTTP
 requests==2.34.2
 
+# Documents
+reportlab==5.0.1
+
 # Observability
 sentry-sdk==2.72.0
 python-json-logger==4.2.0

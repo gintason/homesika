@@ -2,11 +2,13 @@ from decimal import Decimal, InvalidOperation
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.translation import gettext_lazy as _
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from .money import to_major, to_minor
 
 
+@extend_schema_field({"type": "string", "format": "decimal", "example": "1500000.00"})
 class MoneyField(serializers.Field):
     """API edge for money: in/out as a decimal string in major units ("1500000.00"), stored as integer minor
     units. The currency comes from `currency_source` on the object, else the serializer context's

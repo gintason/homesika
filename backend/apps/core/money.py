@@ -64,9 +64,11 @@ class MoneyField(models.BigIntegerField):
         super().__init__(*args, **kwargs)
 
 
-def format_money(minor: int, currency: str) -> str:
-    """Human-readable, e.g. 150000 NGN-minor -> '₦1,500.00' (receipts, messages)."""
+def format_money(minor: int, currency: str, *, plain: bool = False) -> str:
+    """Human-readable, e.g. 150000 NGN-minor -> '₦1,500.00'. plain=True gives 'NGN 1,500.00' for SMS
+    (the naira sign isn't in the GSM alphabet; it would double the SMS cost) and PDF core fonts."""
     symbols = {"NGN": "₦", "USD": "$", "GBP": "£", "EUR": "€", "GHS": "GH₵", "KES": "KSh ", "ZAR": "R"}
     major = to_major(minor, currency)
     sign = "-" if major < 0 else ""
-    return f"{sign}{symbols.get(currency, currency + ' ')}{abs(major):,.{SUPPORTED_CURRENCIES[currency]}f}"
+    prefix = f"{currency} " if plain else symbols.get(currency, currency + " ")
+    return f"{sign}{prefix}{abs(major):,.{SUPPORTED_CURRENCIES[currency]}f}"

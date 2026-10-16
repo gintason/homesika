@@ -26,6 +26,9 @@ class Organization(TimeStampedModel):
     email = models.EmailField(blank=True)
     address = models.CharField(max_length=255, blank=True)
     is_active = models.BooleanField(default=True)
+    rent_reminders_enabled = models.BooleanField(
+        default=True, help_text=_("Send tenants SMS reminders before and after rent is due.")
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )

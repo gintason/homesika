@@ -19,6 +19,7 @@ class OrgContextMixin:
 
 
 class PropertyViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
+    queryset = Property.objects.none()  # schema generation only; get_queryset() scopes to the org
     serializer_class = PropertySerializer
     capability_scope = "property"
     pagination_class = None
@@ -57,6 +58,7 @@ class PropertyViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
 class UnitViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
     """Units of one property (/properties/<property_pk>/units/) or of the whole org (/units/)."""
 
+    queryset = Unit.objects.none()  # schema generation only; get_queryset() scopes to the org
     serializer_class = UnitSerializer
     capability_scope = "property"
     pagination_class = None

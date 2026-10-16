@@ -14,6 +14,7 @@ from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, permissions, serializers, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import TokenError
@@ -346,6 +347,7 @@ class ConsentListView(generics.ListCreateAPIView):
 
 
 class ConsentWithdrawView(generics.GenericAPIView):
+    @extend_schema(request=None, responses={204: None})
     def post(self, request, purpose):
         if purpose in (Consent.Purpose.TERMS, Consent.Purpose.PRIVACY):
             raise serializers.ValidationError(

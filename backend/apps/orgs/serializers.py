@@ -21,6 +21,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
             "phone_number",
             "email",
             "address",
+            "rent_reminders_enabled",
             "my_role",
             "created_at",
         )

@@ -1,6 +1,8 @@
 from django.db.models import Prefetch, Q, Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -23,6 +25,7 @@ from .serializers import (
 
 
 class TenantViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
+    queryset = TenantProfile.objects.none()  # schema generation only; get_queryset() scopes to the org
     serializer_class = TenantSerializer
     capability_scope = "tenant"
     pagination_class = None
@@ -52,6 +55,7 @@ class TenantViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
 
 
 class LeaseViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
+    queryset = Lease.objects.none()  # schema generation only; get_queryset() scopes to the org
     serializer_class = LeaseSerializer
     capability_scope = "lease"
     capabilities = {"list": "tenant.view", "retrieve": "tenant.view"}
@@ -115,6 +119,7 @@ class LeaseViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
 class ChargeViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
     """Charges of the org. ?status=outstanding|paid|..., ?overdue=1, ?lease=, ?tenant=, ?unit=."""
 
+    queryset = Charge.objects.none()  # schema generation only; get_queryset() scopes to the org
     serializer_class = ChargeSerializer
     capability_scope = "charge"
     capabilities = {
@@ -171,6 +176,7 @@ def _money(minor, currency):
 class ArrearsView(OrgScopedMixin, generics.GenericAPIView):
     capabilities = {"get": "tenant.view"}
 
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, org_id):
         ccy = self.org.currency
         rows = services.arrears_by_lease(self.org)
@@ -200,6 +206,7 @@ class ArrearsView(OrgScopedMixin, generics.GenericAPIView):
 class DashboardView(OrgScopedMixin, generics.GenericAPIView):
     capabilities = {"get": "org.view"}
 
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, org_id):
         s = services.org_summary(self.org)
         ccy = self.org.currency
