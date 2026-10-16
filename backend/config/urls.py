@@ -11,6 +11,7 @@ from apps.payments import views as payment_views
 from apps.payments.urls import me_urls as my_payment_urls
 from apps.payments.urls import org_urls as payment_org_urls
 from apps.payments.urls import public_urls as pay_urls
+from apps.payments.urls import receipt_urls
 
 api_v1 = [
     path("auth/", include(auth_urls)),
@@ -22,6 +23,7 @@ api_v1 = [
     path("orgs/<uuid:org_id>/", include(payment_org_urls)),
     path("orgs/<uuid:org_id>/", include(accounting_org_urls)),
     path("pay/", include(pay_urls)),
+    path("receipts/", include(receipt_urls)),
 ]
 
 urlpatterns = [

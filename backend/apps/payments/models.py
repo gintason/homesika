@@ -21,6 +21,11 @@ def new_reference() -> str:
     return "HSK" + secrets.token_hex(10).upper()
 
 
+def new_receipt_token() -> str:
+    """Unguessable id for the public receipt link sent by SMS (the payment id is never exposed)."""
+    return secrets.token_urlsafe(18)
+
+
 class SettlementAccount(TimeStampedModel):
     """Where an organization's collections settle: its OWN bank account, registered with the gateway as a
     subaccount. Homesika never holds rent (ADR-0002)."""
@@ -152,6 +157,7 @@ class Receipt(TimeStampedModel):
     payment = models.OneToOneField(Payment, on_delete=models.CASCADE, related_name="receipt")
     number = models.CharField(max_length=40)
     organization = models.ForeignKey("orgs.Organization", on_delete=models.CASCADE, related_name="receipts")
+    public_token = models.CharField(max_length=32, unique=True, default=new_receipt_token, editable=False)
     sent_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:

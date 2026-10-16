@@ -440,3 +440,15 @@ def test_receipt_for_payment_without_receipt_is_404(auth_client, org, user, tena
     )
     Receipt.objects.filter(payment=p).delete()
     assert auth_client.get(url("payment-receipt", org, p.pk)).status_code == 404
+
+
+def test_manual_payment_sms_links_to_a_working_public_receipt(api_client, org, user, tenant, _sms_outbox):
+    p = services.record_manual_payment(
+        org=org, tenant=tenant, amount=NAIRA, channel="cash", paid_at=timezone.now(), by=user
+    )
+    token = p.receipt.public_token
+    assert len(token) >= 24 and str(p.pk) not in _sms_outbox[-1][1]
+    assert f"/receipts/{token}" in _sms_outbox[-1][1]
+    pdf = api_client.get(reverse("v1:public-receipt", args=[token]))
+    assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF")
+    assert api_client.get(reverse("v1:public-receipt", args=["not-a-real-token"])).status_code == 404

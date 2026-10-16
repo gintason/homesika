@@ -320,7 +320,7 @@ def receipt_url(payment: Payment) -> str:
     link = payment.payment_link
     if link:
         return f"{pay_url(link)}/receipt"
-    return f"{settings.WEB_APP_URL.rstrip('/')}/receipts/{payment.pk}"
+    return f"{settings.WEB_APP_URL.rstrip('/')}/receipts/{payment.receipt.public_token}"
 
 
 def _notify_paid(payment: Payment, receipt: Receipt) -> None:

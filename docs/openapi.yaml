@@ -2867,6 +2867,29 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /api/v1/receipts/{token}/:
+    get:
+      operationId: receipts_retrieve
+      description: Receipt PDF from the SMS of a payment without a pay link (cash/transfer
+        recorded by staff).
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+        required: true
+      tags:
+      - receipts
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          description: ''
 components:
   schemas:
     CategoryEnum:

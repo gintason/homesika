@@ -18,6 +18,10 @@ me_urls = [
     path("pay/", views.TenantPayView.as_view(), name="my-pay"),
 ]
 
+receipt_urls = [
+    path("<str:token>/", views.PublicReceiptByTokenView.as_view(), name="public-receipt"),
+]
+
 public_urls = [
     path("<str:reference>/", views.PublicLinkView.as_view(), name="pay-link"),
     path("<str:reference>/checkout/", views.PublicCheckoutView.as_view(), name="pay-checkout"),

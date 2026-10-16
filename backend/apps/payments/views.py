@@ -322,6 +322,18 @@ class PublicReceiptView(APIView):
         return pdf_response(payment)
 
 
+class PublicReceiptByTokenView(APIView):
+    """Receipt PDF from the SMS of a payment without a pay link (cash/transfer recorded by staff)."""
+
+    permission_classes = [permissions.AllowAny]
+    authentication_classes: list = []
+    throttle_classes = [PayThrottle]
+
+    @extend_schema(responses={(200, "application/pdf"): OpenApiTypes.BINARY})
+    def get(self, request, token):
+        return pdf_response(get_object_or_404(Payment, receipt__public_token=token))
+
+
 class MockCompleteView(APIView):
     """MOCK gateway only: the fake checkout page calls this to simulate paying. 404 unless mock is enabled."""
 
