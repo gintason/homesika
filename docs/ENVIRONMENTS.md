@@ -32,5 +32,5 @@
 | `mobile` | `npm ci`, TypeScript, ESLint, Jest |
 | `design-tokens` | Token build is in sync with the committed outputs; WCAG contrast tests |
 
-Deployment jobs (build image, push to registry, deploy to staging and production) are added in
-Phase 1 once you've chosen hosting.
+Deployment: Render builds and deploys from `main` itself (see `docs/DEPLOY_RENDER.md`); CI runs in
+parallel. Turn on Render's "deploy only after checks pass" option to make CI a gate.
