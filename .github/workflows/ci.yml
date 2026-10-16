@@ -58,6 +58,7 @@ jobs:
           DJANGO_SECRET_KEY: ci-only-${{ github.run_id }}-not-a-real-secret-key-for-deploy-checks-0123456789
           DJANGO_ALLOWED_HOSTS: api.homesika.example
           DJANGO_ADMIN_URL: ops-ci/
+          PAYMENT_GATEWAYS: paystack,flutterwave
       - name: Tests (Postgres + Redis)
         run: pytest
 
