@@ -1,6 +1,6 @@
 # ADR-0004: AI assistant grounded in permission-checked tools, with confirmations
 
-**Status:** proposed · **Date:** 2026-10-15
+**Status:** accepted, built in Phase 2 (see `docs/ASSISTANT.md`) · **Date:** 2026-10-15, updated 2026-10-17
 
 **Decision:**
 * **Engine:** Claude via the official `anthropic` Python SDK, using the Messages API with

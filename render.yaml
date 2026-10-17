@@ -37,6 +37,34 @@ envVarGroups:
         sync: false
       - key: FLUTTERWAVE_WEBHOOK_HASH
         sync: false
+      - key: WHATSAPP_PROVIDER
+        value: mock                    # change to "cloud" once the WhatsApp number is set up
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false
+      - key: WHATSAPP_APP_SECRET
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        sync: false
+      - key: SUPPORT_PHONE
+        sync: false
+      - key: ASSISTANT_PROVIDER
+        value: mock                    # change to "anthropic" once ANTHROPIC_API_KEY is set
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-opus-5-5
+      - key: S3_BUCKET
+        sync: false                    # listing photos; Render disks are wiped on deploy
+      - key: S3_ENDPOINT_URL
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_PUBLIC_DOMAIN
+        sync: false
 
 databases:
   - name: homesika-staging-db

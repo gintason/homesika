@@ -44,6 +44,38 @@ ready to launch.
 7. **Create your admin user:** open the API service → **Shell**, then run
    `python manage.py createsuperuser`.
 
+## Phase 2: WhatsApp, the assistant and photos
+
+Do these when you're ready; until then staging uses the mock WhatsApp and mock assistant.
+
+1. **Photos (do first; listings need them).** Create a Cloudflare R2 bucket (or S3), make it public
+   (or attach a custom domain), and create an API token with read/write access to it. Then set
+   `S3_BUCKET`, `S3_ENDPOINT_URL` (R2: `https://<account-id>.r2.cloudflarestorage.com`),
+   `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` and `S3_PUBLIC_DOMAIN` (the public bucket domain).
+2. **Claude.** In the Anthropic Console, create an API key for a "homesika-staging" workspace and set a
+   monthly spend limit there too.
+   * Paste the key as `ANTHROPIC_API_KEY` in Render (never in chat or GitHub).
+   * Set `ASSISTANT_PROVIDER` to `anthropic`.
+   * Run the evaluation once from the API service's **Shell**:
+     `python manage.py assistant_eval --limit 10 --yes`, then the full set (it costs money; the
+     command shows the estimated cost).
+3. **WhatsApp.**
+   * In Meta Business Manager, create the WhatsApp Business account and add the Homesika number.
+   * In the Meta developer app, add the **webhook**:
+     * URL: `https://homesika-staging-api.onrender.com/webhooks/whatsapp/`
+     * Verify token: any long random string; put the same value in `WHATSAPP_VERIFY_TOKEN`.
+     * Subscribe to the **messages** field.
+   * Set these in Render:
+     * `WHATSAPP_PHONE_NUMBER_ID`;
+     * a permanent `WHATSAPP_ACCESS_TOKEN` (system user token);
+     * `WHATSAPP_APP_SECRET` (App settings → Basic);
+     * `SUPPORT_PHONE`;
+     * `WHATSAPP_PROVIDER` = `cloud`.
+   * Submit the templates in `docs/WHATSAPP_TEMPLATES.md`, and list each one in `WHATSAPP_TEMPLATES`
+     once approved.
+   * `TODO(verify)`: menu names in Meta's dashboards change often; follow Meta's current "Cloud API
+     get started" guide.
+
 ## Every later release
 
 Just push to `main`. Render redeploys automatically; CI on GitHub runs the tests in parallel.
