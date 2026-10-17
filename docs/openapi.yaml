@@ -32,7 +32,7 @@ paths:
           description: ''
   /api/v1/assistant/messages/:
     get:
-      operationId: assistant_messages_list
+      operationId: assistant_messages_retrieve
       description: POST a message to the assistant (app or web); GET this channel's
         recent messages.
       tags:
@@ -44,9 +44,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Message'
+                $ref: '#/components/schemas/AssistantHistory'
           description: ''
     post:
       operationId: assistant_messages_create
@@ -376,7 +374,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PublicListing'
+                $ref: '#/components/schemas/PublicListingDetail'
           description: ''
   /api/v1/listings/{ref}/book/:
     post:
@@ -405,7 +403,11 @@ paths:
       - {}
       responses:
         '201':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ViewingBooked'
+          description: ''
   /api/v1/listings/{ref}/enquire/:
     post:
       operationId: listings_enquire_create
@@ -433,7 +435,11 @@ paths:
       - {}
       responses:
         '201':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnquiryReceived'
+          description: ''
   /api/v1/me/:
     get:
       operationId: me_retrieve
@@ -2265,6 +2271,35 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/orgs/{org_id}/listings/{id}/archive/:
+    post:
+      operationId: orgs_listings_archive_create
+      description: ?status=draft|published|let|archived
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this listing.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
   /api/v1/orgs/{org_id}/listings/{id}/mark-let/:
     post:
       operationId: orgs_listings_mark_let_create
@@ -2369,6 +2404,35 @@ paths:
     post:
       operationId: orgs_listings_publish_create
       description: ?status=draft|published|let|archived
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this listing.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
+  /api/v1/orgs/{org_id}/listings/{id}/unpublish/:
+    post:
+      operationId: orgs_listings_unpublish_create
+      description: Back to draft (hidden from the public).
       parameters:
       - in: path
         name: id
@@ -4221,6 +4285,25 @@ paths:
           description: ''
 components:
   schemas:
+    AssistantHistory:
+      type: object
+      properties:
+        conversation:
+          type: string
+          format: uuid
+          nullable: true
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+        pending_action:
+          allOf:
+          - $ref: '#/components/schemas/PendingAction'
+          nullable: true
+      required:
+      - conversation
+      - messages
+      - pending_action
     CategoryEnum:
       enum:
       - repairs
@@ -4666,6 +4749,13 @@ components:
       required:
       - name
       - phone_number
+    EnquiryReceived:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+      - status
     Escalation:
       type: object
       properties:
@@ -6489,6 +6579,72 @@ components:
       - photos
       - rent_amount
       - title
+    PublicListingDetail:
+      type: object
+      description: 'What anyone can see: no exact address, no staff details.'
+      properties:
+        ref:
+          type: string
+          maxLength: 20
+        title:
+          type: string
+          maxLength: 140
+        description:
+          type: string
+        features: {}
+        area:
+          type: string
+          description: Neighbourhood, e.g. Lekki, Yaba.
+          maxLength: 80
+        city:
+          type: string
+          maxLength: 80
+        bedrooms:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        bathrooms:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        rent_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+        rent_period:
+          $ref: '#/components/schemas/RentPeriodEnum'
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        landlord:
+          type: string
+          readOnly: true
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Photo'
+          readOnly: true
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+        slots:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          readOnly: true
+      required:
+      - area
+      - landlord
+      - photos
+      - rent_amount
+      - slots
+      - title
     PurposeEnum:
       enum:
       - terms
@@ -7045,6 +7201,17 @@ components:
       - listing_title
       - slot
       - starts_at
+    ViewingBooked:
+      type: object
+      properties:
+        status:
+          type: string
+        starts_at:
+          type: string
+          format: date-time
+      required:
+      - starts_at
+      - status
     ViewingStatusEnum:
       enum:
       - booked

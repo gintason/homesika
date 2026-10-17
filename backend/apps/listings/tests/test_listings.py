@@ -196,3 +196,9 @@ def test_generator_returns_a_draft(auth_client, org, listing):
     draft = resp.json()
     assert set(draft) >= {"title", "description", "whatsapp_caption", "features", "suggested_replies"}
     assert draft["model"] == "mock"
+
+
+def test_unpublish_and_archive(auth_client, api_client, org, published):
+    assert auth_client.post(url("listing-unpublish", org, published.pk)).json()["status"] == "draft"
+    assert api_client.get(reverse("v1:public-listing", args=[published.ref])).status_code == 404
+    assert auth_client.post(url("listing-archive", org, published.pk)).json()["status"] == "archived"

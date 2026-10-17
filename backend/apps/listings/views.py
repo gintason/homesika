@@ -1,7 +1,7 @@
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from rest_framework import mixins, parsers, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -22,8 +22,8 @@ from .serializers import (
     ListingSerializer,
     PhotoSerializer,
     PublicBookingSerializer,
+    PublicListingDetailSerializer,
     PublicListingSerializer,
-    PublicSlotSerializer,
     SlotSerializer,
     ViewingSerializer,
 )
@@ -41,6 +41,8 @@ class ListingViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
         "delete_photo": "listing.manage",
         "publish": "listing.manage",
         "mark_let": "listing.manage",
+        "unpublish": "listing.manage",
+        "archive": "listing.manage",
     }
 
     def get_queryset(self):
@@ -73,6 +75,23 @@ class ListingViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
     def publish(self, request, *args, **kwargs):
         listing = services.publish(self.get_object(), by=request.user, request=request)
         return Response(self.get_serializer(self.get_queryset().get(pk=listing.pk)).data)
+
+    def _set_status(self, status_):
+        listing = self.get_object()
+        listing.status = status_
+        listing.save(update_fields=["status", "updated_at"])
+        return Response(self.get_serializer(self.get_queryset().get(pk=listing.pk)).data)
+
+    @extend_schema(request=None, responses=ListingSerializer)
+    @action(detail=True, methods=["post"])
+    def unpublish(self, request, *args, **kwargs):
+        """Back to draft (hidden from the public)."""
+        return self._set_status(Listing.Status.DRAFT)
+
+    @extend_schema(request=None, responses=ListingSerializer)
+    @action(detail=True, methods=["post"])
+    def archive(self, request, *args, **kwargs):
+        return self._set_status(Listing.Status.ARCHIVED)
 
     @extend_schema(request=None, responses=ListingSerializer)
     @action(detail=True, methods=["post"], url_path="mark-let")
@@ -239,12 +258,9 @@ class PublicListingDetailView(APIView):
     authentication_classes: list = []
     throttle_classes = [ListingThrottle]
 
-    @extend_schema(responses=PublicListingSerializer)
+    @extend_schema(responses=PublicListingDetailSerializer)
     def get(self, request, ref):
-        listing = _public(ref)
-        data = PublicListingSerializer(listing, context={"request": request}).data
-        data["slots"] = PublicSlotSerializer(services.open_slots(listing), many=True).data
-        return Response(data)
+        return Response(PublicListingDetailSerializer(_public(ref), context={"request": request}).data)
 
 
 class PublicEnquiryView(APIView):
@@ -252,7 +268,10 @@ class PublicEnquiryView(APIView):
     authentication_classes: list = []
     throttle_classes = [ListingThrottle]
 
-    @extend_schema(request=EnquirySerializer, responses={201: None})
+    @extend_schema(
+        request=EnquirySerializer,
+        responses={201: inline_serializer("EnquiryReceived", {"status": serializers.CharField()})},
+    )
     def post(self, request, ref):
         s = EnquirySerializer(data=request.data)
         s.is_valid(raise_exception=True)
@@ -272,7 +291,14 @@ class PublicBookingView(APIView):
     authentication_classes: list = []
     throttle_classes = [ListingThrottle]
 
-    @extend_schema(request=PublicBookingSerializer, responses={201: None})
+    @extend_schema(
+        request=PublicBookingSerializer,
+        responses={
+            201: inline_serializer(
+                "ViewingBooked", {"status": serializers.CharField(), "starts_at": serializers.DateTimeField()}
+            )
+        },
+    )
     def post(self, request, ref):
         s = PublicBookingSerializer(data=request.data)
         s.is_valid(raise_exception=True)

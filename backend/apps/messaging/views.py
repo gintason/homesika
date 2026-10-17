@@ -10,6 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.idempotency import idempotent
 from apps.orgs.permissions import OrgScopedMixin
 
 from . import services, whatsapp
@@ -97,6 +98,7 @@ class InboxViewSet(OrgScopedMixin, mixins.ListModelMixin, mixins.RetrieveModelMi
 
     @extend_schema(request=StaffReplySerializer, responses=ConversationDetailSerializer)
     @action(detail=True, methods=["post"])
+    @idempotent
     def reply(self, request, *args, **kwargs):
         s = StaffReplySerializer(data=request.data)
         s.is_valid(raise_exception=True)

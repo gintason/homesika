@@ -235,3 +235,15 @@ class EnquirySerializer(serializers.Serializer):
 
 class PublicBookingSerializer(EnquirySerializer):
     slot = serializers.UUIDField()
+
+
+class PublicListingDetailSerializer(PublicListingSerializer):
+    slots = serializers.SerializerMethodField()
+
+    class Meta(PublicListingSerializer.Meta):
+        fields = (*PublicListingSerializer.Meta.fields, "slots")
+
+    def get_slots(self, obj) -> list[dict]:
+        from .services import open_slots
+
+        return PublicSlotSerializer(open_slots(obj), many=True).data

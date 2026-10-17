@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import extend_schema
-from rest_framework import permissions, status, viewsets
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -38,7 +38,16 @@ class ChatView(APIView):
         )
         return Response(_reply_data(convo, reply), status=status.HTTP_201_CREATED)
 
-    @extend_schema(responses=MessageSerializer(many=True))
+    @extend_schema(
+        responses=inline_serializer(
+            "AssistantHistory",
+            {
+                "conversation": serializers.UUIDField(allow_null=True),
+                "messages": MessageSerializer(many=True),
+                "pending_action": PendingActionSerializer(allow_null=True),
+            },
+        )
+    )
     def get(self, request):
         channel = request.query_params.get("channel", "app")
         convo = (

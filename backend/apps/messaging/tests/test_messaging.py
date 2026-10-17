@@ -206,3 +206,15 @@ def test_my_whatsapp_preference(auth_client, user):
     auth_client.put(reverse("v1:my-whatsapp"), {"opted_in": True}, format="json")
     assert auth_client.get(reverse("v1:my-whatsapp")).json() == {"opted_in": True}
     assert Contact.objects.get().user == user
+
+
+def test_inbox_reply_retry_sends_once(auth_client, org, _wa_outbox):
+    convo = services.open_conversation(services.get_contact("2348031110001"))
+    Conversation.objects.filter(pk=convo.pk).update(last_inbound_at=timezone.now(), organization=org)
+    url = f"/api/v1/orgs/{org.pk}/conversations/{convo.pk}/reply/"
+    for _ in range(2):
+        resp = auth_client.post(
+            url, {"body": "On it"}, format="json", HTTP_IDEMPOTENCY_KEY="inbox-reply-0001-abcd"
+        )
+        assert resp.status_code == 201
+    assert [m["body"] for m in _wa_outbox] == ["On it"]
