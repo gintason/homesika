@@ -12,7 +12,8 @@ WhatsApp as the front door. Built by **Homesika Real Estate**.
 | `packages/design-tokens/` | Single source of colours, type, spacing (WCAG-tested) | JSON + generator |
 | `docs/` | Architecture, data model, API, integrations, decisions | Markdown + Mermaid |
 
-**Start with:** `docs/ARCHITECTURE.md` → `docs/DATA_MODEL.md` → `docs/API.md`.
+**Start with:** `docs/ARCHITECTURE.md` → `docs/DATA_MODEL.md` → `docs/API.md` (contract: `docs/openapi.yaml`).
+Assistant: `docs/ASSISTANT.md`. Deploying: `docs/DEPLOY_RENDER.md`. Phase reports: `docs/PHASE_*_REPORT.md`.
 
 ## Run locally (Mac)
 
@@ -44,6 +45,7 @@ cd packages/design-tokens && npm run build && npm test
 
 ```bash
 cd backend && pip install -r requirements/dev.txt && ruff check . && pytest
+cd backend && python manage.py assistant_eval --limit 5   # assistant evaluation (mock model unless ASSISTANT_PROVIDER=anthropic)
 cd web && npm run check && npm run build
 cd mobile && npm run check
 cd packages/design-tokens && npm run check && npm test
