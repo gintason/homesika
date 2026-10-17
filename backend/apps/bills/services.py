@@ -159,7 +159,7 @@ def create_order(
         ]  # server-side, never trusted from the client
     if not any(providers.get(n).supports(biller, plan) for n in providers.enabled()):
         raise BillsUnavailable()
-    return Order.objects.create(
+    order = Order.objects.create(
         user=user,
         phone_number=phone,
         unit=unit,
@@ -174,6 +174,10 @@ def create_order(
         channel=channel,
         expires_at=timezone.now() + timedelta(minutes=settings.BILLS_PAYMENT_TTL_MINUTES),
     )
+    from apps.referrals import services as referrals
+
+    referrals.apply_to(order)  # a free service fee from a referral, if the person has one
+    return order
 
 
 def _payer_email(order: Order) -> str:
@@ -355,6 +359,7 @@ def _apply(order_id, result: providers.Result) -> Order:
             order.receipt_number = _next_receipt()
             order.save()
             transaction.on_commit(lambda: _notify_delivered(order))
+            transaction.on_commit(lambda: _qualify_referral(order))
             return order
         order.save(update_fields=["attempts", "updated_at"])
         if result.outcome in (providers.FAILED, providers.REJECTED):
@@ -381,6 +386,15 @@ def _next_receipt() -> str:
 
 def receipt_url(order: Order) -> str:
     return f"{settings.WEB_APP_URL.rstrip('/')}/bills/{order.reference}/done"
+
+
+def _qualify_referral(order: Order) -> None:
+    from apps.referrals import services as referrals
+
+    try:
+        referrals.qualify(order.user, by="bill")
+    except Exception:  # noqa: BLE001 - a reward must never break a delivered order
+        logger.exception("Referral check failed for bill %s", order.reference)
 
 
 def _notify_delivered(order: Order) -> None:
@@ -448,6 +462,9 @@ def refund(order_id) -> Order:
         status=Order.Status.REFUNDED, refund_reference=ref[:80], refunded_at=timezone.now()
     )
     order.refresh_from_db()
+    from apps.referrals import services as referrals
+
+    referrals.release([order.pk])
     amount = format_money(order.paid_amount or order.total, order.currency, plain=True)
     notify(
         to=order.phone_number,
@@ -482,9 +499,14 @@ def reconcile() -> dict:
                     break
             except gateways.GatewayError as exc:
                 logger.warning("Bill payment check %s failed: %s", a["reference"], exc)
-    expired = Order.objects.filter(
+    to_expire = Order.objects.filter(
         status=Order.Status.AWAITING_PAYMENT, expires_at__lt=now - timedelta(minutes=30)
-    ).update(status=Order.Status.EXPIRED, updated_at=now)
+    )
+    ids = list(to_expire.values_list("pk", flat=True))
+    expired = Order.objects.filter(pk__in=ids).update(status=Order.Status.EXPIRED, updated_at=now)
+    from apps.referrals import services as referrals
+
+    referrals.release(ids)  # an unpaid order gives its free fee back
     stale = now - timedelta(minutes=10)
     for order in Order.objects.filter(
         status=Order.Status.PROCESSING, needs_review=False, updated_at__lt=stale

@@ -50,6 +50,8 @@ export type RegisterInput = {
   preferred_language?: LanguageCode;
   channel?: OtpChannel;
   accept_terms: boolean;
+  /** A friend's code (optional): the new account gets free bill service fees. */
+  referral_code?: string;
 };
 
 /** Cursor pagination (apps/core/pagination.py): `next` is a full URL. */
@@ -355,6 +357,8 @@ export type BillOrder = {
   customer_name: string;
   amount: string;
   fee: string;
+  /** Service fee not charged (an invite reward). */
+  fee_waived: string;
   total: string;
   currency: string;
   status: BillOrderStatus;
@@ -772,4 +776,24 @@ export const pushApi = {
   register: (token: string, platform: "android" | "ios") =>
     api<void>("/api/v1/me/push-devices/", { method: "POST", body: { token, platform } }),
   unregister: (token: string) => api<void>("/api/v1/me/push-devices/", { method: "DELETE", body: { token } }),
+};
+
+// ---- Referrals (Phase 6): backend/apps/referrals ----
+
+export type ReferralSummary = {
+  code: string;
+  share_url: string;
+  share_message: string;
+  /** Free service fees left (electricity and cable TV). */
+  waivers_available: number;
+  waivers_expire_at: string | null;
+  invited: number;
+  qualified: number;
+  can_redeem: boolean;
+  enabled: boolean;
+};
+
+export const referralApi = {
+  mine: () => api<ReferralSummary>("/api/v1/me/referral/"),
+  redeem: (code: string) => api<ReferralSummary>("/api/v1/me/referral/redeem/", { method: "POST", body: { code } }),
 };

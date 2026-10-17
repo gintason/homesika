@@ -76,6 +76,7 @@ export default function Profile() {
       <WhatsAppCard />
 
       <Card>
+        <ListRow title={t("referral.rowTitle")} chevron onPress={() => router.push("/invite")} />
         <ListRow title={t("profile.findPlace")} chevron onPress={() => router.push("/find")} />
         <ListRow title={t("profile.work")} chevron onPress={() => router.push("/work")} />
       </Card>

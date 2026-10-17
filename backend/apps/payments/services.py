@@ -271,7 +271,18 @@ def confirm(gateway_name: str, reference: str) -> Payment | None:
         changes={"amount": payment.amount, "gateway": gateway_name},
     )
     _notify_paid(payment, receipt)
+    _qualify_referral(payment)
     return payment
+
+
+def _qualify_referral(payment: Payment) -> None:
+    """An online rent or dues payment is a real first purchase for referrals."""
+    from apps.referrals import services as referrals
+
+    try:
+        referrals.qualify(payment.tenant.user, by="rent_payment")
+    except Exception:  # noqa: BLE001 - never let a reward break a recorded payment
+        logger.exception("Referral check failed for payment %s", payment.pk)
 
 
 def _allocate(payment: Payment, preferred: list[Charge]) -> None:

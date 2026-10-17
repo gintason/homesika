@@ -22,6 +22,14 @@ function sameMoney(a: string, b: string): boolean {
   }
 }
 
+function lessThan(a: string, b: string): boolean {
+  try {
+    return toKobo(a) < toKobo(b);
+  } catch {
+    return false;
+  }
+}
+
 /** Bills error codes with our own copy (anything else: the server's message). */
 const BILL_CODES = ["bills_daily_limit", "bills_unavailable", "order_not_payable", "customer_not_found"] as const;
 
@@ -85,8 +93,8 @@ export function useBillCheckout() {
       const created = await billsApi.createOrder(input, key);
       last.current = null; // done: a new submission gets a new key
       qc.invalidateQueries({ queryKey: keys.billOrders }).catch(() => {});
-      if (sameMoney(created.total, shownTotal)) {
-        await pay(created);
+      if (sameMoney(created.total, shownTotal) || lessThan(created.total, shownTotal)) {
+        await pay(created); // what they saw, or less (a free fee from an invite): never more without asking
       } else {
         setOrder(created); // a fee applies: show it and ask again
       }

@@ -6,7 +6,7 @@ import { View } from "react-native";
 import { billsApi, type BillCategory, type BillCustomer, type Biller, type BillOrderInput, type BillPlan } from "@/api";
 import { Banner, Button, Card, EmptyState, PhoneInput, Screen, SkeletonCard, Text, TextField } from "@/components";
 import { ChoiceChips, PlanList, SummaryRow } from "@/components/bills";
-import { useBillsCatalogue, useLeases } from "@/hooks/queries";
+import { useBillsCatalogue, useLeases, useReferral } from "@/hooks/queries";
 import { billErrorText, useBillCheckout } from "@/hooks/useBillCheckout";
 import { errorText } from "@/lib/api";
 import {
@@ -61,6 +61,7 @@ function BillForm({ category }: { category: BillCategory }) {
   const isPower = category === "electricity";
   const leases = useLeases({ enabled: isPower });
   const checkout = useBillCheckout();
+  const referral = useReferral();
 
   const [billerId, setBillerId] = useState<string | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
@@ -204,7 +205,10 @@ function BillForm({ category }: { category: BillCategory }) {
     const address = detailText(verifiedCustomer?.details, "customer_address");
     // The fee from the catalogue is shown up front; if the server's total still differs, the
     // created order's figures replace these and the person is asked again.
-    const fee = created ? created.fee : (biller.fee ?? "0.00");
+    const catalogueFee = biller.fee ?? "0.00";
+    // An invite reward makes the next service fee free (the server applies it; this only shows it).
+    const freeFee = !created && toKobo(catalogueFee) > 0 && (referral.data?.waivers_available ?? 0) > 0;
+    const fee = created ? created.fee : freeFee ? "0.00" : catalogueFee;
     const total = created ? created.total : fromKobo(toKobo(amount) + toKobo(fee));
     const payAmount = total;
     return (
@@ -231,6 +235,9 @@ function BillForm({ category }: { category: BillCategory }) {
           <View className="h-px bg-surface-line" />
           <SummaryRow label={t("bills.review.amount")} value={formatMoney(created ? created.amount : amount)} />
           {toKobo(fee) > 0 ? <SummaryRow label={t("bills.review.fee")} value={formatMoney(fee)} /> : null}
+          {freeFee || (created && toKobo(created.fee_waived) > 0) ? (
+            <SummaryRow label={t("bills.review.fee")} value={t("bills.review.feeFree")} />
+          ) : null}
           <SummaryRow label={t("bills.review.total")} value={formatMoney(total)} strong />
         </Card>
         {created ? (

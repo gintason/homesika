@@ -1788,6 +1788,49 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/me/referral/:
+    get:
+      operationId: me_referral_retrieve
+      description: My code to share, my free fees, and how many people I've invited.
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferralSummary'
+          description: ''
+  /api/v1/me/referral/redeem/:
+    post:
+      operationId: me_referral_redeem_create
+      description: '''I have a code'': for new accounts that didn''t enter one at
+        sign-up.'
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Redeem'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Redeem'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Redeem'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferralSummary'
+          description: ''
   /api/v1/me/tickets/:
     get:
       operationId: me_tickets_list
@@ -10715,6 +10758,12 @@ components:
           format: decimal
           example: '1500000.00'
           readOnly: true
+        fee_waived:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+          description: Service fee not charged (a referral reward)
         total:
           type: string
           format: decimal
@@ -10771,6 +10820,7 @@ components:
       - customer_id
       - expires_at
       - fee
+      - fee_waived
       - id
       - plan_name
       - token
@@ -12699,6 +12749,50 @@ components:
         * `low_confidence` - Assistant couldn't help
         * `limit` - Usage limit reached
         * `refusal` - Assistant declined
+    Redeem:
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 20
+      required:
+      - code
+    ReferralSummary:
+      type: object
+      properties:
+        code:
+          type: string
+        share_url:
+          type: string
+          format: uri
+        share_message:
+          type: string
+        waivers_available:
+          type: integer
+          description: Free service fees left (electricity and cable TV)
+        waivers_expire_at:
+          type: string
+          format: date-time
+          nullable: true
+        invited:
+          type: integer
+        qualified:
+          type: integer
+        can_redeem:
+          type: boolean
+          description: This account can still enter someone's code
+        enabled:
+          type: boolean
+      required:
+      - can_redeem
+      - code
+      - enabled
+      - invited
+      - qualified
+      - share_message
+      - share_url
+      - waivers_available
+      - waivers_expire_at
     Register:
       type: object
       description: Step 1 of sign-up. Nothing is created until the code is verified.
@@ -12727,6 +12821,11 @@ components:
           default: sms
         accept_terms:
           type: boolean
+        referral_code:
+          type: string
+          default: ''
+          description: A friend's Homesika code (optional)
+          maxLength: 20
       required:
       - accept_terms
       - first_name

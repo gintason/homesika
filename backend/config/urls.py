@@ -31,6 +31,7 @@ from apps.payments.urls import me_urls as my_payment_urls
 from apps.payments.urls import org_urls as payment_org_urls
 from apps.payments.urls import public_urls as pay_urls
 from apps.payments.urls import receipt_urls
+from apps.referrals.urls import me_urls as my_referral_urls
 from apps.security.urls import me_urls as my_alert_urls
 from apps.security.urls import org_urls as alert_org_urls
 
@@ -62,6 +63,7 @@ api_v1 = [
     path("platform/", include(platform_urls)),
     path("me/", include(my_estate_urls)),
     path("me/", include(my_alert_urls)),
+    path("me/", include(my_referral_urls)),
     path("orgs/<uuid:org_id>/", include(estate_org_urls)),
     path("orgs/<uuid:org_id>/", include(alert_org_urls)),
 ]

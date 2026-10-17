@@ -64,6 +64,7 @@ class CreateOrderSerializer(BillVerifySerializer):
 class OrderSerializer(serializers.ModelSerializer):
     amount = MoneyField(read_only=True)
     fee = MoneyField(read_only=True)
+    fee_waived = MoneyField(read_only=True, help_text="Service fee not charged (a referral reward)")
     total = MoneyField(read_only=True)
     biller_name = serializers.CharField(source="biller.name", read_only=True)
     plan_name = serializers.CharField(source="plan.name", read_only=True, default=None)
@@ -83,6 +84,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "customer_name",
             "amount",
             "fee",
+            "fee_waived",
             "total",
             "currency",
             "status",

@@ -12,7 +12,7 @@ import { useBillOrderStatus } from "@/hooks/useBillOrderStatus";
 import { formatToken } from "@/lib/bills";
 import { copyText } from "@/lib/clipboard";
 import { formatDateTime } from "@/lib/date";
-import { formatMoney } from "@/lib/money";
+import { formatMoney, toKobo } from "@/lib/money";
 import { formatPhone } from "@/lib/phone";
 import { downloadBillReceipt } from "@/lib/receipts";
 import { useSession } from "@/store/session";
@@ -210,7 +210,10 @@ function OrderSummary({ order: o }: { order: BillOrder }) {
       <SummaryRow label={t("bills.review.what")} value={[o.biller_name, o.plan_name].filter(Boolean).join(" · ")} />
       <SummaryRow label={t(`bills.customerLabel.${o.category}`)} value={customerOf(o)} />
       <SummaryRow label={t("bills.review.amount")} value={formatMoney(o.amount, o.currency)} />
-      <SummaryRow label={t("bills.review.fee")} value={formatMoney(o.fee, o.currency)} />
+      <SummaryRow
+        label={t("bills.review.fee")}
+        value={toKobo(o.fee_waived ?? "0") > 0 ? t("bills.review.feeFree") : formatMoney(o.fee, o.currency)}
+      />
       <SummaryRow label={t("bills.review.total")} value={formatMoney(o.total, o.currency)} strong />
       {o.receipt_number ? <SummaryRow label={t("bills.order.receipt")} value={o.receipt_number} /> : null}
       <SummaryRow label={t("bills.order.reference")} value={o.reference} />

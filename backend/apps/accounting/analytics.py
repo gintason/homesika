@@ -177,7 +177,12 @@ def platform(*, months: int = 6, today: date | None = None) -> dict:
     for kind, n in Organization.objects.values_list("kind").annotate(n=Count("id")):
         by_kind[kind] = n
     paying = Organization.objects.filter(payments__paid_at__gte=since).distinct().count()
+    from apps.referrals.models import FeeWaiver, Referral
+
+    referrals = {status: n for status, n in Referral.objects.values_list("status").annotate(n=Count("id"))}
+    referrals["waivers_used"] = FeeWaiver.objects.filter(order__status="delivered").count()
     return {
+        "referrals": referrals,
         "users": User.objects.count(),
         "active_users_30d": len(active),
         "organizations": dict(by_kind),

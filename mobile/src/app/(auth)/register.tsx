@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,14 +12,21 @@ import { isValidPhone, normalisePhone } from "@/lib/phone";
 import { useAuthFlow } from "@/store/authFlow";
 import { useSession } from "@/store/session";
 
-type Field = "first_name" | "last_name" | "phone_number";
+type Field = "first_name" | "last_name" | "phone_number" | "referral_code";
 
 /** Step 1 of sign-up. Nothing is created until the code is verified. */
 export default function Register() {
   const { t } = useTranslation();
   const language = useSession((s) => s.language);
   const setChallenge = useAuthFlow((s) => s.setChallenge);
-  const [form, setForm] = useState<Record<Field, string>>({ first_name: "", last_name: "", phone_number: "" });
+  // A shared invite link (homesika://register?code=K7PM2QX) fills in the friend's code.
+  const { code = "" } = useLocalSearchParams<{ code?: string }>();
+  const [form, setForm] = useState<Record<Field, string>>({
+    first_name: "",
+    last_name: "",
+    phone_number: "",
+    referral_code: String(code).toUpperCase(),
+  });
   const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
@@ -43,6 +50,7 @@ export default function Register() {
         phone_number: phone,
         preferred_language: language,
         accept_terms: accepted,
+        ...(form.referral_code.trim() ? { referral_code: form.referral_code.trim() } : {}),
       });
       setChallenge(challenge);
       router.push("/verify");
@@ -56,7 +64,7 @@ export default function Register() {
   const filled = form.first_name.trim() && form.last_name.trim() && form.phone_number.trim() && accepted;
   const fieldsWithErrors = error?.code === "validation_error" ? Object.keys(error.details) : [];
   const otherError =
-    error && (error.code !== "validation_error" || fieldsWithErrors.some((f) => !["first_name", "last_name", "phone_number"].includes(f)));
+    error && (error.code !== "validation_error" || fieldsWithErrors.some((f) => !["first_name", "last_name", "phone_number", "referral_code"].includes(f)));
 
   return (
     <Screen back footer={<Button title={t("common.continue")} loading={busy} disabled={!filled} onPress={submit} />}>
@@ -90,6 +98,16 @@ export default function Register() {
         value={form.phone_number}
         onChangeText={set("phone_number")}
         error={phoneError ?? fieldError("phone_number")}
+      />
+      <TextField
+        label={t("auth.referralCode")}
+        hint={t("auth.referralHint")}
+        value={form.referral_code}
+        onChangeText={(v) => set("referral_code")(v.replace(/[^A-Za-z0-9]/g, "").toUpperCase())}
+        autoCapitalize="characters"
+        autoCorrect={false}
+        maxLength={12}
+        error={fieldError("referral_code")}
       />
       <Checkbox checked={accepted} onChange={setAccepted} label={t("auth.acceptTerms")}>
         <Text>{t("auth.acceptTerms")}</Text>

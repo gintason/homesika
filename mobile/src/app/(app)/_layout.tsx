@@ -31,6 +31,7 @@ export default function AppLayout() {
       <Stack.Screen name="estate/join" />
       <Stack.Screen name="estate/pass" />
       <Stack.Screen name="alert/[id]" />
+      <Stack.Screen name="invite" />
     </Stack>
   );
 }

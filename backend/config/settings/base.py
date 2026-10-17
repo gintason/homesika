@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "apps.maintenance",
     "apps.estates",
     "apps.security",
+    "apps.referrals",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -189,6 +190,7 @@ REST_FRAMEWORK = {
         "vouch": env("THROTTLE_VOUCH", default="20/hour"),
         "estate_join": env("THROTTLE_ESTATE_JOIN", default="10/hour"),
         "gate_verify": env("THROTTLE_GATE_VERIFY", default="60/min"),
+        "referral": env("THROTTLE_REFERRAL", default="10/hour"),
     },
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardCursorPagination",
 }
@@ -302,6 +304,13 @@ SMILEID_PRODUCTION = env.bool("SMILEID_PRODUCTION", default=False)  # False = Sm
 SMILEID_NIN_ID_TYPE = env("SMILEID_NIN_ID_TYPE", default="NIN_V2")  # TODO(verify) in the sandbox
 ASSISTANT_EFFORT_VERIFY = env("ASSISTANT_EFFORT_VERIFY", default="medium")
 ARTISAN_DOCUMENT_RETENTION_DAYS = env.int("ARTISAN_DOCUMENT_RETENTION_DAYS", default=90)
+# Referrals (apps/referrals): rewarded with bill fee waivers only, never money.
+REFERRALS_ENABLED = env.bool("REFERRALS_ENABLED", default=True)
+REFERRAL_WAIVERS_NEW_USER = env.int("REFERRAL_WAIVERS_NEW_USER", default=3)
+REFERRAL_WAIVERS_REFERRER = env.int("REFERRAL_WAIVERS_REFERRER", default=3)
+REFERRAL_MONTHLY_CAP = env.int("REFERRAL_MONTHLY_CAP", default=20)  # rewarded referrals per referrer
+REFERRAL_WAIVER_DAYS = env.int("REFERRAL_WAIVER_DAYS", default=180)
+REFERRAL_REDEEM_DAYS = env.int("REFERRAL_REDEEM_DAYS", default=14)  # "I have a code" after sign-up
 # Retention (apps/core/retention.py, daily).
 NOTIFICATION_RETENTION_DAYS = env.int("NOTIFICATION_RETENTION_DAYS", default=180)
 ALERT_LOCATION_RETENTION_DAYS = env.int("ALERT_LOCATION_RETENTION_DAYS", default=90)

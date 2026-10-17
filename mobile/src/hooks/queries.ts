@@ -6,6 +6,7 @@ import {
   artisanApi,
   authApi,
   estatesApi,
+  referralApi,
   billsApi,
   listingsApi,
   repairsApi,
@@ -38,7 +39,11 @@ export const keys = {
   announcements: (estate: string) => ["me", "estates", "news", estate] as const,
   passes: ["me", "gate-passes"] as const,
   alerts: ["me", "alerts"] as const,
+  referral: ["me", "referral"] as const,
 };
+
+export const useReferral = (enabled = true) =>
+  useQuery({ queryKey: keys.referral, queryFn: referralApi.mine, enabled });
 
 export const useMyEstates = () => useQuery({ queryKey: keys.estates, queryFn: async () => (await estatesApi.mine()).results });
 export const useAnnouncements = (estate: string | undefined) =>

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 
 import { Banner, Button, Checkbox, PhoneInput, TextField } from "../../components";
 import { strings } from "../../i18n";
@@ -25,11 +25,14 @@ export function SignUp() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>({ kind: "details" });
   const [busy, setBusy] = useState(false);
+  const [params] = useSearchParams();
   const form = useForm({
     first_name: "",
     last_name: "",
     phone_number: "",
     email: "",
+    // From an invite link (/join?code=…): the new account gets free bill service fees.
+    referral_code: (params.get("code") ?? "").toUpperCase(),
     accept_terms: false,
   });
   const v = form.values;
@@ -56,6 +59,7 @@ export function SignUp() {
           email: v.email.trim(),
           accept_terms: true,
           channel: "sms",
+          ...(v.referral_code.trim() ? { referral_code: v.referral_code.trim() } : {}),
         },
       });
       setStep({ kind: "otp", challenge });
@@ -123,6 +127,7 @@ export function SignUp() {
           required
         />
         <TextField label={strings.fields.email} type="email" autoComplete="email" optional {...form.text("email")} />
+        <TextField label={t.referralCode} hint={t.referralHint} autoComplete="off" optional {...form.text("referral_code")} />
         <Checkbox
           label={t.acceptTerms}
           checked={v.accept_terms}

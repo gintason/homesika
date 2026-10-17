@@ -19,6 +19,7 @@ const BillDone = lazy(() => import("./screens/bills/BillDone"));
 // Guarantor / reference confirmation page, opened from an SMS: its own tiny chunk.
 const VouchPage = lazy(() => import("./screens/vouch/VouchPage"));
 const PrivacyPage = lazy(() => import("./screens/privacy/PrivacyPage"));
+const JoinPage = lazy(() => import("./screens/join/JoinPage"));
 
 export function FullPageLoading() {
   return (
@@ -49,6 +50,14 @@ export function AppRoutes() {
         element={
           <Suspense fallback={<FullPageLoading />}>
             <BillDone />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/join"
+        element={
+          <Suspense fallback={<FullPageLoading />}>
+            <JoinPage />
           </Suspense>
         }
       />

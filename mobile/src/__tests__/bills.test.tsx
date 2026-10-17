@@ -329,6 +329,45 @@ describe("bills: catalogue and forms", () => {
     expect(calls.filter((c) => c.method === "POST" && c.url.endsWith("/bills/orders/"))).toHaveLength(1);
   });
 
+  it("an invite reward shows the fee as free and pays the lower total straight away", async () => {
+    const calls = mockFetch((c) => {
+      if (c.url.endsWith("/me/referral/")) return json(200, { waivers_available: 2, enabled: true });
+      if (c.url.endsWith("/bills/verify/")) return json(200, { customer_id: "7012345678", name: "ADA OBI", details: {} });
+      if (c.url.endsWith("/bills/orders/"))
+        return json(201, order({ category: "cable_tv", amount: "15700.00", fee: "0.00", fee_waived: "100.00", total: "15700.00" }));
+      return catalogue(c);
+    });
+    renderForm("cable_tv");
+    fireEvent.changeText(await screen.findByLabelText("Smartcard / IUC number"), "7012345678");
+    fireEvent.press(screen.getByRole("button", { name: "Check smartcard number" }));
+    expect(await screen.findByText(/ADA OBI/)).toBeTruthy();
+    fireEvent.press(screen.getByRole("radio", { name: /Compact/ }));
+    fireEvent.press(screen.getByRole("button", { name: "Continue" }));
+    expect(await screen.findByText("Free (invite reward)")).toBeTruthy();
+    fireEvent.press(await screen.findByRole("button", { name: "Pay ₦15,700.00" }));
+    await waitFor(() => expect(WebBrowser.openBrowserAsync).toHaveBeenCalledTimes(1));
+    expect(calls.filter((c) => c.method === "POST" && c.url.endsWith("/bills/orders/"))).toHaveLength(1);
+  });
+
+  it("never pays more than shown: if the reward was used up meanwhile, it asks again", async () => {
+    mockFetch((c) => {
+      if (c.url.endsWith("/me/referral/")) return json(200, { waivers_available: 1, enabled: true });
+      if (c.url.endsWith("/bills/verify/")) return json(200, { customer_id: "7012345678", name: "ADA OBI", details: {} });
+      if (c.url.endsWith("/bills/orders/"))
+        return json(201, order({ category: "cable_tv", amount: "15700.00", fee: "100.00", total: "15800.00" }));
+      return catalogue(c);
+    });
+    renderForm("cable_tv");
+    fireEvent.changeText(await screen.findByLabelText("Smartcard / IUC number"), "7012345678");
+    fireEvent.press(screen.getByRole("button", { name: "Check smartcard number" }));
+    expect(await screen.findByText(/ADA OBI/)).toBeTruthy();
+    fireEvent.press(screen.getByRole("radio", { name: /Compact/ }));
+    fireEvent.press(screen.getByRole("button", { name: "Continue" }));
+    fireEvent.press(await screen.findByRole("button", { name: "Pay ₦15,700.00" }));
+    expect(await screen.findByRole("button", { name: "Pay ₦15,800.00" })).toBeTruthy();
+    expect(WebBrowser.openBrowserAsync).not.toHaveBeenCalled();
+  });
+
   it("explains a daily limit error", async () => {
     mockFetch(
       (c) =>

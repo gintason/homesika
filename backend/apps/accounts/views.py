@@ -156,7 +156,9 @@ class OTPVerifyView(generics.GenericAPIView):
 
     @staticmethod
     def _create_user(ch: OTPChallenge) -> User:
-        data = {k: v for k, v in ch.payload.items() if k not in ("setup_used", "terms_version")}
+        data = {
+            k: v for k, v in ch.payload.items() if k not in ("setup_used", "terms_version", "referral_code")
+        }
         try:
             with transaction.atomic():
                 user = User.objects.create_user(
@@ -177,6 +179,13 @@ class OTPVerifyView(generics.GenericAPIView):
                 {"non_field_errors": [_("An account with these details already exists.")]}
             ) from exc
         user_registered.send(sender=User, user=user)
+        if ch.payload.get("referral_code"):
+            from apps.referrals import services as referrals
+
+            try:
+                referrals.attribute(user, ch.payload["referral_code"])
+            except serializers.ValidationError:
+                pass  # the code was checked at step 1; never block a sign-up over a reward
         return user
 
 

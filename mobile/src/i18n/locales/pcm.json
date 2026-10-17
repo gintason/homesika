@@ -60,7 +60,9 @@
     "signInTitle": "Welcome back",
     "signInSubtitle": "Sign in for dis phone with your phone number and your 6-digit PIN.",
     "noAccount": "You never get Homesika account? Open one",
-    "haveAccount": "You get account before? Sign in"
+    "haveAccount": "You get account before? Sign in",
+    "referralCode": "Friend code (if you get)",
+    "referralHint": "If person invite you, put im code."
   },
   "otp": {
     "title": "Put the code",
@@ -376,7 +378,8 @@
       "fee": "Service charge",
       "total": "Total",
       "feeAdded": "Service charge of {{fee}} dey, so you go pay {{total}} total.",
-      "edit": "Change the details"
+      "edit": "Change the details",
+      "feeFree": "Free (invite gift)"
     },
     "pay": "Pay {{amount}}",
     "starting": "We dey open safe checkout…",
@@ -873,5 +876,26 @@
       "desk": "Open security desk",
       "done": "E don update"
     }
+  },
+  "referral": {
+    "title": "Invite your people",
+    "rowTitle": "Invite people, get free fee",
+    "intro": "Share your code. Your friend first electricity or cable TV service fee go free, and once e buy something or pay rent online, your own go free too.",
+    "yourCode": "Your code",
+    "share": "Share my code",
+    "copy": "Copy code",
+    "copied": "Code don copy",
+    "free_one": "You get {{count}} free service fee",
+    "free_other": "You get {{count}} free service fees",
+    "freeNone": "No free service fee yet",
+    "expires": "Use dem before {{date}}",
+    "stats": "{{invited}} don join · {{qualified}} don buy something",
+    "haveCode": "You get your friend code?",
+    "haveCodeBody": "You fit still use am: your first electricity or TV service fee go free.",
+    "enterCode": "Friend code",
+    "use": "Use code",
+    "used": "E don work. Your next service fees go free.",
+    "rules": "Free fee na only for Homesika service fee on electricity and cable TV. E no be money, and e go expire after 6 months.",
+    "off": "Invite no dey work now."
   }
 }

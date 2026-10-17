@@ -78,4 +78,5 @@ def test_platform_metrics_are_for_staff_only(api_client, world):
         r = api_client.get(url, {"months": 2})
     assert r.status_code == 200
     assert r.data["organizations"]["landlord"] >= 2 and r.data["users"] > 5
+    assert "waivers_used" in r.data["referrals"]
     assert len(r.data["months"]) == 2 and "rent_and_dues_online" in r.data["months"][0]

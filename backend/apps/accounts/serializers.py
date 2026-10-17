@@ -65,6 +65,21 @@ class RegisterSerializer(serializers.Serializer):
     preferred_language = serializers.ChoiceField(choices=settings.LANGUAGES, default="en")
     channel = serializers.ChoiceField(choices=OTPChallenge.Channel.choices, default=OTPChallenge.Channel.SMS)
     accept_terms = serializers.BooleanField()
+    referral_code = serializers.CharField(
+        max_length=20,
+        required=False,
+        allow_blank=True,
+        default="",
+        help_text="A friend's Homesika code (optional)",
+    )
+
+    def validate_referral_code(self, value):
+        from apps.referrals import services as referrals
+
+        value = (value or "").strip()
+        if value and referrals.find(value) is None:
+            raise serializers.ValidationError(_("We don't recognise this code. Check it, or leave it empty."))
+        return value
 
     def validate_phone_number(self, value):
         if User.objects.filter(phone_number=value).exists():
