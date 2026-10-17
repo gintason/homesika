@@ -1,31 +1,39 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { can, capabilitiesOf } from "./permissions";
 import type { Role } from "./types";
 
-// Copied from backend/apps/orgs/permissions.py CAPABILITIES (Phase 2 capabilities only).
-const NEW_CAPS = ["listing.view", "listing.manage", "inbox.view", "inbox.reply", "kb.manage"] as const;
-const BACKEND: Record<Role, string[]> = {
-  owner: [...NEW_CAPS],
-  manager: ["listing.view", "listing.manage", "inbox.view", "inbox.reply", "kb.manage"],
-  accountant: ["listing.view", "inbox.view"],
-  agent: ["listing.view", "listing.manage", "inbox.view", "inbox.reply"],
-  viewer: ["listing.view", "inbox.view"],
-  estate_admin: [],
-  security: [],
-};
+/** Reads CAPABILITIES straight from backend/apps/orgs/permissions.py, so the copy can't drift. */
+function backendMatrix(): Record<string, string[]> {
+  const src = readFileSync(resolve(__dirname, "../../../backend/apps/orgs/permissions.py"), "utf8");
+  const body = src.slice(src.indexOf("CAPABILITIES"), src.indexOf("def can("));
+  const out: Record<string, string[]> = {};
+  for (const m of body.matchAll(/Role\.([A-Z_]+):\s*\{([^}]*)\}/g)) {
+    const role = m[1]!.toLowerCase();
+    out[role] = m[2]!.includes("ALL") ? ["*"] : [...m[2]!.matchAll(/"([a-z_.]+)"/g)].map((x) => x[1]!);
+  }
+  return out;
+}
 
 describe("capabilities copy", () => {
-  it.each(Object.entries(BACKEND))("%s has exactly the backend's Phase 2 capabilities", (role, expected) => {
-    const granted = NEW_CAPS.filter((c) => can(role as Role, c));
-    expect(granted).toEqual(NEW_CAPS.filter((c) => expected.includes(c)));
+  const backend = backendMatrix();
+
+  it("parses every backend role", () => {
+    expect(Object.keys(backend).sort()).toEqual(
+      ["accountant", "agent", "estate_admin", "manager", "owner", "security", "viewer"].sort(),
+    );
   });
 
-  it("matches the backend's full sets for the roles that changed", () => {
-    expect([...capabilitiesOf("agent")].sort()).toEqual(
-      ["org.view", "property.view", "tenant.view", "listing.view", "listing.manage", "inbox.view", "inbox.reply"].sort(),
-    );
-    expect([...capabilitiesOf("viewer")].sort()).toEqual(
-      ["org.view", "property.view", "tenant.view", "payment.view", "expense.view", "report.view", "listing.view", "inbox.view"].sort(),
-    );
-    expect([...capabilitiesOf("owner")]).toEqual(["*"]);
+  it.each(Object.entries(backend))("%s has exactly the backend's capabilities", (role, expected) => {
+    expect([...capabilitiesOf(role as Role)].sort()).toEqual([...expected].sort());
+  });
+
+  it("approving repairs is for owners and managers only", () => {
+    expect(can("owner", "maintenance.approve")).toBe(true);
+    expect(can("manager", "maintenance.approve")).toBe(true);
+    expect(can("agent", "maintenance.approve")).toBe(false);
+    expect(can("agent", "maintenance.manage")).toBe(true);
+    expect(can("viewer", "maintenance.manage")).toBe(false);
   });
 });

@@ -25,7 +25,10 @@ export type Capability =
   | "listing.manage"
   | "inbox.view"
   | "inbox.reply"
-  | "kb.manage";
+  | "kb.manage"
+  | "maintenance.view"
+  | "maintenance.manage"
+  | "maintenance.approve";
 
 const ALL = "*";
 
@@ -51,6 +54,9 @@ const CAPABILITIES: Record<Role, ReadonlySet<string>> = {
     "inbox.view",
     "inbox.reply",
     "kb.manage",
+    "maintenance.view",
+    "maintenance.manage",
+    "maintenance.approve",
   ]),
   accountant: new Set([
     "org.view",
@@ -65,8 +71,19 @@ const CAPABILITIES: Record<Role, ReadonlySet<string>> = {
     "members.view",
     "listing.view",
     "inbox.view",
+    "maintenance.view",
   ]),
-  agent: new Set(["org.view", "property.view", "tenant.view", "listing.view", "listing.manage", "inbox.view", "inbox.reply"]),
+  agent: new Set([
+    "org.view",
+    "property.view",
+    "tenant.view",
+    "listing.view",
+    "listing.manage",
+    "inbox.view",
+    "inbox.reply",
+    "maintenance.view",
+    "maintenance.manage",
+  ]),
   viewer: new Set([
     "org.view",
     "property.view",
@@ -76,8 +93,9 @@ const CAPABILITIES: Record<Role, ReadonlySet<string>> = {
     "report.view",
     "listing.view",
     "inbox.view",
+    "maintenance.view",
   ]),
-  estate_admin: new Set(["org.view", "property.view", "members.view"]),
+  estate_admin: new Set(["org.view", "property.view", "members.view", "maintenance.view"]),
   security: new Set(["org.view"]),
 };
 

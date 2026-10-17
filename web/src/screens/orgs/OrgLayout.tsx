@@ -22,6 +22,7 @@ const NAV: Array<{ path: string; label: string; cap: Capability }> = [
   { path: "payments", label: strings.nav.payments, cap: "payment.view" },
   { path: "payment-links", label: strings.nav.paymentLinks, cap: "payment.view" },
   { path: "inbox", label: strings.nav.inbox, cap: "inbox.view" },
+  { path: "repairs", label: strings.nav.repairs, cap: "maintenance.view" },
   { path: "listings", label: strings.nav.listings, cap: "listing.view" },
   { path: "leads", label: strings.nav.leads, cap: "listing.view" },
   { path: "viewings", label: strings.nav.viewings, cap: "listing.view" },

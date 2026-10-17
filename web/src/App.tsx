@@ -16,6 +16,8 @@ const PublicListingPage = lazy(() => import("./screens/public").then((m) => ({ d
 const PublicSearch = lazy(() => import("./screens/public").then((m) => ({ default: m.PublicSearch })));
 // Bill-payment return page (airtime, data, TV, electricity): its own tiny chunk.
 const BillDone = lazy(() => import("./screens/bills/BillDone"));
+// Guarantor / reference confirmation page, opened from an SMS: its own tiny chunk.
+const VouchPage = lazy(() => import("./screens/vouch/VouchPage"));
 
 export function FullPageLoading() {
   return (
@@ -46,6 +48,14 @@ export function AppRoutes() {
         element={
           <Suspense fallback={<FullPageLoading />}>
             <BillDone />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/v/:token"
+        element={
+          <Suspense fallback={<FullPageLoading />}>
+            <VouchPage />
           </Suspense>
         }
       />

@@ -20,6 +20,9 @@ import { PaymentDetail } from "./payments/PaymentDetail";
 import { PaymentsList } from "./payments/PaymentsList";
 import { RecordPayment } from "./payments/RecordPayment";
 import { PropertiesList } from "./properties/PropertiesList";
+import { NewRepair } from "./repairs/NewRepair";
+import { RepairDetail } from "./repairs/RepairDetail";
+import { RepairsList } from "./repairs/RepairsList";
 import { PropertyDetail } from "./properties/PropertyDetail";
 import { PropertyForm } from "./properties/PropertyForm";
 import { Statement } from "./reports/Statement";
@@ -67,5 +70,8 @@ export const orgRoutes = (
     <Route path="viewings" element={<ViewingsList />} />
     <Route path="inbox" element={<InboxList />} />
     <Route path="inbox/:conversationId" element={<ConversationView />} />
+    <Route path="repairs" element={<RepairsList />} />
+    <Route path="repairs/new" element={<NewRepair />} />
+    <Route path="repairs/:ticketId" element={<RepairDetail />} />
   </>
 );

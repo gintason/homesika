@@ -527,3 +527,130 @@ export interface AssistantHistory {
   messages: InboxMessage[];
   pending_action: PendingAction | null;
 }
+
+// ---- Repairs and artisans (Phase 4) ---------------------------------------------------------------
+
+export type Trade =
+  | "plumbing"
+  | "electrical"
+  | "carpentry"
+  | "painting"
+  | "ac"
+  | "generator"
+  | "roofing"
+  | "tiling"
+  | "welding"
+  | "appliance"
+  | "pest"
+  | "cleaning"
+  | "locksmith"
+  | "other";
+export type TicketStatus =
+  | "awaiting_approval"
+  | "approved"
+  | "assigned"
+  | "in_progress"
+  | "done"
+  | "confirmed"
+  | "rejected"
+  | "cancelled";
+export type TicketPriority = "low" | "normal" | "urgent" | "emergency";
+export type JobStatus = "offered" | "accepted" | "declined" | "on_site" | "completed" | "confirmed" | "cancelled";
+export type TicketAction =
+  | "approve"
+  | "reject"
+  | "resolve"
+  | "assign"
+  | "reassign"
+  | "confirm"
+  | "cancel"
+  | "comment"
+  | "photo";
+
+export interface TicketPhoto {
+  id: string;
+  stage: "report" | "completion";
+  /** A signed link that works for about 15 minutes. */
+  url: string | null;
+  created_at: ISODateTime;
+}
+export interface TicketEvent {
+  id: string;
+  kind: string;
+  actor_role: "tenant" | "staff" | "artisan" | "system" | "";
+  actor_name: string;
+  note: string;
+  internal: boolean;
+  created_at: ISODateTime;
+}
+export interface TicketJob {
+  id: string;
+  status: JobStatus;
+  artisan: {
+    id: string;
+    display_name: string;
+    is_verified: boolean;
+    rating_avg: number | null;
+    rating_count: number;
+    jobs_completed: number;
+    /** Only once they've accepted. */
+    phone_number: string | null;
+  };
+  offer_expires_at: ISODateTime;
+  scheduled_for: ISODateTime | null;
+  started_at: ISODateTime | null;
+  completed_at: ISODateTime | null;
+  completion_note: string;
+}
+/** GET /orgs/{org}/tickets/ and /{id}/ (staff view). */
+export interface Ticket {
+  id: string;
+  reference: string;
+  status: TicketStatus;
+  category: Trade;
+  priority: TicketPriority;
+  title: string;
+  description: string;
+  access_notes: string;
+  channel: "app" | "web" | "whatsapp";
+  raised_by_staff: boolean;
+  unit: { id: string; label: string; property: string; address: string; city: string; organization: string };
+  tenant: { id: string; full_name: string; phone_number: string } | null;
+  closed_reason: string;
+  approved_at: ISODateTime | null;
+  done_at: ISODateTime | null;
+  confirmed_at: ISODateTime | null;
+  auto_confirmed: boolean;
+  created_at: ISODateTime;
+  updated_at: ISODateTime;
+  photos: TicketPhoto[];
+  job: TicketJob | null;
+  rating: { score: number; comment: string } | null;
+  events: TicketEvent[];
+  can: TicketAction[];
+}
+/** GET /orgs/{org}/artisans/: verified artisans to choose from. */
+export interface DirectoryArtisan {
+  id: string;
+  display_name: string;
+  trades: Trade[];
+  service_areas: string[];
+  city: string;
+  state: string;
+  bio: string;
+  years_experience: number | null;
+  is_verified: boolean;
+  verified_at: ISODateTime | null;
+  rating_avg: number | null;
+  rating_count: number;
+  jobs_completed: number;
+  jobs_with_us: number;
+}
+/** GET/POST /vouch/{token}/ (public): what a guarantor or reference sees. */
+export interface PublicVoucher {
+  kind: "guarantor" | "reference";
+  full_name: string;
+  artisan_name: string;
+  trades: string[];
+  status: "pending" | "confirmed" | "declined" | "expired";
+}
