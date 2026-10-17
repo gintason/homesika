@@ -331,3 +331,190 @@ export interface PublicStatus {
   status: LinkStatus;
   receipt_number: string | null;
 }
+
+// ---- Listings (Phase 2) ----
+export type ListingStatus = "draft" | "published" | "let" | "archived";
+export type RentPeriod = "year" | "month";
+export interface ListingPhoto {
+  id: string;
+  url: string;
+  caption: string;
+  position: number;
+}
+export interface Listing {
+  id: string;
+  ref: string;
+  unit: string | null;
+  title: string;
+  description: string;
+  whatsapp_caption: string;
+  features: string[];
+  area: string;
+  city: string;
+  address: string;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  rent_amount: Money;
+  rent_period: RentPeriod;
+  currency: string;
+  status: ListingStatus;
+  published_at: ISODateTime | null;
+  ai_generated: boolean;
+  contact_phone: string;
+  photos: ListingPhoto[];
+  lead_count: number;
+  created_at: ISODateTime;
+}
+
+/** POST listings/generate/ response: a draft for the agent to check. */
+export interface ListingDraft {
+  title: string;
+  description: string;
+  whatsapp_caption: string;
+  features: string[];
+  suggested_replies: Array<{ question: string; answer: string }>;
+  model?: string;
+}
+
+export interface ViewingSlot {
+  id: string;
+  listing: string;
+  starts_at: ISODateTime;
+  ends_at: ISODateTime;
+  capacity: number;
+  agent: string | null;
+  booked: number;
+}
+
+export type LeadStage = "new" | "contacted" | "viewing_booked" | "viewed" | "applied" | "won" | "lost";
+export type ViewingStatus = "booked" | "done" | "no_show" | "cancelled";
+export interface Viewing {
+  id: string;
+  lead: string;
+  lead_name: string;
+  lead_phone: string;
+  listing: string;
+  listing_title: string;
+  slot: string;
+  starts_at: ISODateTime;
+  status: ViewingStatus;
+  notes: string;
+}
+export interface Lead {
+  id: string;
+  listing: string | null;
+  listing_title: string | null;
+  name: string;
+  phone_number: string;
+  source: "whatsapp" | "web" | "app" | "manual";
+  stage: LeadStage;
+  message: string;
+  notes: string;
+  assigned_to: string | null;
+  viewings: Viewing[];
+  created_at: ISODateTime;
+}
+
+export interface PublicListing {
+  ref: string;
+  title: string;
+  description: string;
+  features: string[];
+  area: string;
+  city: string;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  rent_amount: Money;
+  rent_period: RentPeriod;
+  currency: string;
+  landlord: string;
+  photos: ListingPhoto[];
+  published_at: ISODateTime | null;
+}
+/** GET /listings/{ref}/ adds the open viewing slots. */
+export interface PublicListingDetail extends PublicListing {
+  slots: Array<{ id: string; starts_at: ISODateTime; ends_at: ISODateTime }>;
+}
+
+// ---- Inbox (Phase 2) ----
+export type ConversationStatus = "bot" | "handoff" | "closed";
+export interface InboxMessage {
+  id: string;
+  direction: "in" | "out";
+  sender: "person" | "assistant" | "staff" | "system";
+  kind: string;
+  body: string;
+  status: "received" | "queued" | "sent" | "delivered" | "read" | "failed";
+  error: string;
+  sent_by_name: string | null;
+  created_at: ISODateTime;
+}
+export type EscalationReason =
+  | "dispute"
+  | "payment_problem"
+  | "emergency"
+  | "user_request"
+  | "complaint"
+  | "low_confidence"
+  | "limit"
+  | "refusal";
+export interface Escalation {
+  id: string;
+  reason: EscalationReason;
+  summary: string;
+  status: "open" | "assigned" | "resolved";
+  assigned_to: string | null;
+  resolved_at: ISODateTime | null;
+  created_at: ISODateTime;
+}
+export interface Conversation {
+  id: string;
+  channel: "whatsapp" | "app" | "web";
+  status: ConversationStatus;
+  language: "en" | "pcm";
+  contact_name: string;
+  contact_phone: string;
+  open_escalation: Escalation | null;
+  last_message: InboxMessage | null;
+  last_inbound_at: ISODateTime | null;
+  last_message_at: ISODateTime | null;
+  can_reply_freely: boolean;
+  handoff_by: string | null;
+}
+export interface ConversationDetail extends Conversation {
+  messages: InboxMessage[];
+  escalations: Escalation[];
+}
+
+// ---- Assistant + knowledge base (Phase 2) ----
+export type KbAudience = "tenant" | "landlord" | "staff" | "prospect";
+export interface KbArticle {
+  id: string;
+  slug: string;
+  title: string;
+  body: string;
+  language: "en" | "pcm";
+  audience: KbAudience[];
+  status: "draft" | "published";
+  updated_at: ISODateTime;
+}
+export interface PendingAction {
+  id: string;
+  tool: string;
+  summary: string;
+  status: "proposed" | "executed" | "rejected" | "expired" | "failed";
+  expires_at: ISODateTime;
+}
+/** POST assistant/messages/ and actions/{id}/confirm|reject/. */
+export interface AssistantReply {
+  conversation: string;
+  text: string;
+  pending_action: PendingAction | null;
+  escalated: boolean;
+}
+/** GET assistant/messages/?channel=web */
+export interface AssistantHistory {
+  conversation: string | null;
+  messages: InboxMessage[];
+  pending_action: PendingAction | null;
+}

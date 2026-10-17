@@ -20,7 +20,12 @@ export type Capability =
   | "expense.manage"
   | "report.view"
   | "members.view"
-  | "members.manage";
+  | "members.manage"
+  | "listing.view"
+  | "listing.manage"
+  | "inbox.view"
+  | "inbox.reply"
+  | "kb.manage";
 
 const ALL = "*";
 
@@ -41,6 +46,11 @@ const CAPABILITIES: Record<Role, ReadonlySet<string>> = {
     "expense.manage",
     "report.view",
     "members.view",
+    "listing.view",
+    "listing.manage",
+    "inbox.view",
+    "inbox.reply",
+    "kb.manage",
   ]),
   accountant: new Set([
     "org.view",
@@ -53,12 +63,28 @@ const CAPABILITIES: Record<Role, ReadonlySet<string>> = {
     "expense.manage",
     "report.view",
     "members.view",
+    "listing.view",
+    "inbox.view",
   ]),
-  agent: new Set(["org.view", "property.view", "tenant.view"]),
-  viewer: new Set(["org.view", "property.view", "tenant.view", "payment.view", "expense.view", "report.view"]),
+  agent: new Set(["org.view", "property.view", "tenant.view", "listing.view", "listing.manage", "inbox.view", "inbox.reply"]),
+  viewer: new Set([
+    "org.view",
+    "property.view",
+    "tenant.view",
+    "payment.view",
+    "expense.view",
+    "report.view",
+    "listing.view",
+    "inbox.view",
+  ]),
   estate_admin: new Set(["org.view", "property.view", "members.view"]),
   security: new Set(["org.view"]),
 };
+
+/** The capabilities granted to a role ("*" for owner), for tests that compare with the backend. */
+export function capabilitiesOf(role: Role): ReadonlySet<string> {
+  return CAPABILITIES[role];
+}
 
 export function can(role: Role | null | undefined, capability: Capability): boolean {
   if (!role) return false;

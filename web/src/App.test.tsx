@@ -35,6 +35,9 @@ describe("App routing", () => {
       [`GET /api/v1/orgs/${ORG_ID}/dashboard/`]: {
         body: { overdue_amount: "450000.00", overdue_charges: 3, due_next_30_days: "1200000.00", units: 10, occupied_units: 8, currency: "NGN" },
       },
+      [`GET /api/v1/orgs/${ORG_ID}/conversations/`]: {
+        body: { next: null, previous: null, results: [{ id: "c1" }, { id: "c2" }] },
+      },
     });
     renderApp("/");
     expect(await screen.findByText(/₦\s?450,000\.00/)).toBeInTheDocument();
@@ -48,6 +51,25 @@ describe("App routing", () => {
     expect(within(nav).queryByRole("link", { name: "Monthly statement" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Record a payment" })).not.toBeInTheDocument();
     expect(session.getRefresh()).toBe("rotated");
+
+    // Phase 2: agents work listings and the inbox; the Inbox entry shows how many need a person.
+    expect(within(nav).getByRole("link", { name: "Listings" })).toBeInTheDocument();
+    expect(within(nav).getByRole("link", { name: "Leads" })).toBeInTheDocument();
+    expect(await within(nav).findByRole("link", { name: /^Inbox\W*2 need a person$/ })).toHaveAttribute("href", `/orgs/${ORG_ID}/inbox`);
+    expect(screen.getAllByRole("button", { name: "Ask Homesika" }).length).toBeGreaterThan(0);
+  });
+
+  it("opens the public listing page without signing in", async () => {
+    mockFetch({
+      "GET /api/v1/listings/LST-1/": {
+        body: {
+          ref: "LST-1", title: "Self-contain in Akoka", description: "", features: [], area: "Akoka", city: "Lagos", bedrooms: 1, bathrooms: 1,
+          rent_amount: "400000.00", rent_period: "year", currency: "NGN", landlord: "Obi Properties", photos: [], published_at: null, slots: [],
+        },
+      },
+    });
+    renderApp("/l/LST-1");
+    expect(await screen.findByRole("heading", { name: "Self-contain in Akoka" })).toBeInTheDocument();
   });
 
   it("first run: a user with no organization is asked to create one", async () => {

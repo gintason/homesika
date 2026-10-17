@@ -11,6 +11,9 @@ import { ReceiptInfo } from "./screens/pay/ReceiptInfo";
 // The staff dashboard (React Query, every screen) loads as a separate chunk, so tenants opening a pay
 // link from an SMS on a cheap phone download only the small public pages.
 const StaffApp = lazy(() => import("./StaffApp"));
+// Public listing pages (shared on WhatsApp) are a separate small chunk too.
+const PublicListingPage = lazy(() => import("./screens/public").then((m) => ({ default: m.PublicListingPage })));
+const PublicSearch = lazy(() => import("./screens/public").then((m) => ({ default: m.PublicSearch })));
 
 export function FullPageLoading() {
   return (
@@ -28,6 +31,22 @@ export function AppRoutes() {
       <Route path="/pay/:reference/mock-checkout" element={<MockCheckout />} />
       <Route path="/pay/:reference/receipt" element={<PayReceipt />} />
       <Route path="/receipts/:token" element={<ReceiptInfo />} />
+      <Route
+        path="/l/:ref"
+        element={
+          <Suspense fallback={<FullPageLoading />}>
+            <PublicListingPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/listings"
+        element={
+          <Suspense fallback={<FullPageLoading />}>
+            <PublicSearch />
+          </Suspense>
+        }
+      />
       <Route
         path="*"
         element={

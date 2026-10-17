@@ -1,6 +1,6 @@
 import { useSearchParams } from "react-router";
 
-import { PageHeader, Tabs } from "../../components";
+import { ButtonLink, PageHeader, Tabs } from "../../components";
 import { strings } from "../../i18n";
 import { useOrg } from "../../lib/org";
 import { OrgSettings } from "./OrgSettings";
@@ -10,7 +10,7 @@ import { TeamSettings } from "./TeamSettings";
 const t = strings.settings;
 
 export function Settings() {
-  const { can } = useOrg();
+  const { base, can } = useOrg();
   const [params, setParams] = useSearchParams();
   const items = [
     { id: "organization", label: t.orgTab, content: <OrgSettings /> },
@@ -19,7 +19,16 @@ export function Settings() {
   ];
   return (
     <>
-      <PageHeader title={t.title} />
+      <PageHeader
+        title={t.title}
+        actions={
+          can("kb.manage") ? (
+            <ButtonLink variant="secondary" to={`${base}/settings/help-articles`}>
+              {strings.kb.link}
+            </ButtonLink>
+          ) : undefined
+        }
+      />
       <Tabs label={t.title} items={items} value={params.get("tab") ?? "organization"} onChange={(id) => setParams({ tab: id }, { replace: true })} />
     </>
   );

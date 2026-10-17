@@ -1,6 +1,12 @@
 import { Navigate, Route } from "react-router";
 
 import { Arrears } from "./charges/Arrears";
+import { ConversationView } from "./inbox/ConversationView";
+import { InboxList } from "./inbox/InboxList";
+import { LeadsList } from "./leads/LeadsList";
+import { ListingDetail } from "./listings/ListingDetail";
+import { ListingForm } from "./listings/ListingForm";
+import { ListingsList } from "./listings/ListingsList";
 import { ChargesList } from "./charges/ChargesList";
 import { Dashboard } from "./orgs/Dashboard";
 import { ExpenseForm } from "./expenses/ExpenseForm";
@@ -17,10 +23,12 @@ import { PropertiesList } from "./properties/PropertiesList";
 import { PropertyDetail } from "./properties/PropertyDetail";
 import { PropertyForm } from "./properties/PropertyForm";
 import { Statement } from "./reports/Statement";
+import { HelpArticles } from "./settings/HelpArticles";
 import { Settings } from "./settings/Settings";
 import { TenantDetail } from "./tenants/TenantDetail";
 import { TenantForm } from "./tenants/TenantForm";
 import { TenantsList } from "./tenants/TenantsList";
+import { ViewingsList } from "./viewings/ViewingsList";
 
 /** Routes under /orgs/:orgId (rendered inside OrgLayout). */
 export const orgRoutes = (
@@ -50,5 +58,14 @@ export const orgRoutes = (
     <Route path="expenses/:expenseId/edit" element={<ExpenseForm />} />
     <Route path="statement" element={<Statement />} />
     <Route path="settings" element={<Settings />} />
+    <Route path="settings/help-articles" element={<HelpArticles />} />
+    <Route path="listings" element={<ListingsList />} />
+    <Route path="listings/new" element={<ListingForm />} />
+    <Route path="listings/:listingId" element={<ListingDetail />} />
+    <Route path="listings/:listingId/edit" element={<ListingForm />} />
+    <Route path="leads" element={<LeadsList />} />
+    <Route path="viewings" element={<ViewingsList />} />
+    <Route path="inbox" element={<InboxList />} />
+    <Route path="inbox/:conversationId" element={<ConversationView />} />
   </>
 );

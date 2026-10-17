@@ -1,12 +1,16 @@
-import { useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router";
 
 import { AppShell, Banner, EmptyState, ButtonLink, LoadingBlock, type NavItem } from "../../components";
-import { strings } from "../../i18n";
-import { errorText } from "../../lib/api";
+import { fmt, strings } from "../../i18n";
+import { api, errorText } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 import { lastOrg, makeOrgContext, OrgContext, useMyOrgs } from "../../lib/org";
 import type { Capability } from "../../lib/permissions";
+import { orgKey } from "../../lib/queries";
+import type { Conversation, Paginated } from "../../lib/types";
+import { AssistantPanel } from "../assistant/AssistantPanel";
 
 const NAV: Array<{ path: string; label: string; cap: Capability }> = [
   { path: "dashboard", label: strings.nav.dashboard, cap: "org.view" },
@@ -17,10 +21,31 @@ const NAV: Array<{ path: string; label: string; cap: Capability }> = [
   { path: "arrears", label: strings.nav.arrears, cap: "tenant.view" },
   { path: "payments", label: strings.nav.payments, cap: "payment.view" },
   { path: "payment-links", label: strings.nav.paymentLinks, cap: "payment.view" },
+  { path: "inbox", label: strings.nav.inbox, cap: "inbox.view" },
+  { path: "listings", label: strings.nav.listings, cap: "listing.view" },
+  { path: "leads", label: strings.nav.leads, cap: "listing.view" },
+  { path: "viewings", label: strings.nav.viewings, cap: "listing.view" },
   { path: "expenses", label: strings.nav.expenses, cap: "expense.view" },
   { path: "statement", label: strings.nav.statement, cap: "report.view" },
   { path: "settings", label: strings.nav.settings, cap: "org.view" },
 ];
+
+const ESCALATED_POLL_MS = 60_000;
+
+/** Conversations with an open escalation, for the Inbox nav badge ("20+" past one page). */
+function useEscalatedCount(orgId: string, enabled: boolean): string | undefined {
+  const q = useQuery({
+    queryKey: orgKey(orgId, "/conversations/", "escalated-count"),
+    queryFn: ({ signal }) =>
+      api<Paginated<Conversation>>(`/orgs/${orgId}/conversations/`, { query: { escalated: 1, page_size: 20 }, signal }),
+    enabled,
+    refetchInterval: ESCALATED_POLL_MS,
+  });
+  if (!q.data) return undefined;
+  const n = q.data.results.length;
+  if (n === 0) return undefined;
+  return q.data.next ? `${n}+` : String(n);
+}
 
 /** Resolves /orgs/:orgId against my organizations and provides OrgContext + the app shell. */
 export function OrgLayout() {
@@ -37,6 +62,9 @@ export function OrgLayout() {
   useEffect(() => {
     if (ctx) lastOrg.set(ctx.org.id);
   }, [ctx]);
+
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  const escalated = useEscalatedCount(orgId, Boolean(ctx?.can("inbox.view")));
 
   if (isLoading) {
     return (
@@ -62,7 +90,11 @@ export function OrgLayout() {
     );
   }
 
-  const nav: NavItem[] = NAV.filter((n) => ctx.can(n.cap)).map((n) => ({ to: `${ctx.base}/${n.path}`, label: n.label }));
+  const nav: NavItem[] = NAV.filter((n) => ctx.can(n.cap)).map((n) => ({
+    to: `${ctx.base}/${n.path}`,
+    label: n.label,
+    ...(n.path === "inbox" && escalated ? { badge: escalated, badgeLabel: fmt(strings.nav.inboxCount, { count: escalated }) } : {}),
+  }));
 
   return (
     <OrgContext.Provider value={ctx}>
@@ -76,9 +108,11 @@ export function OrgLayout() {
         onSignOut={() => {
           void signOut().then(() => navigate("/signin", { replace: true }));
         }}
+        onOpenAssistant={() => setAssistantOpen(true)}
       >
         <Outlet />
       </AppShell>
+      <AssistantPanel open={assistantOpen} onClose={() => setAssistantOpen(false)} />
     </OrgContext.Provider>
   );
 }

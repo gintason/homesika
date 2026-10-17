@@ -8,7 +8,10 @@ import { Button } from "./Button";
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-/** Modal dialog: traps focus, closes on Escape, returns focus to what opened it. */
+/**
+ * Modal dialog: traps focus, closes on Escape, returns focus to what opened it. variant="drawer" is
+ * the same dialog as a full-height panel sliding in from the right (detail drawers, the assistant).
+ */
 export function Dialog({
   open,
   onClose,
@@ -16,6 +19,7 @@ export function Dialog({
   description,
   children,
   footer,
+  variant = "modal",
 }: {
   open: boolean;
   onClose: () => void;
@@ -23,6 +27,7 @@ export function Dialog({
   description?: ReactNode;
   children?: ReactNode;
   footer?: ReactNode;
+  variant?: "modal" | "drawer";
 }) {
   const titleId = useId();
   const descId = useId();
@@ -68,8 +73,15 @@ export function Dialog({
   }, [open]);
 
   if (!open) return null;
+  const drawer = variant === "drawer";
   return createPortal(
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-surface-overlay p-0 sm:items-center sm:p-4">
+    <div
+      className={
+        drawer
+          ? "fixed inset-0 z-40 flex justify-end bg-surface-overlay"
+          : "fixed inset-0 z-40 flex items-end justify-center bg-surface-overlay p-0 sm:items-center sm:p-4"
+      }
+    >
       <div className="absolute inset-0" aria-hidden="true" onClick={onClose} />
       <div
         ref={panel}
@@ -78,18 +90,39 @@ export function Dialog({
         aria-labelledby={titleId}
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
-        className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-xl bg-surface-card p-6 shadow-lg sm:rounded-xl"
+        className={
+          drawer
+            ? "relative flex h-full w-full max-w-lg flex-col overflow-y-auto bg-surface-card p-5 shadow-lg md:p-6"
+            : "relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-xl bg-surface-card p-6 shadow-lg sm:rounded-xl"
+        }
       >
-        <h2 id={titleId} className="font-display text-xl font-semibold text-ink-900">
-          {title}
-        </h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 id={titleId} className="font-display text-xl font-semibold text-ink-900">
+            {title}
+          </h2>
+          {drawer && (
+            <Button variant="ghost" onClick={onClose} className="-mr-2 -mt-2 shrink-0">
+              {strings.common.close}
+            </Button>
+          )}
+        </div>
         {description && (
           <div id={descId} className="mt-2 text-base text-ink-600">
             {description}
           </div>
         )}
         {children && <div className="mt-4 space-y-4">{children}</div>}
-        {footer && <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">{footer}</div>}
+        {footer && (
+          <div
+            className={
+              drawer
+                ? "sticky bottom-0 -mx-5 mt-auto bg-surface-card px-5 pt-4 md:-mx-6 md:px-6"
+                : "mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"
+            }
+          >
+            {footer}
+          </div>
+        )}
       </div>
     </div>,
     document.body,

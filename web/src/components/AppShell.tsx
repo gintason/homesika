@@ -9,6 +9,10 @@ import { Logo } from "./Logo";
 export interface NavItem {
   to: string;
   label: string;
+  /** A short count shown after the label, e.g. "3". */
+  badge?: string;
+  /** What the badge means, for screen readers, e.g. "3 need a person". */
+  badgeLabel?: string;
 }
 
 export interface OrgOption {
@@ -68,6 +72,17 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
             }
           >
             {item.label}
+            {item.badge && (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="ml-auto rounded-pill bg-white px-2 py-[2px] text-xs font-bold text-primary-800"
+                >
+                  {item.badge}
+                </span>
+                <span className="sr-only">, {item.badgeLabel ?? item.badge}</span>
+              </>
+            )}
           </NavLink>
         </li>
       ))}
@@ -87,6 +102,7 @@ export function AppShell({
   createOrgHref,
   userName,
   onSignOut,
+  onOpenAssistant,
   children,
 }: {
   nav: NavItem[];
@@ -97,6 +113,8 @@ export function AppShell({
   createOrgHref: string;
   userName: string;
   onSignOut: () => void;
+  /** Shows an "Ask Homesika" button that opens the assistant panel. */
+  onOpenAssistant?: () => void;
   children: ReactNode;
 }) {
   const location = useLocation();
@@ -113,6 +131,18 @@ export function AppShell({
         currentOrgId={currentOrgId}
         onSwitch={(id) => onSwitchOrg(id === "__new" ? createOrgHref : id)}
       />
+      {onOpenAssistant && (
+        <button
+          type="button"
+          onClick={() => {
+            onNavigate?.();
+            onOpenAssistant();
+          }}
+          className="flex min-h-touch w-full items-center justify-center rounded-md border border-primary-100 px-3 text-base font-semibold text-white hover:bg-primary-700"
+        >
+          {strings.assistant.open}
+        </button>
+      )}
       <nav aria-label={strings.nav.main}>
         <NavList items={nav} onNavigate={onNavigate} />
       </nav>

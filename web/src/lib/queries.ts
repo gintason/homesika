@@ -10,12 +10,17 @@ export function orgKey(orgId: string, ...parts: unknown[]) {
 }
 
 /** GET a non-paginated org endpoint, e.g. useOrgQuery<Property[]>("/properties/"). */
-export function useOrgQuery<T>(path: string, query?: Query, options: { enabled?: boolean } = {}) {
+export function useOrgQuery<T>(
+  path: string,
+  query?: Query,
+  options: { enabled?: boolean; /** Poll every N ms (e.g. an open inbox thread). */ refetchInterval?: number } = {},
+) {
   const { org } = useOrg();
   return useQuery({
     queryKey: orgKey(org.id, path, query ?? {}),
     queryFn: ({ signal }) => api<T>(`/orgs/${org.id}${path}`, { query, signal }),
     enabled: options.enabled ?? true,
+    refetchInterval: options.refetchInterval,
   });
 }
 

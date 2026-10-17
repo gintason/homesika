@@ -47,6 +47,12 @@ const STATUS_TONE: Record<Status, BadgeTone> = {
   unavailable: "neutral",
   reversed: "neutral",
   disabled: "neutral",
+  published: "success",
+  let: "neutral",
+  archived: "neutral",
+  booked: "info",
+  done: "success",
+  no_show: "warning",
 };
 
 /** Status chip with a consistent colour and plain-language label (paid, part_paid, open, overdue...). */

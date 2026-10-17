@@ -27,7 +27,8 @@ export function mockFetch(routes: Record<string, Handler>) {
       path: url.pathname,
       search: url.searchParams,
       headers,
-      body: typeof init.body === "string" ? JSON.parse(init.body) : undefined,
+      body:
+        typeof init.body === "string" ? JSON.parse(init.body) : init.body instanceof FormData ? init.body : undefined,
     };
     calls.push(req);
     const key = `${method} ${url.pathname}`;

@@ -111,16 +111,18 @@ export async function apiFetch(path: string, opts: RequestOptions = {}): Promise
   const { method = "GET", body, query, auth = true, idempotencyKey, signal, accept = "application/json" } = opts;
   const url = apiUrl(path, query);
 
+  // FormData (photo uploads) goes as multipart: the browser sets Content-Type with the boundary.
+  const isForm = typeof FormData !== "undefined" && body instanceof FormData;
   const send = () => {
     const headers: Record<string, string> = { Accept: accept, "Accept-Language": "en" };
-    if (body !== undefined) headers["Content-Type"] = "application/json";
+    if (body !== undefined && !isForm) headers["Content-Type"] = "application/json";
     if (idempotencyKey) headers["Idempotency-Key"] = idempotencyKey;
     const token = auth ? session.getAccess() : null;
     if (token) headers.Authorization = `Bearer ${token}`;
     return fetch(url, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
       signal,
     });
   };
