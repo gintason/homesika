@@ -81,7 +81,8 @@ def private_storage():
 
 
 def id_document_path(instance, filename: str) -> str:
-    return f"artisans/{instance.artisan_id}/id/{secrets.token_hex(16)}.jpg"
+    """ID photos and proof-of-address documents, by check kind."""
+    return f"artisans/{instance.artisan_id}/{instance.kind}/{secrets.token_hex(16)}.jpg"
 
 
 class VerificationCheck(TimeStampedModel):
@@ -94,7 +95,8 @@ class VerificationCheck(TimeStampedModel):
 
     class Status(models.TextChoices):
         NOT_STARTED = "not_started", _("Not started")
-        PENDING = "pending", _("Waiting for review")
+        PROCESSING = "processing", _("Being checked automatically")
+        PENDING = "pending", _("Waiting for a person to review")
         PASSED = "passed", _("Passed")
         FAILED = "failed", _("Failed")
 
@@ -106,8 +108,16 @@ class VerificationCheck(TimeStampedModel):
     id_number = EncryptedTextField(blank=True)
     id_number_last4 = models.CharField(max_length=4, blank=True)
     document = models.ImageField(
-        upload_to=id_document_path, storage=private_storage, blank=True, help_text=_("Photo of the ID.")
+        upload_to=id_document_path,
+        storage=private_storage,
+        blank=True,
+        help_text=_("Photo of the ID, or of the proof of address. Deleted 90 days after the check passes."),
     )
+    date_of_birth = EncryptedTextField(blank=True, help_text=_("As the artisan entered it (YYYY-MM-DD)."))
+    review_requested_at = models.DateTimeField(
+        null=True, blank=True, help_text=_("The artisan asked a person to review an automatic result.")
+    )
+    document_deleted_at = models.DateTimeField(null=True, blank=True)
     evidence = EncryptedTextField(blank=True, help_text=_("What the provider returned (encrypted JSON)."))
     note = models.CharField(max_length=200, blank=True, help_text=_("Shown to the artisan when it fails."))
     attempts = models.PositiveSmallIntegerField(default=0)

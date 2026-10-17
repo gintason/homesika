@@ -55,6 +55,10 @@ envVarGroups:
         sync: false
       - key: ANTHROPIC_MODEL
         value: claude-opus-5-5
+      - key: ID_VERIFICATION_PROVIDER
+        value: nin                     # NIN lookup + AI document reading; "manual" = staff review
+      - key: NIN_PROVIDER
+        value: mock                    # change once a licensed NIN provider is chosen and its adapter built
       - key: BILLS_PROVIDERS
         value: mock                    # change to "vtung,flutterwave" once VTU.ng is funded and keys are set
       - key: VTUNG_USERNAME

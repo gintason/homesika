@@ -88,20 +88,21 @@ class ArtisanAdmin(admin.ModelAdmin):
 
 @admin.register(VerificationCheck)
 class CheckAdmin(admin.ModelAdmin):
-    """The review queue: filter Status = Waiting for review. Open the ID photo, compare it with the name
-    and the selfie-free details; for addresses, confirm by call or visit."""
+    """The review queue: filter Status = "Waiting for a person to review" (unclear automatic results,
+    and artisans who asked for a person). "What the automatic check found" shows the NIN and AI results.
+    Open the photo, then choose Passed, or type a reason in Note and choose Failed."""
 
     list_display = (
         "artisan",
         "kind",
         "status",
         "provider",
-        "id_type",
         "id_number_last4",
+        "review_requested_at",
         "attempts",
         "updated_at",
     )
-    list_filter = ("status", "kind", "provider")
+    list_filter = ("status", "kind", "provider", ("review_requested_at", admin.EmptyFieldListFilter))
     search_fields = ("artisan__display_name", "artisan__user__phone_number")
     fields = (
         "artisan",
@@ -112,7 +113,9 @@ class CheckAdmin(admin.ModelAdmin):
         "id_number_last4",
         "document_link",
         "artisan_address",
+        "automatic_result",
         "note",
+        "review_requested_at",
         "attempts",
         "checked_at",
         "checked_by",
@@ -126,6 +129,20 @@ class CheckAdmin(admin.ModelAdmin):
         return (
             format_html('<a href="{}" target="_blank" rel="noopener">Open (15 min link)</a>', url)
             if url
+            else "-"
+        )
+
+    @admin.display(description="What the automatic check found")
+    def automatic_result(self, obj):
+        import json
+
+        try:
+            data = json.loads(obj.evidence) if obj.evidence else {}
+        except ValueError:
+            data = {}
+        return (
+            format_html("<pre style='white-space:pre-wrap'>{}</pre>", json.dumps(data, indent=2))
+            if data
             else "-"
         )
 

@@ -14,11 +14,16 @@ class ApplySerializer(serializers.Serializer):
     bio = serializers.CharField(max_length=300, required=False, allow_blank=True, default="")
     years_experience = serializers.IntegerField(min_value=0, max_value=70, required=False, allow_null=True)
     consent = serializers.BooleanField(
-        help_text="They agree to the ID, guarantor and reference checks (NDPA consent)."
+        help_text="They agree to the NIN lookup, automated (AI) reading of their documents, and the "
+        "guarantor and reference checks, with the right to ask for a person to review (NDPA consent)."
     )
 
 
 class CheckSerializer(serializers.ModelSerializer):
+    can_request_review = serializers.SerializerMethodField(
+        help_text="It failed automatically and a person can be asked to look at it."
+    )
+
     class Meta:
         model = VerificationCheck
         fields = (
@@ -30,7 +35,12 @@ class CheckSerializer(serializers.ModelSerializer):
             "id_number_last4",
             "attempts",
             "checked_at",
+            "review_requested_at",
+            "can_request_review",
         )
+
+    def get_can_request_review(self, obj) -> bool:
+        return obj.status == VerificationCheck.Status.FAILED and bool(obj.document)
 
 
 class MyVoucherSerializer(serializers.ModelSerializer):
@@ -71,6 +81,9 @@ class MyArtisanSerializer(serializers.ModelSerializer):
     checks = CheckSerializer(many=True, read_only=True)
     vouchers = MyVoucherSerializer(many=True, read_only=True)
     requirements = serializers.SerializerMethodField()
+    verification_mode = serializers.SerializerMethodField(
+        help_text="nin: NIN lookup and AI document checks; manual: Homesika staff review."
+    )
 
     class Meta:
         model = ArtisanProfile
@@ -95,8 +108,12 @@ class MyArtisanSerializer(serializers.ModelSerializer):
             "checks",
             "vouchers",
             "requirements",
+            "verification_mode",
         )
         read_only_fields = ("status", "status_reason", "verified_at", "rating_count", "jobs_completed")
+
+    def get_verification_mode(self, obj) -> str:
+        return "nin" if services.automated() else "manual"
 
     def get_requirements(self, obj) -> RequirementsSerializer:
         return services.requirements(obj)
@@ -106,11 +123,24 @@ class MyArtisanSerializer(serializers.ModelSerializer):
 
 
 class IdSubmitSerializer(serializers.Serializer):
-    id_type = serializers.ChoiceField(choices=list(idcheck.ID_TYPES.items()))
-    id_number = serializers.CharField(max_length=30)
+    id_type = serializers.ChoiceField(choices=list(idcheck.ID_TYPES.items()), default="nin")
+    id_number = serializers.CharField(max_length=30, help_text="The NIN (11 digits) in nin mode.")
+    date_of_birth = serializers.CharField(
+        max_length=10, required=False, allow_blank=True, default="", help_text="YYYY-MM-DD (nin mode)."
+    )
     document = serializers.ImageField(
         required=False, help_text="A clear photo of the ID (required for review)."
     )
+
+
+class AddressProofSerializer(serializers.Serializer):
+    document = serializers.ImageField(
+        help_text="A utility bill, bank statement or tenancy paper from the last 3 months."
+    )
+
+
+class ReviewRequestSerializer(serializers.Serializer):
+    kind = serializers.ChoiceField(choices=[("id", "ID check"), ("address", "Address")])
 
 
 class VoucherCreateSerializer(serializers.Serializer):

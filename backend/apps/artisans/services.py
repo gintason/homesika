@@ -1,7 +1,9 @@
+import difflib
 import hashlib
 import json
+import re
 import secrets
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -16,7 +18,7 @@ from apps.core.exceptions import HomesikaAPIException
 from apps.core.media import clean_photo
 from apps.notifications.services import notify_sms
 
-from . import idcheck
+from . import ai_review, idcheck, nin
 from .models import ArtisanProfile, Trade, VerificationCheck, Voucher
 
 GUARANTORS_NEEDED = 2
@@ -69,6 +71,11 @@ def clean_areas(values) -> list[str]:
     return areas
 
 
+def automated() -> bool:
+    """NIN lookup + AI document reading (the default), or staff review ("manual")."""
+    return settings.ID_VERIFICATION_PROVIDER == "nin"
+
+
 def get_profile(user) -> ArtisanProfile:
     try:
         return user.artisan
@@ -95,7 +102,7 @@ def apply(
         raise AlreadyArtisan()
     if not consent:
         raise serializers.ValidationError(
-            {"consent": [_("Please agree to the ID, guarantor and reference checks to continue.")]}
+            {"consent": [_("Please agree to the NIN, document, guarantor and reference checks to continue.")]}
         )
     profile = ArtisanProfile.objects.create(
         user=user,
@@ -123,8 +130,10 @@ def apply(
     VerificationCheck.objects.create(
         artisan=profile,
         kind=VerificationCheck.Kind.ADDRESS,
-        status=VerificationCheck.Status.PENDING,
-        provider="manual",
+        # Automated: matched to the NIN record's address, or checked from a proof of address the
+        # artisan uploads. Manual: Homesika staff confirm it.
+        status=VerificationCheck.Status.NOT_STARTED if automated() else VerificationCheck.Status.PENDING,
+        provider="" if automated() else "manual",
     )
     VerificationCheck.objects.create(artisan=profile, kind=VerificationCheck.Kind.ID)
     audit.record("artisan.applied", actor=user, obj=profile, request=request)
@@ -143,7 +152,10 @@ def update_profile(profile: ArtisanProfile, *, by=None, request=None, **fields) 
     profile.save()
     if address_changed:  # a new address has to be confirmed again
         profile.checks.filter(kind=VerificationCheck.Kind.ADDRESS).update(
-            status=VerificationCheck.Status.PENDING, checked_at=None, checked_by=None, note=""
+            status=VerificationCheck.Status.NOT_STARTED if automated() else VerificationCheck.Status.PENDING,
+            checked_at=None,
+            checked_by=None,
+            note="",
         )
         refresh_status(profile)
     return profile
@@ -153,50 +165,388 @@ def update_profile(profile: ArtisanProfile, *, by=None, request=None, **fields) 
 
 
 @transaction.atomic
-def submit_id(profile: ArtisanProfile, *, id_type: str, id_number: str, document=None, request=None):
+def submit_id(
+    profile: ArtisanProfile,
+    *,
+    id_type: str,
+    id_number: str,
+    document=None,
+    date_of_birth: str = "",
+    request=None,
+):
     check = VerificationCheck.objects.select_for_update().get(artisan=profile, kind=VerificationCheck.Kind.ID)
     if check.status == VerificationCheck.Status.PASSED:
         raise serializers.ValidationError({"id_number": [_("Your ID has already been checked.")]})
+    if check.status == VerificationCheck.Status.PROCESSING:
+        raise serializers.ValidationError({"id_number": [_("We're still checking your last try.")]})
     if check.attempts >= MAX_ID_ATTEMPTS:
         raise serializers.ValidationError(
-            {"id_number": [_("Too many tries. Contact Homesika support to check your ID.")]}
+            {"id_number": [_("Too many tries. Ask for a person to review your ID.")]}
         )
-    if id_type not in idcheck.ID_TYPES:
-        raise serializers.ValidationError({"id_type": [_("Choose an ID type.")]})
     id_number = "".join(id_number.split()).upper()
-    if id_type == "nin" and not (id_number.isdigit() and len(id_number) == 11):
-        raise serializers.ValidationError({"id_number": [_("A NIN is 11 digits.")]})
-    if not 5 <= len(id_number) <= 20:
-        raise serializers.ValidationError({"id_number": [_("Check the ID number.")]})
-    provider = idcheck.get()
-    if provider.needs_document and document is None:
+    if automated():
+        id_type = "nin"
+        if not (id_number.isdigit() and len(id_number) == 11):
+            raise serializers.ValidationError({"id_number": [_("A NIN is 11 digits.")]})
+        dob = _parse_date(date_of_birth)
+        if dob is None or not (date(1930, 1, 1) <= dob <= date.today() - timedelta(days=16 * 365)):
+            raise serializers.ValidationError({"date_of_birth": [_("Enter your date of birth.")]})
+        date_of_birth = dob.isoformat()
+    else:
+        if id_type not in idcheck.ID_TYPES:
+            raise serializers.ValidationError({"id_type": [_("Choose an ID type.")]})
+        if id_type == "nin" and not (id_number.isdigit() and len(id_number) == 11):
+            raise serializers.ValidationError({"id_number": [_("A NIN is 11 digits.")]})
+        if not 5 <= len(id_number) <= 20:
+            raise serializers.ValidationError({"id_number": [_("Check the ID number.")]})
+    if document is None:
         raise serializers.ValidationError({"document": [_("Add a clear photo of the ID.")]})
-    result = provider.check(
-        id_type=id_type,
-        id_number=id_number,
-        full_name=profile.user.full_name,
-        has_document=bool(document),
-    )
-    if document is not None:
-        if check.document:
-            check.document.delete(save=False)
-        check.document.save("id.jpg", clean_photo(document, field="document"), save=False)
-    check.provider = provider.name
+    if check.document:
+        check.document.delete(save=False)
+    check.document.save("id.jpg", clean_photo(document, field="document"), save=False)
     check.id_type, check.id_number, check.id_number_last4 = id_type, id_number, id_number[-4:]
-    check.status, check.note = result.status, result.note
-    check.evidence = json.dumps(result.evidence)
+    check.date_of_birth = date_of_birth
+    check.status = VerificationCheck.Status.PROCESSING if automated() else VerificationCheck.Status.PENDING
+    check.provider = settings.NIN_PROVIDER if automated() else "manual"
+    check.note, check.evidence, check.checked_at, check.review_requested_at = "", "", None, None
+    check.document_deleted_at = None
     check.attempts += 1
-    check.checked_at = timezone.now() if result.status != "pending" else None
     check.save()
     audit.record(
         "artisan.id_submitted",
         actor=profile.user,
         obj=profile,
-        changes={"provider": provider.name, "result": result.status},
+        changes={"mode": check.provider},
         request=request,
     )
+    if automated():
+        _queue("run_id_check", check.pk)
     refresh_status(profile)
     return check
+
+
+def _queue(task: str, check_id) -> None:
+    from . import tasks
+
+    transaction.on_commit(lambda: getattr(tasks, task).delay(str(check_id)))
+
+
+def _parse_date(value: str):
+    try:
+        return date.fromisoformat((value or "").strip()[:10])
+    except ValueError:
+        return None
+
+
+# ---- Matching rules (code decides; the model only reads) -------------------------------------------
+
+
+def _tokens(name: str) -> list[str]:
+    return [t for t in re.split(r"[^a-z]+", (name or "").lower()) if len(t) > 1]
+
+
+def _close(a: str, b: str) -> bool:
+    return a == b or difflib.SequenceMatcher(None, a, b).ratio() >= 0.85
+
+
+def names_match(claimed: list[str], record: list[str]) -> bool:
+    """The artisan's first and last names both appear in the record (any order; middle names and small
+    spelling differences such as Olusegun/Olushegun allowed)."""
+    claimed, record = [t for t in claimed if t], [t for t in record if t]
+    if len(claimed) < 2 or not record:
+        return False
+    return all(any(_close(c, r) for r in record) for c in claimed[:1] + claimed[-1:])
+
+
+def _fail(check, note: str, evidence: dict) -> None:
+    check.status, check.note = VerificationCheck.Status.FAILED, note[:200]
+    check.evidence, check.checked_at = json.dumps(evidence), timezone.now()
+    check.save(update_fields=["status", "note", "evidence", "checked_at", "provider", "updated_at"])
+
+
+def _pass(check, evidence: dict) -> None:
+    check.status, check.note = VerificationCheck.Status.PASSED, ""
+    check.evidence, check.checked_at = json.dumps(evidence), timezone.now()
+    check.save(update_fields=["status", "note", "evidence", "checked_at", "provider", "updated_at"])
+
+
+def _to_person(check, note: str, evidence: dict) -> None:
+    """Unclear: a person decides (never an automatic fail on a doubt)."""
+    check.status, check.note = VerificationCheck.Status.PENDING, note[:200]
+    check.evidence = json.dumps(evidence)
+    check.save(update_fields=["status", "note", "evidence", "provider", "updated_at"])
+
+
+def _tell(profile, body: str, kind: str) -> None:
+    notify_sms(to=profile.user.phone_number, kind=kind, user=profile.user, body=str(body))
+
+
+@transaction.atomic
+def run_id_check(check_id) -> str:
+    """NIN lookup, then the ID photo read by AI, then fixed rules. Retries later if a service is down."""
+    check = VerificationCheck.objects.select_for_update().select_related("artisan__user").get(pk=check_id)
+    if check.status != VerificationCheck.Status.PROCESSING:
+        return check.status
+    profile, user = check.artisan, check.artisan.user
+    claimed = nin.Claimed(
+        nin=check.id_number,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        date_of_birth=check.date_of_birth,
+        phone=user.phone_number,
+        address=_full_address(profile),
+    )
+    try:
+        record = nin.get().lookup(claimed)
+    except nin.NinUnavailable:
+        return check.status  # stays processing; housekeeping retries
+    claimed_names = _tokens(user.first_name) + _tokens(user.last_name)
+    record_names = _tokens(record.first_name) + _tokens(record.middle_name) + _tokens(record.last_name)
+    ev = {
+        "nin": {
+            "provider": record.provider,
+            "found": record.found,
+            "name_match": record.found and names_match(claimed_names, record_names),
+            "dob_match": record.found and record.date_of_birth == check.date_of_birth,
+            "phone_match": record.found
+            and bool(record.phone)
+            and normalise_phone(record.phone) == user.phone_number,
+            "has_address": bool(record.address),
+        }
+    }
+    if not record.found:
+        _fail(check, str(_("We couldn't find that NIN. Check the number and try again.")), ev)
+    elif not ev["nin"]["name_match"]:
+        _fail(check, str(_("The name on this NIN doesn't match your name on Homesika.")), ev)
+    elif not ev["nin"]["dob_match"]:
+        _fail(check, str(_("The date of birth doesn't match your NIN record.")), ev)
+    else:
+        try:
+            with check.document.open("rb") as f:
+                doc = ai_review.read_id(
+                    f,
+                    claimed_name=user.full_name,
+                    claimed_nin=check.id_number,
+                    claimed_dob=check.date_of_birth,
+                )
+        except ai_review.ReviewUnavailable:
+            return check.status  # retried later
+        number = re.sub(r"\D", "", doc["nin_on_document"])
+        doc_names = _tokens(doc["name_on_document"])
+        ev["document"] = {
+            "type": doc["document_type"],
+            "legible": doc["legible"],
+            "looks_altered": doc["looks_altered"],
+            "number_match": (number == check.id_number) if number else None,
+            "name_match": names_match(claimed_names, doc_names) if doc_names else None,
+            "dob_match": (doc["date_of_birth_on_document"] == check.date_of_birth)
+            if doc["date_of_birth_on_document"]
+            else None,
+            "confidence": doc["confidence"],
+            "concerns": doc["concerns"][:5],
+            "model": doc.get("_model", ""),
+        }
+        d = ev["document"]
+        if not doc["is_identity_document"] or not doc["legible"]:
+            _fail(
+                check,
+                str(_("We couldn't read the ID in the photo. Take a clear, flat photo in good light.")),
+                ev,
+            )
+        elif d["number_match"] is False:
+            _fail(check, str(_("The number on the photo doesn't match the NIN you entered.")), ev)
+        elif d["looks_altered"] or d["name_match"] is False or d["dob_match"] is False:
+            _to_person(
+                check, str(_("A person at Homesika will check your ID (usually within 1 working day).")), ev
+            )
+        elif doc["confidence"] == "low" or (d["number_match"] is None and d["name_match"] is None):
+            _to_person(
+                check, str(_("A person at Homesika will check your ID (usually within 1 working day).")), ev
+            )
+        else:
+            _pass(check, ev)
+    audit.record(f"artisan.id_{check.status}", obj=profile, changes={"auto": True})
+    if check.status == VerificationCheck.Status.PASSED:
+        _tell(profile, _("Homesika: your ID (NIN) check passed."), "artisan_check_passed")
+        if record.address:
+            _match_nin_address(profile, record.address)
+    elif check.status == VerificationCheck.Status.FAILED:
+        _tell(
+            profile,
+            _(
+                "Homesika: your ID check didn't pass: %(note)s You can try again, or ask a "
+                "person to review it."
+            )
+            % {"note": check.note},
+            "artisan_check_failed",
+        )
+    refresh_status(profile)
+    return check.status
+
+
+def _full_address(profile) -> str:
+    return ", ".join(x for x in (profile.address, profile.city, profile.state) if x)
+
+
+def _match_nin_address(profile, nin_address: str) -> None:
+    """If the NIN record's address is the address they gave, the address check passes without a document."""
+    check = VerificationCheck.objects.select_for_update().get(
+        artisan=profile, kind=VerificationCheck.Kind.ADDRESS
+    )
+    if check.status in (VerificationCheck.Status.PASSED, VerificationCheck.Status.PROCESSING):
+        return
+    try:
+        verdict = ai_review.same_place(nin_address, _full_address(profile))
+    except ai_review.ReviewUnavailable:
+        return  # they can still upload a proof of address
+    if verdict["same_place"] == "yes":
+        check.provider = "nin+ai"
+        _pass(check, {"source": "nin_record", "same_place": "yes", "reason": verdict["reason"][:200]})
+        audit.record("artisan.address_passed", obj=profile, changes={"auto": True, "source": "nin"})
+
+
+# ---- Address check ----------------------------------------------------------------------------------
+
+
+@transaction.atomic
+def submit_address_proof(profile: ArtisanProfile, *, document, request=None):
+    check = VerificationCheck.objects.select_for_update().get(
+        artisan=profile, kind=VerificationCheck.Kind.ADDRESS
+    )
+    if not automated():
+        raise serializers.ValidationError({"document": [_("Homesika staff will confirm your address.")]})
+    if check.status in (VerificationCheck.Status.PASSED, VerificationCheck.Status.PROCESSING):
+        raise serializers.ValidationError({"document": [_("Your address is already being checked or done.")]})
+    if check.attempts >= MAX_ID_ATTEMPTS:
+        raise serializers.ValidationError({"document": [_("Too many tries. Ask for a person to review it.")]})
+    if document is None:
+        raise serializers.ValidationError({"document": [_("Add a photo of the document.")]})
+    if check.document:
+        check.document.delete(save=False)
+    check.document.save("address.jpg", clean_photo(document, field="document"), save=False)
+    check.status, check.provider, check.note, check.evidence = (
+        VerificationCheck.Status.PROCESSING,
+        "ai",
+        "",
+        "",
+    )
+    check.checked_at, check.review_requested_at, check.document_deleted_at = None, None, None
+    check.attempts += 1
+    check.save()
+    audit.record("artisan.address_submitted", actor=profile.user, obj=profile, request=request)
+    _queue("run_address_check", check.pk)
+    return check
+
+
+@transaction.atomic
+def run_address_check(check_id) -> str:
+    check = VerificationCheck.objects.select_for_update().select_related("artisan__user").get(pk=check_id)
+    if check.status != VerificationCheck.Status.PROCESSING:
+        return check.status
+    profile, user = check.artisan, check.artisan.user
+    claimed = _full_address(profile)
+    try:
+        with check.document.open("rb") as f:
+            doc = ai_review.read_address_proof(
+                f,
+                claimed_address=claimed,
+                claimed_name=user.full_name,
+                today=timezone.localdate().isoformat(),
+            )
+    except ai_review.ReviewUnavailable:
+        return check.status
+    issued = _parse_date(doc["issue_date"])
+    age = (timezone.localdate() - issued).days if issued else None
+    name_tokens = _tokens(doc["name_on_document"])
+    ev = {
+        "source": "document",
+        "type": doc["document_type"],
+        "legible": doc["legible"],
+        "looks_altered": doc["looks_altered"],
+        "same_address": doc["same_address_as_claimed"],
+        "name_match": names_match(_tokens(user.first_name) + _tokens(user.last_name), name_tokens)
+        if name_tokens
+        else None,
+        "age_days": age,
+        "confidence": doc["confidence"],
+        "concerns": doc["concerns"][:5],
+        "model": doc.get("_model", ""),
+    }
+    person = str(_("A person at Homesika will check your address (usually within 1 working day)."))
+    if not doc["is_proof_of_address"] or not doc["legible"]:
+        _fail(
+            check,
+            str(
+                _(
+                    "We couldn't read a proof of address in the photo. Use a bill, bank statement or "
+                    "tenancy paper."
+                )
+            ),
+            ev,
+        )
+    elif age is None or age < 0 or age > settings.ARTISAN_PROOF_MAX_AGE_DAYS:
+        _fail(check, str(_("Use a document from the last 3 months.")), ev)
+    elif doc["same_address_as_claimed"] == "no":
+        _fail(check, str(_("The address on the document isn't the address you gave us.")), ev)
+    elif doc["looks_altered"] or doc["same_address_as_claimed"] == "unsure" or doc["confidence"] == "low":
+        _to_person(check, person, ev)
+    elif ev["name_match"] is not True:
+        # Bills are often in a landlord's or relative's name: a person looks rather than a hard fail.
+        _to_person(check, person, ev)
+    else:
+        _pass(check, ev)
+    audit.record(f"artisan.address_{check.status}", obj=profile, changes={"auto": True})
+    if check.status == VerificationCheck.Status.FAILED:
+        _tell(
+            profile,
+            _(
+                "Homesika: your address check didn't pass: %(note)s You can try again, or ask a "
+                "person to review it."
+            )
+            % {"note": check.note},
+            "artisan_check_failed",
+        )
+    refresh_status(profile)
+    return check.status
+
+
+@transaction.atomic
+def request_review(profile: ArtisanProfile, *, kind: str, request=None):
+    """NDPA: anyone refused by an automatic decision can ask for a person to look at it."""
+    check = VerificationCheck.objects.select_for_update().get(artisan=profile, kind=kind)
+    if check.status != VerificationCheck.Status.FAILED or not check.document:
+        raise serializers.ValidationError({"kind": [_("There's nothing to review for this check.")]})
+    check.status, check.review_requested_at = VerificationCheck.Status.PENDING, timezone.now()
+    check.note = str(_("A person at Homesika will review this (usually within 1 working day)."))
+    check.save(update_fields=["status", "review_requested_at", "note", "updated_at"])
+    audit.record(
+        "artisan.review_requested", actor=profile.user, obj=profile, changes={"kind": kind}, request=request
+    )
+    return check
+
+
+def housekeeping(now=None) -> dict:
+    """Hourly: retry automatic checks stuck while a service was down; delete ID and address photos
+    ARTISAN_DOCUMENT_RETENTION_DAYS after the check passed (type, last 4 digits and result are kept)."""
+    now = now or timezone.now()
+    counts = {"retried": 0, "deleted": 0}
+    stuck = VerificationCheck.objects.filter(
+        status=VerificationCheck.Status.PROCESSING, updated_at__lt=now - timedelta(minutes=10)
+    )
+    for check in stuck:
+        _queue("run_id_check" if check.kind == VerificationCheck.Kind.ID else "run_address_check", check.pk)
+        counts["retried"] += 1
+    old = VerificationCheck.objects.filter(
+        status=VerificationCheck.Status.PASSED,
+        checked_at__lt=now - timedelta(days=settings.ARTISAN_DOCUMENT_RETENTION_DAYS),
+        document_deleted_at=None,
+    ).exclude(document="")
+    for check in old:
+        check.document.delete(save=False)
+        check.document_deleted_at = now
+        check.save(update_fields=["document", "document_deleted_at", "updated_at"])
+        counts["deleted"] += 1
+    return counts
 
 
 @transaction.atomic

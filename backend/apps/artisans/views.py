@@ -12,12 +12,14 @@ from apps.orgs.permissions import OrgScopedMixin
 from . import services
 from .models import Trade, Voucher
 from .serializers import (
+    AddressProofSerializer,
     ApplySerializer,
     DirectoryArtisanSerializer,
     IdSubmitSerializer,
     MyArtisanSerializer,
     MyVoucherSerializer,
     PublicVoucherSerializer,
+    ReviewRequestSerializer,
     VoucherCreateSerializer,
     VoucherResponseSerializer,
 )
@@ -69,9 +71,41 @@ class SubmitIdView(APIView):
             profile,
             id_type=s.validated_data["id_type"],
             id_number=s.validated_data["id_number"],
+            date_of_birth=s.validated_data["date_of_birth"],
             document=s.validated_data.get("document"),
             request=request,
         )
+        profile.refresh_from_db()
+        return Response(MyArtisanSerializer(profile).data)
+
+
+class AddressProofView(APIView):
+    """A proof of address, read by AI and compared with the address they gave."""
+
+    parser_classes = [MultiPartParser, FormParser]
+    throttle_classes = [ArtisanWriteThrottle]
+
+    @extend_schema(request={"multipart/form-data": AddressProofSerializer}, responses=MyArtisanSerializer)
+    def post(self, request):
+        s = AddressProofSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        profile = _me(request)
+        services.submit_address_proof(profile, document=s.validated_data["document"], request=request)
+        profile.refresh_from_db()
+        return Response(MyArtisanSerializer(profile).data)
+
+
+class ReviewRequestView(APIView):
+    """Ask a person to look at a check that failed automatically (NDPA right to human review)."""
+
+    throttle_classes = [ArtisanWriteThrottle]
+
+    @extend_schema(request=ReviewRequestSerializer, responses=MyArtisanSerializer)
+    def post(self, request):
+        s = ReviewRequestSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        profile = _me(request)
+        services.request_review(profile, kind=s.validated_data["kind"], request=request)
         profile.refresh_from_db()
         return Response(MyArtisanSerializer(profile).data)
 

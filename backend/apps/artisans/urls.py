@@ -6,6 +6,8 @@ urls = [
     path("apply/", views.ApplyView.as_view(), name="artisan-apply"),
     path("me/", views.MyArtisanView.as_view(), name="artisan-me"),
     path("me/verification/id/", views.SubmitIdView.as_view(), name="artisan-id"),
+    path("me/verification/address/", views.AddressProofView.as_view(), name="artisan-address"),
+    path("me/verification/review/", views.ReviewRequestView.as_view(), name="artisan-review"),
     path("me/verification/vouchers/", views.VouchersView.as_view(), name="artisan-vouchers"),
     path("me/verification/vouchers/<uuid:pk>/", views.VoucherDetailView.as_view(), name="artisan-voucher"),
     path(

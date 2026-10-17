@@ -349,6 +349,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/ArtisanJob'
           description: ''
+  /api/v1/artisans/me/verification/address/:
+    post:
+      operationId: artisans_me_verification_address_create
+      description: A proof of address, read by AI and compared with the address they
+        gave.
+      tags:
+      - artisans
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AddressProof'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyArtisan'
+          description: ''
   /api/v1/artisans/me/verification/id/:
     post:
       operationId: artisans_me_verification_id_create
@@ -359,6 +381,34 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/IdSubmit'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyArtisan'
+          description: ''
+  /api/v1/artisans/me/verification/review/:
+    post:
+      operationId: artisans_me_verification_review_create
+      description: Ask a person to look at a check that failed automatically (NDPA
+        right to human review).
+      tags:
+      - artisans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
         required: true
       security:
       - jwtAuth: []
@@ -5676,6 +5726,16 @@ paths:
           description: ''
 components:
   schemas:
+    AddressProof:
+      type: object
+      properties:
+        document:
+          type: string
+          format: uri
+          description: A utility bill, bank statement or tenancy paper from the last
+            3 months.
+      required:
+      - document
     Apply:
       type: object
       properties:
@@ -5715,8 +5775,9 @@ components:
           nullable: true
         consent:
           type: boolean
-          description: They agree to the ID, guarantor and reference checks (NDPA
-            consent).
+          description: They agree to the NIN lookup, automated (AI) reading of their
+            documents, and the guarantor and reference checks, with the right to ask
+            for a person to review (NDPA consent).
       required:
       - address
       - consent
@@ -6186,7 +6247,18 @@ components:
           type: string
           format: date-time
           nullable: true
+        review_requested_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: The artisan asked a person to review an automatic result.
+        can_request_review:
+          type: boolean
+          readOnly: true
+          description: It failed automatically and a person can be asked to look at
+            it.
       required:
+      - can_request_review
       - kind
     Comment:
       type: object
@@ -6777,10 +6849,18 @@ components:
       type: object
       properties:
         id_type:
-          $ref: '#/components/schemas/IdTypeEnum'
+          allOf:
+          - $ref: '#/components/schemas/IdTypeEnum'
+          default: nin
         id_number:
           type: string
+          description: The NIN (11 digits) in nin mode.
           maxLength: 30
+        date_of_birth:
+          type: string
+          default: ''
+          description: YYYY-MM-DD (nin mode).
+          maxLength: 10
         document:
           type: string
           format: uri
@@ -6788,7 +6868,6 @@ components:
           description: A clear photo of the ID (required for review).
       required:
       - id_number
-      - id_type
     IdTypeEnum:
       enum:
       - nin
@@ -7378,6 +7457,11 @@ components:
           allOf:
           - $ref: '#/components/schemas/Requirements'
           readOnly: true
+        verification_mode:
+          type: string
+          readOnly: true
+          description: 'nin: NIN lookup and AI document checks; manual: Homesika staff
+            review.'
       required:
       - checks
       - display_name
@@ -7391,6 +7475,7 @@ components:
       - status
       - status_reason
       - trades
+      - verification_mode
       - verified_at
       - vouchers
     MyLease:
@@ -8282,6 +8367,11 @@ components:
           allOf:
           - $ref: '#/components/schemas/Requirements'
           readOnly: true
+        verification_mode:
+          type: string
+          readOnly: true
+          description: 'nin: NIN lookup and AI document checks; manual: Homesika staff
+            review.'
     PatchedOrganization:
       type: object
       properties:
@@ -9254,6 +9344,21 @@ components:
       - phone
       - references
       - references_needed
+    ReviewRequest:
+      type: object
+      properties:
+        kind:
+          $ref: '#/components/schemas/ReviewRequestKindEnum'
+      required:
+      - kind
+    ReviewRequestKindEnum:
+      enum:
+      - id
+      - address
+      type: string
+      description: |-
+        * `id` - ID check
+        * `address` - Address
     RoleEnum:
       enum:
       - owner
@@ -9913,13 +10018,15 @@ components:
     VerificationCheckStatusEnum:
       enum:
       - not_started
+      - processing
       - pending
       - passed
       - failed
       type: string
       description: |-
         * `not_started` - Not started
-        * `pending` - Waiting for review
+        * `processing` - Being checked automatically
+        * `pending` - Waiting for a person to review
         * `passed` - Passed
         * `failed` - Failed
     Verify:

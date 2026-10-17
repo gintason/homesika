@@ -273,8 +273,14 @@ BILLS_STATUS_POLL_SECONDS = env.int("BILLS_STATUS_POLL_SECONDS", default=30)
 BILLS_MAX_STATUS_CHECKS = env.int("BILLS_MAX_STATUS_CHECKS", default=12)
 
 # Maintenance and artisans (Phase 4).
-# "manual": staff compare a photo of the ID in the admin. "mock": labelled, never in production.
-ID_VERIFICATION_PROVIDER = env("ID_VERIFICATION_PROVIDER", default="manual")
+# "nin" (default): NIN looked up through NIN_PROVIDER + the ID photo and proof of address read by AI, with
+# fixed rules deciding and anything unclear going to a person. "manual": staff review everything.
+ID_VERIFICATION_PROVIDER = env("ID_VERIFICATION_PROVIDER", default="nin")
+# The licensed NIN lookup provider. Only "mock" exists until one is chosen (apps/artisans/nin.py).
+NIN_PROVIDER = env("NIN_PROVIDER", default="mock")
+ASSISTANT_EFFORT_VERIFY = env("ASSISTANT_EFFORT_VERIFY", default="medium")
+ARTISAN_DOCUMENT_RETENTION_DAYS = env.int("ARTISAN_DOCUMENT_RETENTION_DAYS", default=90)
+ARTISAN_PROOF_MAX_AGE_DAYS = env.int("ARTISAN_PROOF_MAX_AGE_DAYS", default=92)  # "last 3 months"
 ARTISAN_VOUCHER_LINK_DAYS = env.int("ARTISAN_VOUCHER_LINK_DAYS", default=14)
 MAINTENANCE_MAX_PHOTOS = env.int("MAINTENANCE_MAX_PHOTOS", default=6)
 MAINTENANCE_OFFER_HOURS = env.int("MAINTENANCE_OFFER_HOURS", default=24)  # artisan must accept within
@@ -362,6 +368,10 @@ CELERY_BEAT_SCHEDULE = {
     "bills-reconcile": {
         "task": "apps.bills.tasks.reconcile_bills",
         "schedule": 5 * 60.0,
+    },
+    "artisans-housekeeping": {
+        "task": "apps.artisans.tasks.housekeeping",
+        "schedule": 60 * 60.0,
     },
     "maintenance-housekeeping": {
         "task": "apps.maintenance.tasks.housekeeping",
