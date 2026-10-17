@@ -340,6 +340,168 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /api/v1/bills/{reference}/status/:
+    get:
+      operationId: bills_status_retrieve
+      description: 'For the page the gateway returns to (no login): status only, never
+        the token.'
+      parameters:
+      - in: path
+        name: reference
+        schema:
+          type: string
+        required: true
+      tags:
+      - bills
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillStatus'
+          description: ''
+  /api/v1/bills/catalogue/:
+    get:
+      operationId: bills_catalogue_list
+      description: Billers and plans. ?category=airtime|data|cable_tv|electricity
+      tags:
+      - bills
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Biller'
+          description: ''
+  /api/v1/bills/orders/:
+    get:
+      operationId: bills_orders_list
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - bills
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrderList'
+          description: ''
+    post:
+      operationId: bills_orders_create
+      tags:
+      - bills
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrder'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateOrder'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateOrder'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/bills/orders/{id}/:
+    get:
+      operationId: bills_orders_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - bills
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/bills/orders/{id}/receipt/:
+    get:
+      operationId: bills_orders_receipt_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - bills
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/bills/verify/:
+    post:
+      operationId: bills_verify_create
+      description: Look up a meter or smartcard owner before paying.
+      tags:
+      - bills
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BillVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BillVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BillVerify'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillCustomer'
+          description: ''
   /api/v1/listings/:
     get:
       operationId: listings_list
@@ -4307,28 +4469,123 @@ components:
       - escalated
       - messages
       - pending_action
-    CategoryEnum:
+    BillCategoryEnum:
       enum:
-      - repairs
-      - utilities
-      - cleaning
-      - security
-      - agent_fee
-      - legal
-      - tax
-      - insurance
-      - other
+      - airtime
+      - data
+      - cable_tv
+      - electricity
       type: string
       description: |-
-        * `repairs` - Repairs and maintenance
-        * `utilities` - Utilities
-        * `cleaning` - Cleaning and waste
-        * `security` - Security
-        * `agent_fee` - Agent / management fee
-        * `legal` - Legal and professional
-        * `tax` - Taxes and levies
-        * `insurance` - Insurance
-        * `other` - Other
+        * `airtime` - Airtime
+        * `data` - Data
+        * `cable_tv` - Cable TV
+        * `electricity` - Electricity
+    BillCustomer:
+      type: object
+      properties:
+        customer_id:
+          type: string
+        name:
+          type: string
+        details:
+          type: object
+          additionalProperties: {}
+      required:
+      - customer_id
+      - details
+      - name
+    BillOrderStatusEnum:
+      enum:
+      - awaiting_payment
+      - processing
+      - delivered
+      - refund_pending
+      - refunded
+      - expired
+      type: string
+      description: |-
+        * `awaiting_payment` - Waiting for payment
+        * `processing` - Paid, delivering
+        * `delivered` - Delivered
+        * `refund_pending` - Couldn't deliver, refunding
+        * `refunded` - Refunded
+        * `expired` - Payment not completed
+    BillStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        receipt_number:
+          type: string
+      required:
+      - receipt_number
+      - status
+    BillVerify:
+      type: object
+      properties:
+        biller:
+          type: string
+          format: uuid
+        plan:
+          type: string
+          format: uuid
+          nullable: true
+        customer_id:
+          type: string
+          maxLength: 40
+      required:
+      - biller
+      - customer_id
+    Biller:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        category:
+          $ref: '#/components/schemas/BillCategoryEnum'
+        code:
+          type: string
+          description: Our code, e.g. mtn, dstv, ikeja-electric.
+          maxLength: 60
+          pattern: ^[-a-zA-Z0-9_]+$
+        name:
+          type: string
+          maxLength: 120
+        customer_label:
+          type: string
+          maxLength: 60
+        requires_verification:
+          type: boolean
+          description: Look up the meter/smartcard owner first.
+        min_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+          nullable: true
+        max_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+          nullable: true
+        plans:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          readOnly: true
+      required:
+      - category
+      - code
+      - id
+      - max_amount
+      - min_amount
+      - name
+      - plans
     ChangeLoginPIN:
       type: object
       properties:
@@ -4659,6 +4916,31 @@ components:
         * `bot` - Assistant replying
         * `handoff` - A person has taken over
         * `closed` - Closed
+    CreateOrder:
+      type: object
+      properties:
+        biller:
+          type: string
+          format: uuid
+        plan:
+          type: string
+          format: uuid
+          nullable: true
+        customer_id:
+          type: string
+          maxLength: 40
+        amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          nullable: true
+        unit:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - biller
+      - customer_id
     CurrencyEnum:
       enum:
       - NGN
@@ -4818,7 +5100,7 @@ components:
           format: uuid
           nullable: true
         category:
-          $ref: '#/components/schemas/CategoryEnum'
+          $ref: '#/components/schemas/ExpenseCategoryEnum'
         amount:
           type: string
           format: decimal
@@ -4847,6 +5129,28 @@ components:
       - id
       - property_name
       - spent_on
+    ExpenseCategoryEnum:
+      enum:
+      - repairs
+      - utilities
+      - cleaning
+      - security
+      - agent_fee
+      - legal
+      - tax
+      - insurance
+      - other
+      type: string
+      description: |-
+        * `repairs` - Repairs and maintenance
+        * `utilities` - Utilities
+        * `cleaning` - Cleaning and waste
+        * `security` - Security
+        * `agent_fee` - Agent / management fee
+        * `legal` - Legal and professional
+        * `tax` - Taxes and levies
+        * `insurance` - Insurance
+        * `other` - Other
     ForgotPin:
       type: object
       properties:
@@ -5345,6 +5649,16 @@ components:
           type: string
           format: uuid
           readOnly: true
+        unit:
+          type: string
+          format: uuid
+          readOnly: true
+        meter_number:
+          type: string
+          readOnly: true
+        disco:
+          type: string
+          readOnly: true
         unit_label:
           type: string
         property_name:
@@ -5378,15 +5692,18 @@ components:
         status:
           $ref: '#/components/schemas/LeaseStatusEnum'
       required:
+      - disco
       - end_date
       - id
       - landlord
       - landlord_phone
+      - meter_number
       - property_address
       - property_name
       - rent_amount
       - service_charge_amount
       - start_date
+      - unit
       - unit_label
     OTP:
       type: object
@@ -5404,6 +5721,108 @@ components:
           type: boolean
       required:
       - opted_in
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reference:
+          type: string
+          maxLength: 40
+        category:
+          $ref: '#/components/schemas/BillCategoryEnum'
+        biller:
+          type: string
+          format: uuid
+        biller_name:
+          type: string
+          readOnly: true
+        plan:
+          type: string
+          format: uuid
+          nullable: true
+        plan_name:
+          type: string
+          readOnly: true
+        customer_id:
+          type: string
+          description: Phone, meter or smartcard number.
+          maxLength: 40
+        customer_name:
+          type: string
+          maxLength: 150
+        amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+        fee:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+        total:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        status:
+          $ref: '#/components/schemas/BillOrderStatusEnum'
+        checkout_url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        token:
+          type: string
+          readOnly: true
+        units:
+          type: string
+          maxLength: 40
+        receipt_number:
+          type: string
+          maxLength: 20
+        failure_reason:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        paid_at:
+          type: string
+          format: date-time
+          nullable: true
+        delivered_at:
+          type: string
+          format: date-time
+          nullable: true
+        refunded_at:
+          type: string
+          format: date-time
+          nullable: true
+        expires_at:
+          type: string
+          format: date-time
+      required:
+      - amount
+      - biller
+      - biller_name
+      - category
+      - created_at
+      - customer_id
+      - expires_at
+      - fee
+      - id
+      - plan_name
+      - token
+      - total
     Organization:
       type: object
       properties:
@@ -5572,6 +5991,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Listing'
+    PaginatedOrderList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
     PaginatedPaymentLinkList:
       type: object
       required:
@@ -5629,7 +6067,7 @@ components:
           format: uuid
           nullable: true
         category:
-          $ref: '#/components/schemas/CategoryEnum'
+          $ref: '#/components/schemas/ExpenseCategoryEnum'
         amount:
           type: string
           format: decimal

@@ -166,6 +166,8 @@ def get_my_lease(p: Principal, ctx) -> dict:
                 "address": x.unit.property.address,
                 "landlord": x.organization.name,
                 "landlord_phone": x.organization.phone_number,
+                "meter_number": x.unit.meter_number,
+                "disco": x.unit.disco,
                 "rent": money(x.rent_amount, x.currency),
                 "frequency": x.rent_frequency,
                 "service_charge": money(x.service_charge_amount, x.currency),
@@ -599,6 +601,144 @@ def escalate_to_human(p: Principal, ctx, reason: str, summary: str) -> dict:
     }
 
 
+# ---- Bills (airtime, data, TV, electricity): pay-per-transaction by link ----------------------------------
+
+
+def _biller(category: str, biller_code: str):
+    from apps.bills.models import Biller
+
+    b = Biller.objects.filter(category=category, code=biller_code, is_active=True).first()
+    if b is None:
+        raise ToolError("Unknown service. Use list_bill_options to see the codes.")
+    return b
+
+
+def _plan(biller, plan_code):
+    if not plan_code:
+        return None
+    plan = biller.plans.filter(code=plan_code, is_active=True).first()
+    if plan is None:
+        raise ToolError("Unknown plan. Use list_bill_options to see the plan codes.")
+    return plan
+
+
+def list_bill_options(p: Principal, ctx, category: str, biller_code) -> dict:
+    from apps.bills.models import Biller
+
+    qs = Biller.objects.filter(category=category, is_active=True).prefetch_related("plans")
+    if biller_code:
+        qs = qs.filter(code=biller_code)
+    return {
+        "billers": [
+            {
+                "biller_code": b.code,
+                "name": b.name,
+                "number_label": b.customer_label,
+                "min_amount": money(b.min_amount) if b.min_amount else None,
+                "max_amount": money(b.max_amount) if b.max_amount else None,
+                "plans": [
+                    {
+                        "plan_code": x.code,
+                        "name": x.name,
+                        "price": money(x.price) if x.price else "you choose the amount",
+                    }
+                    for x in b.plans.all()
+                    if x.is_active
+                ][: (25 if biller_code else 5)],
+            }
+            for b in qs[:15]
+        ]
+    }
+
+
+def check_meter_or_card(p: Principal, ctx, category: str, biller_code: str, plan_code, number: str) -> dict:
+    from apps.bills import services as bills
+
+    biller = _biller(category, biller_code)
+    plan = _plan(biller, plan_code)
+    try:
+        cid = bills.normalise_customer(biller, number)
+        found = bills.verify_customer(biller, plan, cid)
+    except Exception as exc:
+        raise ToolError(str(getattr(exc, "detail", "") or exc)[:200]) from exc
+    return {"number": cid, "name": found["name"], "details": found.get("details", {})}
+
+
+def _bill_quote(category, biller_code, plan_code, number, amount):
+    from apps.bills import services as bills
+
+    biller = _biller(category, biller_code)
+    plan = _plan(biller, plan_code)
+    try:
+        cid = bills.normalise_customer(biller, number)
+        kobo = (
+            to_minor(Decimal(str(amount).replace(",", "").replace("₦", "").strip()), "NGN")
+            if amount
+            else None
+        )
+        value, fee, total = bills.quote(biller, plan, kobo)
+    except (InvalidOperation, ValueError) as exc:
+        raise ToolError("Give the amount in naira, e.g. 1000.") from exc
+    except Exception as exc:
+        raise ToolError(str(getattr(exc, "detail", "") or exc)[:200]) from exc
+    return biller, plan, cid, value, fee, total
+
+
+def buy_bill(p: Principal, ctx, category: str, biller_code: str, plan_code, number: str, amount) -> dict:
+    biller, plan, cid, value, fee, total = _bill_quote(category, biller_code, plan_code, number, amount)
+    what = plan.name if plan and plan.price else f"{money(value)} NGN"
+    fee_text = f" + {money(fee)} NGN fee" if fee else ""
+    return ctx.propose(
+        "buy_bill",
+        {
+            "category": category,
+            "biller_code": biller_code,
+            "plan_code": plan_code,
+            "number": cid,
+            "amount": str(to_major(value, "NGN")) if not (plan and plan.price) else None,
+        },
+        f"Buy {biller.name} {what} for {cid}{fee_text}. Total {money(total)} NGN, paid by a secure link",
+    )
+
+
+def run_buy_bill(p: Principal, ctx, category: str, biller_code: str, plan_code, number: str, amount) -> dict:
+    from apps.bills import services as bills
+
+    biller, plan, cid, value, _fee, _total = _bill_quote(category, biller_code, plan_code, number, amount)
+    order = bills.create_order(
+        user=p.user,
+        phone=p.phone,
+        biller=biller,
+        plan=plan,
+        customer_id=cid,
+        amount=None if plan and plan.price else value,
+        channel=ctx.channel_source,
+    )
+    order = bills.start_checkout(order)
+    return {"pay_url": order.checkout_url, "total": money(order.total), "what": bills.describe(order)}
+
+
+def my_bill_orders(p: Principal, ctx) -> dict:
+    from apps.bills.models import Order
+
+    qs = Order.objects.filter(phone_number=p.phone).select_related("biller", "plan")[:8]
+    return {
+        "orders": [
+            {
+                "reference": o.reference,
+                "what": f"{o.biller.name} {o.plan.name if o.plan_id else ''}".strip(),
+                "number": o.customer_id,
+                "total": money(o.total),
+                "status": o.status,
+                "receipt_number": o.receipt_number or None,
+                "token": o.token if o.status == "delivered" else None,
+                "date": str(timezone.localtime(o.created_at).date()),
+            }
+            for o in qs
+        ]
+    }
+
+
 # ---- Registry ------------------------------------------------------------------------------------
 
 ORG = {"type": "string", "description": "organization_id from the context"}
@@ -608,6 +748,54 @@ STAFF_ROLES = {"landlord", "staff"}
 ALL = {"*"}
 
 TOOLS: list[Tool] = [
+    Tool(
+        "list_bill_options",
+        "Networks, TV services and electricity companies with their plan codes and "
+        "prices (for buying airtime, data, cable TV or electricity).",
+        {
+            "category": {"type": "string", "enum": ["airtime", "data", "cable_tv", "electricity"]},
+            "biller_code": NULL_STR,
+        },
+        ALL,
+        list_bill_options,
+    ),
+    Tool(
+        "check_meter_or_card",
+        "Look up the owner of a meter or TV smartcard before buying. For electricity, "
+        "plan_code is prepaid or postpaid.",
+        {
+            "category": {"type": "string", "enum": ["airtime", "data", "cable_tv", "electricity"]},
+            "biller_code": {"type": "string"},
+            "plan_code": NULL_STR,
+            "number": {"type": "string"},
+        },
+        ALL,
+        check_meter_or_card,
+    ),
+    Tool(
+        "buy_bill",
+        "Propose buying airtime, data, cable TV or electricity (the person must confirm, "
+        "then pays by a secure link). amount in naira for airtime and electricity; "
+        "null when the plan has a price.",
+        {
+            "category": {"type": "string", "enum": ["airtime", "data", "cable_tv", "electricity"]},
+            "biller_code": {"type": "string"},
+            "plan_code": NULL_STR,
+            "number": {"type": "string"},
+            "amount": NULL_STR,
+        },
+        ALL,
+        buy_bill,
+        action=True,
+    ),
+    Tool(
+        "my_bill_orders",
+        "The person's recent airtime, data, TV and electricity orders, with status, "
+        "receipts and electricity tokens.",
+        {},
+        ALL,
+        my_bill_orders,
+    ),
     Tool(
         "search_help",
         "Search Homesika's help articles (how things work, fees, policies). Use before "
@@ -754,6 +942,7 @@ TOOLS: list[Tool] = [
 ]
 BY_NAME = {t.name: t for t in TOOLS}
 RUNNERS = {
+    "buy_bill": run_buy_bill,
     "create_my_payment_link": run_create_my_payment_link,
     "send_payment_link": run_send_payment_link,
     "request_viewing": run_request_viewing,

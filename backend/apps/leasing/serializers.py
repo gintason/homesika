@@ -187,11 +187,17 @@ class MyLeaseSerializer(serializers.ModelSerializer):
     property_address = serializers.CharField(source="unit.property.address")
     landlord = serializers.CharField(source="organization.name")
     landlord_phone = serializers.CharField(source="organization.phone_number")
+    unit = serializers.UUIDField(source="unit_id", read_only=True)
+    meter_number = serializers.CharField(source="unit.meter_number", read_only=True)
+    disco = serializers.CharField(source="unit.disco", read_only=True)
 
     class Meta:
         model = Lease
         fields = (
             "id",
+            "unit",
+            "meter_number",
+            "disco",
             "unit_label",
             "property_name",
             "property_address",

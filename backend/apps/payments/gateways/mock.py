@@ -60,6 +60,17 @@ class MockGateway:
             raw={"mock": True, **tx},
         )
 
+    def refund(self, reference: str, amount: int) -> str:
+        tx = cache.get(f"mockpay:{reference}") or {}
+        if tx.get("status") != "success":
+            from .base import GatewayError
+
+            raise GatewayError("mock: nothing to refund", retryable=False)
+        tx.update(refunded=amount)
+        cache.set(f"mockpay:{reference}", tx, timeout=7 * 86400)
+        logger.warning("MOCK refund of %s for %s (no real money)", amount, reference)
+        return f"MOCKREFUND-{reference}"
+
     def verify_signature(self, raw_body: bytes, headers) -> bool:
         expected = hmac.new(SECRET, raw_body, hashlib.sha256).hexdigest()
         return hmac.compare_digest(headers.get("x-mock-signature", ""), expected)

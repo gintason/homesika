@@ -55,10 +55,15 @@ class PaystackGateway:
             "reference": req.reference,
             "callback_url": req.callback_url,
             "metadata": {**req.metadata, "description": req.description},
-            "subaccount": req.subaccount_code,  # TODO(verify)
-            "transaction_charge": req.platform_fee,  # TODO(verify): flat kobo to Homesika's main account
-            "bearer": "subaccount",  # TODO(verify): landlord bears Paystack's fee
         }
+        if req.subaccount_code:  # rent and dues: settle to the landlord's subaccount
+            payload.update(
+                {
+                    "subaccount": req.subaccount_code,  # TODO(verify)
+                    "transaction_charge": req.platform_fee,  # TODO(verify): flat kobo to Homesika's account
+                    "bearer": "subaccount",  # TODO(verify): landlord bears Paystack's fee
+                }
+            )
         body = http(
             "POST",
             f"{self.base}/transaction/initialize",
@@ -105,6 +110,18 @@ class PaystackGateway:
                 )
             },
         )
+
+    def refund(self, reference: str, amount: int) -> str:
+        """Refund a transaction (bills that couldn't be delivered). TODO(verify) POST /refund fields."""
+        body = http(
+            "POST",
+            f"{self.base}/refund",
+            headers=self._headers(),
+            json={"transaction": reference, "amount": amount},
+            provider=self.name,
+        )
+        data = body.get("data") or {}
+        return str(data.get("id") or data.get("reference") or reference)
 
     def verify_signature(self, raw_body: bytes, headers) -> bool:
         given = headers.get("x-paystack-signature", "")

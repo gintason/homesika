@@ -55,6 +55,14 @@ envVarGroups:
         sync: false
       - key: ANTHROPIC_MODEL
         value: claude-opus-5-5
+      - key: BILLS_PROVIDERS
+        value: mock                    # change to "vtung,flutterwave" once VTU.ng is funded and keys are set
+      - key: VTUNG_USERNAME
+        sync: false
+      - key: VTUNG_PASSWORD
+        sync: false
+      - key: VTUNG_USER_PIN
+        sync: false
       - key: S3_BUCKET
         sync: false                    # listing photos; Render disks are wiped on deploy
       - key: S3_ENDPOINT_URL

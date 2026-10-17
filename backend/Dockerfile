@@ -24,7 +24,7 @@ COPY --chown=homesika:homesika . .
 # Static files are collected with production settings at build time. Placeholder values only: the real
 # ones (secrets, gateways, providers) come from the host's environment when the container runs.
 RUN DJANGO_SECRET_KEY=build-only-not-a-secret DATABASE_URL=sqlite:////tmp/build.db \
-    PAYMENT_GATEWAYS=paystack ASSISTANT_PROVIDER=anthropic WHATSAPP_PROVIDER=off \
+    PAYMENT_GATEWAYS=paystack ASSISTANT_PROVIDER=anthropic WHATSAPP_PROVIDER=off BILLS_PROVIDERS=vtung \
     python manage.py collectstatic --noinput \
     && rm -f /tmp/build.db && chown -R homesika:homesika /app
 USER homesika

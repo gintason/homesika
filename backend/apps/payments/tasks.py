@@ -12,7 +12,12 @@ def process_gateway_event(self, event_id: str) -> str:
         return event.status
     event.attempts += 1
     try:
-        payment = services.confirm(event.gateway, event.reference)
+        if event.reference.startswith("BIL"):  # bills settle to Homesika, handled by the bills app
+            from apps.bills import services as bills
+
+            payment = bills.confirm_payment(event.gateway, event.reference)
+        else:
+            payment = services.confirm(event.gateway, event.reference)
         event.status = GatewayEvent.Status.PROCESSED if payment else GatewayEvent.Status.IGNORED
         event.processed_at, event.last_error = timezone.now(), ""
         event.save(update_fields=["status", "processed_at", "last_error", "attempts", "updated_at"])

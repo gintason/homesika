@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.messaging",
     "apps.listings",
     "apps.assistant",
+    "apps.bills",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -159,6 +160,7 @@ REST_FRAMEWORK = {
         "pin": env("THROTTLE_PIN", default="10/hour"),
         "pay": env("THROTTLE_PAY", default="30/min"),
         "listing": env("THROTTLE_LISTING", default="30/min"),
+        "bills": env("THROTTLE_BILLS", default="30/min"),
     },
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardCursorPagination",
 }
@@ -231,6 +233,20 @@ ASSISTANT_PLATFORM_DAILY_CAP_USD = env("ASSISTANT_PLATFORM_DAILY_CAP_USD", defau
 ASSISTANT_RATE_LIMIT = env("ASSISTANT_RATE_LIMIT", default="20/600")  # messages per seconds, per sender
 ASSISTANT_PRICES = env.json("ASSISTANT_PRICES", default={})
 
+# Bills (airtime, data, TV, electricity). Providers in failover order; "mock" for development only.
+BILLS_PROVIDERS = env("BILLS_PROVIDERS", default="mock")
+VTUNG_BASE_URL = env("VTUNG_BASE_URL", default="https://vtu.ng/wp-json")
+VTUNG_USERNAME = env("VTUNG_USERNAME", default="")
+VTUNG_PASSWORD = env("VTUNG_PASSWORD", default="")
+VTUNG_USER_PIN = env("VTUNG_USER_PIN", default="")  # signs VTU.ng webhooks
+BILLS_DATA_MARKUP_PERCENT = env.float("BILLS_DATA_MARKUP_PERCENT", default=0.0)
+BILLS_TV_MARKUP_PERCENT = env.float("BILLS_TV_MARKUP_PERCENT", default=0.0)
+BILLS_FEES = env.json("BILLS_FEES", default={})  # kobo per category, e.g. {"electricity": 10000}
+BILLS_DAILY_LIMIT = env.int("BILLS_DAILY_LIMIT", default=200_000_00)  # kobo per person per 24h
+BILLS_PAYMENT_TTL_MINUTES = env.int("BILLS_PAYMENT_TTL_MINUTES", default=60)
+BILLS_STATUS_POLL_SECONDS = env.int("BILLS_STATUS_POLL_SECONDS", default=30)
+BILLS_MAX_STATUS_CHECKS = env.int("BILLS_MAX_STATUS_CHECKS", default=12)
+
 PAYMENT_GATEWAYS = env("PAYMENT_GATEWAYS", default="mock")
 PAYMENT_LINK_TTL_HOURS = env.int("PAYMENT_LINK_TTL_HOURS", default=72)
 # Homesika's fee per rent/dues payment (percent, capped; kobo). 0 = everything settles to the landlord.
@@ -265,6 +281,8 @@ SPECTACULAR_SETTINGS = {
         "PendingActionStatusEnum": "apps.assistant.models.PendingAction.Status",
         "ConversationChannelEnum": "apps.messaging.models.Conversation.Channel",
         "ChatChannelEnum": [("app", "app"), ("web", "web")],
+        "BillCategoryEnum": "apps.bills.models.Category",
+        "BillOrderStatusEnum": "apps.bills.models.Order.Status",
         "OtpChannelEnum": [("sms", "SMS"), ("email", "Email")],
         "ManualPaymentChannelEnum": [
             ("cash", "Cash"),
@@ -294,6 +312,10 @@ CELERY_BEAT_SCHEDULE = {
     "payments-daily-reconciliation": {
         "task": "apps.payments.tasks.daily_reconciliation",
         "schedule": crontab(hour=6, minute=7),
+    },
+    "bills-reconcile": {
+        "task": "apps.bills.tasks.reconcile_bills",
+        "schedule": 5 * 60.0,
     },
     "payments-rent-reminders": {
         "task": "apps.payments.tasks.send_rent_reminders",

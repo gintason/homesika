@@ -6,6 +6,8 @@ from apps.accounting.urls import org_urls as accounting_org_urls
 from apps.accounts.urls import auth_urls, me_urls
 from apps.assistant.urls import org_urls as assistant_org_urls
 from apps.assistant.urls import urls as assistant_urls
+from apps.bills import views as bill_views
+from apps.bills.urls import urls as bill_urls
 from apps.core import views as core_views
 from apps.leasing.urls import me_urls as my_leasing_urls
 from apps.leasing.urls import org_urls as leasing_org_urls
@@ -34,6 +36,7 @@ api_v1 = [
     path("listings/", include(public_listing_urls)),
     path("orgs/<uuid:org_id>/", include(assistant_org_urls)),
     path("assistant/", include(assistant_urls)),
+    path("bills/", include(bill_urls)),
     path("me/", include(my_messaging_urls)),
     path("pay/", include(pay_urls)),
     path("receipts/", include(receipt_urls)),
@@ -44,6 +47,7 @@ urlpatterns = [
     path("health/ready", core_views.ready, name="health-ready"),
     path("webhooks/payments/<str:gateway_name>/", payment_views.gateway_webhook, name="payment-webhook"),
     path("webhooks/whatsapp/", messaging_views.whatsapp_webhook, name="whatsapp-webhook"),
+    path("webhooks/bills/vtung/", bill_views.vtung_webhook, name="vtung-webhook"),
     path(settings.ADMIN_URL, admin.site.urls),
     path("api/v1/", include((api_v1, "v1"))),
 ]

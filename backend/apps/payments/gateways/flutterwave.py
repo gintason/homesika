@@ -60,15 +60,16 @@ class FlutterwaveGateway:
             "customer": {"email": req.email, "phonenumber": req.phone, "name": req.name},
             "customizations": {"title": "Homesika", "description": req.description[:100]},
             "meta": req.metadata,
+        }
+        if req.subaccount_code:
             # TODO(verify): split so the landlord's subaccount gets everything except Homesika's flat fee.
-            "subaccounts": [
+            payload["subaccounts"] = [
                 {
                     "id": req.subaccount_code,
                     "transaction_charge_type": "flat_subaccount",
                     "transaction_charge": str(to_major(req.amount - req.platform_fee, req.currency)),
                 }
-            ],
-        }
+            ]
         body = http(
             "POST", f"{self.base}/payments", headers=self._headers(), json=payload, provider=self.name
         )
@@ -113,6 +114,28 @@ class FlutterwaveGateway:
                 )
             },
         )
+
+    def refund(self, reference: str, amount: int) -> str:
+        """Refund by tx_ref: look up the transaction id, then refund it. TODO(verify) both endpoints."""
+        body = http(
+            "GET",
+            f"{self.base}/transactions/verify_by_reference",
+            headers=self._headers(),
+            params={"tx_ref": reference},
+            provider=self.name,
+        )
+        tx_id = (body.get("data") or {}).get("id")
+        if not tx_id:
+            raise GatewayError("flutterwave: transaction not found for refund", retryable=False)
+        currency = (body.get("data") or {}).get("currency") or "NGN"
+        resp = http(
+            "POST",
+            f"{self.base}/transactions/{tx_id}/refund",
+            headers=self._headers(),
+            json={"amount": str(to_major(amount, currency))},
+            provider=self.name,
+        )
+        return str((resp.get("data") or {}).get("id") or tx_id)
 
     def verify_signature(self, raw_body: bytes, headers) -> bool:
         given = headers.get("verif-hash", "")

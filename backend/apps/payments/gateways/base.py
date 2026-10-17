@@ -28,7 +28,7 @@ class CheckoutRequest:
     phone: str
     name: str
     callback_url: str
-    subaccount_code: str
+    subaccount_code: str  # "" = settle to Homesika's own account (bills)
     platform_fee: int  # minor units kept by Homesika (0 = everything settles to the landlord)
     description: str = ""
     metadata: dict = field(default_factory=dict)
@@ -67,6 +67,8 @@ class PaymentGateway(Protocol):
     def initialize(self, req: CheckoutRequest) -> Checkout: ...
 
     def verify(self, reference: str) -> VerifiedTransaction: ...
+
+    def refund(self, reference: str, amount: int) -> str: ...
 
     def verify_signature(self, raw_body: bytes, headers) -> bool: ...
 

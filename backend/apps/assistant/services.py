@@ -95,6 +95,16 @@ DONE = {
         "en": "Done. I sent {sent_to} a payment link for ₦{amount}.",
         "pcm": "E don go. I don send {sent_to} payment link for ₦{amount}.",
     },
+    "buy_bill": {
+        "en": (
+            "Pay {total} NGN here to complete {what}: {pay_url}\nIt's delivered as soon as "
+            "the payment is confirmed. If it can't be delivered, you're refunded automatically."
+        ),
+        "pcm": (
+            "Pay {total} NGN for here make {what} enter: {pay_url}\nE go deliver once "
+            "payment confirm. If e no fit deliver, your money go return by itself."
+        ),
+    },
     "request_viewing": {
         "en": "Your viewing is booked for {when}. Address: {address}. Contact: {contact}.",
         "pcm": "Your viewing don book for {when}. Address: {address}. Contact: {contact}.",

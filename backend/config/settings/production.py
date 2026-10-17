@@ -36,6 +36,8 @@ if ENVIRONMENT == "production" and "mock" in PAYMENT_GATEWAYS:  # noqa: F405
 # The mock assistant and mock WhatsApp reply "MOCK:" / send nothing: never to real users.
 if ENVIRONMENT == "production" and ASSISTANT_PROVIDER == "mock":  # noqa: F405
     raise ImproperlyConfigured("ASSISTANT_PROVIDER must not be 'mock' in production.")
+if ENVIRONMENT == "production" and "mock" in BILLS_PROVIDERS:  # noqa: F405
+    raise ImproperlyConfigured("BILLS_PROVIDERS must not include 'mock' in production.")
 if ENVIRONMENT == "production" and WHATSAPP_PROVIDER == "mock":  # noqa: F405
     raise ImproperlyConfigured("WHATSAPP_PROVIDER must be 'cloud' or 'off' in production.")
 if SENTRY_DSN:
