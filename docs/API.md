@@ -102,18 +102,26 @@ drf-spectacular at `/api/v1/schema/`, with docs at `/api/v1/docs/` (non-producti
 | POST | `/bills/purchases/` | Create purchase → gateway checkout (exact amount, no balance) |
 | GET | `/bills/purchases/`, `/{ref}/` | History and status, token/receipt |
 
-## Module D: maintenance and artisans [Phase 4]
+## Module D: maintenance and artisans [Phase 4, built]
 
 | Method | Path | Purpose |
 |---|---|---|
-| POST | `/me/tickets/` | Tenant raises ticket (+ photos) |
-| GET | `/me/tickets/`, `/orgs/{org}/tickets/` | Ticket lists |
-| POST | `/orgs/{org}/tickets/{id}/approve/` · `/reject/` · `/assign/` | Landlord actions |
-| POST | `/me/tickets/{id}/confirm/` · `/rate/` | Tenant confirms the job is done, then rates it |
-| POST | `/artisans/apply/` | Artisan onboarding |
-| POST | `/artisans/me/verification/…` | ID check, guarantors, references |
-| GET/POST | `/artisans/me/jobs/`, `…/{id}/accept/` · `/complete/` | Artisan job flow |
-| GET | `/orgs/{org}/artisans/?trade=plumber&area=lekki` | Find verified artisans |
+| GET/POST | `/me/tickets/` | My repair requests (`?status=all`, default; `open`, `closed`); report one for an active lease (`Idempotency-Key`) |
+| GET | `/me/tickets/{id}/` | One request, with `can` (what I may do next) |
+| POST | `/me/tickets/{id}/photos/` | Add a photo (multipart `image`; re-encoded, EXIF removed) |
+| POST | `/me/tickets/{id}/cancel/` · `/confirm/` · `/reopen/` · `/rate/` · `/comments/` | Tenant actions |
+| GET/POST | `/orgs/{org}/tickets/` | Staff list (`?status=open` default, `closed`, `all` or one status; `?property=`, `?q=`); log a repair (approved at once) |
+| POST | `/orgs/{org}/tickets/{id}/approve/` · `/reject/` | Landlord decision (`maintenance.approve`: owner, manager) |
+| POST | `/orgs/{org}/tickets/{id}/assign/` · `/resolve/` · `/cancel/` · `/confirm/` · `/comments/` · `/photos/` | Staff actions (`maintenance.manage`); comments can be `internal` |
+| GET | `/orgs/{org}/artisans/?trade=plumbing&area=lekki` | Verified, available artisans; ones this landlord used before first |
+| POST | `/artisans/apply/` | Sign up (needs `consent`) |
+| GET/PATCH | `/artisans/me/` | My profile, checks and badge progress (`requirements`) |
+| POST | `/artisans/me/verification/id/` | ID type, number and photo (multipart) |
+| POST/DELETE | `/artisans/me/verification/vouchers/` · `/{id}/` · `/{id}/resend/` | Guarantors and references (SMS link) |
+| GET/POST | `/vouch/{token}/` | Public page for a guarantor or reference: see who's asking, confirm or decline |
+| GET | `/artisans/me/jobs/?status=active` (or `history`) · `/{id}/` | My jobs (address and tenant contact only after accepting) |
+| POST | `/artisans/me/jobs/{id}/accept/` · `/decline/` · `/schedule/` · `/start/` · `/complete/` · `/photos/` · `/comments/` | Artisan job flow |
+| GET | `/files/{signed-token}/` | A private photo or ID document behind a 15-minute signed link |
 
 ## Module E: estates and security [Phase 5]
 

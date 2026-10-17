@@ -100,6 +100,26 @@ Staging starts with the **mock** bill provider: nothing real is bought.
 6. **Watch the admin:** orders flagged **needs review** are payments we couldn't settle
    automatically (wrong amount, or no final status from the provider). Check them daily.
 
+## Phase 4: repairs and artisans
+
+1. **Create a private bucket** for repair photos and ID documents, with **no public access** (for
+   example a second Cloudflare R2 bucket), and set `S3_PRIVATE_BUCKET`. Without it the deploy check
+   warns, and private files go to the photo bucket under `private/`. The app only ever hands out
+   15-minute links to them.
+2. **ID checks:** leave `ID_VERIFICATION_PROVIDER=manual`. Staff review ID photos in the admin:
+   * **Artisans → Verification checks**, filtered by *Waiting for review*;
+   * open the photo (a 15-minute link) and compare it with the artisan's name;
+   * select it and choose **Passed**, or type a reason in *Note* and choose **Failed**. Failing
+     tells the artisan by SMS.
+3. **Addresses:** confirm each artisan's address (by phone or a visit) and mark the *Address* check
+   **Passed** the same way. The Verified badge appears by itself once the ID, phone, address, two
+   guarantors and one reference have all passed.
+4. **Guarantor links** are sent by SMS and open `WEB_APP_URL/v/<token>`, so `WEB_APP_URL` must be
+   the public web address.
+5. **Background job:** `maintenance-housekeeping` runs every 30 minutes on the worker. It expires
+   job offers nobody answered (24 hours), reminds tenants to confirm (after 2 days), and confirms
+   repairs automatically after 7 days.
+
 ## Every later release
 
 Just push to `main`. Render redeploys automatically; CI on GitHub runs the tests in parallel.

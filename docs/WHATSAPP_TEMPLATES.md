@@ -27,6 +27,8 @@ Go to **WhatsApp Manager → Message templates → Create template**.
 | `bill_token` | Electricity token delivered (`bill_token`) | `Homesika: {{1}} token for meter {{2}}: {{3}} ({{4}}). Paid {{5}}. Receipt {{6}}` | DisCo, meter, token, units, amount, receipt number |
 | `bill_delivered` | Airtime/data/TV delivered (`bill_delivered`) | `Homesika: {{1}} delivered. Paid {{2}}. Receipt {{3}}` | what, amount, receipt number |
 | `bill_refunded` | A bill that couldn't be delivered (`bill_refunded`) | `Homesika: we couldn't deliver {{1}}, so {{2}} is being refunded to the card or account you paid with (usually 1-5 working days).` | what, amount |
+| `ticket_update` | Repair status for the tenant: approved, artisan assigned, fixed (`ticket_update`) | `Homesika: your repair request {{1}} ({{2}}): {{3}} {{4}}` | reference, title, what happened, extra (visit time or reason; "-" when none) |
+| `job_offer` | A new job for an artisan (`job_offer`) | `Homesika: new job {{1}} from {{2}}: {{3}}. Open the app to accept within {{4}} hours.` | reference, landlord, title, hours |
 | `payment_link` | A link sent by staff, or by the assistant on staff request (`payment_link`) | `Hi {{1}}, {{3}} sent you a payment link for {{2}}: {{4}}` | first name, amount, landlord, pay link |
 
 > `TODO(verify)`: Meta's current rules for placeholder position (some versions reject a placeholder

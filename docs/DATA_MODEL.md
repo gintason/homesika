@@ -149,28 +149,28 @@ erDiagram
   UNIT ||--o{ TICKET : has
   USER ||--o{ TICKET : raises
   TICKET ||--o{ TICKET_EVENT : logs
-  TICKET ||--o{ ATTACHMENT : has
+  TICKET ||--o{ TICKET_PHOTO : has
   TICKET ||--o{ JOB : "assigned as"
   ARTISAN_PROFILE ||--o{ JOB : takes
   JOB ||--o| RATING : "rated by"
   USER ||--o| ARTISAN_PROFILE : is
   ARTISAN_PROFILE ||--o{ VERIFICATION_CHECK : passes
-  ARTISAN_PROFILE ||--o{ GUARANTOR : "vouched by"
-  ARTISAN_PROFILE ||--o{ REFERENCE : "referenced by"
+  ARTISAN_PROFILE ||--o{ VOUCHER : "vouched by (guarantor or reference)"
 
-  TICKET { uuid id; uuid organization_id FK; uuid unit_id FK; uuid raised_by FK; string category; string priority; text description; string status "open|awaiting_approval|approved|assigned|in_progress|done|confirmed|rejected|cancelled" }
+  TICKET { uuid id; string reference "R + 8 hex"; uuid organization_id FK; uuid unit_id FK; uuid lease_id FK; uuid tenant_id FK; uuid raised_by FK "null on WhatsApp without an account"; string category "= artisan trade"; string priority "low|normal|urgent|emergency"; text description; string status "awaiting_approval|approved|assigned|in_progress|done|confirmed|rejected|cancelled" }
   TICKET_EVENT { uuid id; uuid ticket_id FK; uuid actor_id; string kind; text note; datetime at }
-  ATTACHMENT { uuid id; string owner_type; uuid owner_id; string file; string mime; int bytes }
+  TICKET_PHOTO { uuid id; uuid ticket_id FK; string image "private storage, EXIF removed"; string stage "report|completion" }
   ARTISAN_PROFILE { uuid id; uuid user_id FK; json trades; json service_areas; string verification_status "pending|verified|suspended|removed"; datetime verified_at; float rating_avg; int jobs_completed }
-  VERIFICATION_CHECK { uuid id; uuid artisan_id FK; string kind "id|phone|address"; string provider; string result; json evidence "🔒"; datetime checked_at }
-  GUARANTOR { uuid id; uuid artisan_id FK; string name; string phone_e164; string relationship; string address "🔒"; datetime confirmed_at }
-  REFERENCE { uuid id; uuid artisan_id FK; string kind "landlord|estate"; uuid referee_org_id; string status }
-  JOB { uuid id; uuid ticket_id FK; uuid artisan_id FK; string status "offered|accepted|declined|scheduled|on_site|completed|confirmed"; datetime scheduled_for; datetime completed_at }
+  VERIFICATION_CHECK { uuid id; uuid artisan_id FK; string kind "id|phone|address"; string status "not_started|pending|passed|failed"; string provider "manual|mock|otp"; string id_number "🔒"; string document "private"; json evidence "🔒"; datetime checked_at; uuid checked_by }
+  VOUCHER { uuid id; uuid artisan_id FK; string kind "guarantor|reference"; string full_name; string phone_e164; string relationship; string address "🔒"; string status "pending|confirmed|declined|expired"; string token_hash "SMS link"; datetime responded_at }
+  JOB { uuid id; uuid ticket_id FK; uuid artisan_id FK; string status "offered|accepted|declined|on_site|completed|confirmed|cancelled"; datetime offer_expires_at; datetime scheduled_for; datetime completed_at }
   RATING { uuid id; uuid job_id FK; uuid rater_id; int score; text comment }
 ```
 
 * The **Verified badge** is shown only when all of these pass: the ID check, phone and address,
-  two confirmed guarantors and one reference.
+  two confirmed guarantors and one reference. It's given and taken away automatically as checks
+  change; staff can suspend an artisan, which removes it.
+* One active job per ticket (database constraint). Ratings are 1–5 and one per job.
 * **Payments for jobs are out of scope** until gateway and legal confirmation.
 
 ## 6. Estates, dues and security: Module E [Phase 5]
