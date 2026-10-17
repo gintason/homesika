@@ -14,7 +14,7 @@ from django.utils.translation import gettext as _t
 
 from apps.core.money import format_money
 from apps.leasing.models import Charge
-from apps.notifications.services import notify_sms
+from apps.notifications.services import notify
 
 from . import services
 from .models import ReminderLog, SettlementAccount
@@ -79,9 +79,12 @@ def send_due_reminders(today: date | None = None) -> dict:
                     [ReminderLog(charge=c, stage=stage, payment_link=link) for c in items]
                 )
                 amount = format_money(sum(c.balance for c in items), items[0].currency, plain=True)
-                notify_sms(
+                first_name = tenant.full_name.split(" ")[0]
+                pay = services.pay_url(link) if link else _t("please contact your landlord to pay")
+                notify(
                     to=tenant.phone_number,
-                    kind="rent_reminder",
+                    kind="rent_overdue" if stage.startswith("late") else "rent_reminder",
+                    wa_params=[first_name, amount, f"{items[0].due_date:%d %b %Y}", pay, org.name],
                     user=tenant.user,
                     organization=org,
                     body=_message(

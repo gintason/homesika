@@ -4,6 +4,8 @@ os.environ.setdefault("DJANGO_SECRET_KEY", "test-only-secret-key-not-for-product
 os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 os.environ.setdefault("FIELD_ENCRYPTION_KEYS", "dGVzdC1vbmx5LWtleS1kby1ub3QtdXNlLTMyYnl0ZXM=")
 os.environ.setdefault("SMS_PROVIDER", "mock")
+os.environ.setdefault("WHATSAPP_PROVIDER", "mock")
+os.environ.setdefault("ASSISTANT_PROVIDER", "mock")
 
 from .base import *  # noqa: E402, F403
 

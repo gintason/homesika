@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "apps.leasing",
     "apps.payments",
     "apps.accounting",
+    "apps.messaging",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -171,6 +172,24 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Homesika <no-reply@homes
 WEB_APP_URL = env("WEB_APP_URL", default="http://localhost:5173")
 
 # Payments: gateways tried in this order (failover). "mock" moves no money and is refused in production.
+# WhatsApp: "mock" (nothing sent), "cloud" (Meta WhatsApp Cloud API), or "off".
+WHATSAPP_PROVIDER = env("WHATSAPP_PROVIDER", default="mock")
+WHATSAPP_GRAPH_URL = env("WHATSAPP_GRAPH_URL", default="https://graph.facebook.com")
+WHATSAPP_API_VERSION = env("WHATSAPP_API_VERSION", default="v21.0")  # TODO(verify) current version
+WHATSAPP_PHONE_NUMBER_ID = env("WHATSAPP_PHONE_NUMBER_ID", default="")
+WHATSAPP_ACCESS_TOKEN = env("WHATSAPP_ACCESS_TOKEN", default="")
+WHATSAPP_APP_SECRET = env("WHATSAPP_APP_SECRET", default="")
+WHATSAPP_VERIFY_TOKEN = env("WHATSAPP_VERIFY_TOKEN", default="")
+# Approved message templates per notification kind, e.g.
+# {"receipt": {"name": "payment_receipt", "language": "en"}}. Empty = reminders/receipts go by SMS.
+WHATSAPP_TEMPLATES = env.json("WHATSAPP_TEMPLATES", default={})
+# Where the assistant receives WhatsApp messages (an import path); empty = store only.
+MESSAGING_INBOUND_HANDLER = env(
+    "MESSAGING_INBOUND_HANDLER", default="apps.assistant.channels.handle_whatsapp"
+)
+# Escalations with no organization (e.g. a prospect) alert this number.
+SUPPORT_PHONE = env("SUPPORT_PHONE", default="")
+
 PAYMENT_GATEWAYS = env("PAYMENT_GATEWAYS", default="mock")
 PAYMENT_LINK_TTL_HOURS = env.int("PAYMENT_LINK_TTL_HOURS", default=72)
 # Homesika's fee per rent/dues payment (percent, capped; kobo). 0 = everything settles to the landlord.

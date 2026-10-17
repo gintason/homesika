@@ -24,7 +24,7 @@ from apps.core import audit
 from apps.core.exceptions import HomesikaAPIException
 from apps.core.money import format_money
 from apps.leasing.models import Charge, TenantProfile
-from apps.notifications.services import notify_sms
+from apps.notifications.services import notify
 
 from . import gateways
 from .models import Allocation, Payment, PaymentLink, Receipt, ReceiptCounter, SettlementAccount
@@ -326,11 +326,12 @@ def receipt_url(payment: Payment) -> str:
 def _notify_paid(payment: Payment, receipt: Receipt) -> None:
     tenant = payment.tenant
     amount = format_money(payment.amount, payment.currency, plain=True)
-    notify_sms(
+    notify(
         to=tenant.phone_number,
         kind="receipt",
         user=tenant.user,
         organization=payment.organization,
+        wa_params=[amount, payment.organization.name, receipt.number, receipt_url(payment)],
         body=_t("Payment of %(amount)s received by %(org)s. Receipt %(number)s: %(url)s")
         % {
             "amount": amount,
@@ -341,10 +342,11 @@ def _notify_paid(payment: Payment, receipt: Receipt) -> None:
     )
     owner_phone = payment.organization.phone_number
     if owner_phone:
-        notify_sms(
+        notify(
             to=owner_phone,
             kind="payment_received",
             organization=payment.organization,
+            wa_params=[tenant.full_name, amount, receipt.number],
             body=_t("Homesika: %(tenant)s paid %(amount)s. Receipt %(number)s.")
             % {"tenant": tenant.full_name, "amount": amount, "number": receipt.number},
         )
