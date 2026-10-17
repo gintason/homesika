@@ -13,7 +13,8 @@
     "home": "Home",
     "charges": "Charges",
     "payments": "Payments",
-    "profile": "Profile"
+    "profile": "Profile",
+    "help": "Help"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
@@ -33,7 +34,9 @@
       "otp_resend_limited": "Please wait before requesting another code.",
       "otp_delivery_failed": "We couldn't send the code right now. Try again, or use email instead.",
       "setup_expired": "This step has expired. Please start again.",
-      "request_in_progress": "We're still processing your last request. Please wait a moment."
+      "request_in_progress": "We're still processing your last request. Please wait a moment.",
+      "slot_unavailable": "That viewing time has just been taken. Please pick another.",
+      "listing_unavailable": "This place is no longer available."
     }
   },
   "welcome": {
@@ -112,7 +115,8 @@
     "notLinkedBody": "Ask your landlord to add your number {{phone}} on Homesika. Your rent and charges will appear here once they do.",
     "myHome": "My home",
     "landlordLine": "Landlord: {{name}}",
-    "seePayments": "See payments and receipts"
+    "seePayments": "See payments and receipts",
+    "findPlace": "Find a place to rent"
   },
   "charges": {
     "title": "Charges",
@@ -199,7 +203,14 @@
     "signOut": "Sign out",
     "signOutTitle": "Sign out of this phone?",
     "signOutBody": "You'll need your phone number, PIN and a code to sign in again.",
-    "version": "Version {{version}}"
+    "version": "Version {{version}}",
+    "findPlace": "Find a place to rent",
+    "whatsapp": {
+      "title": "WhatsApp messages",
+      "body": "Get your rent reminders and receipts on WhatsApp instead of SMS.",
+      "toggle": "Send reminders and receipts on WhatsApp",
+      "stop": "Reply STOP on WhatsApp at any time to turn them off."
+    }
   },
   "language": {
     "en": "English",
@@ -209,5 +220,73 @@
     "selected": "selected",
     "notSelected": "not selected",
     "refresh": "Pull to refresh"
+  },
+  "help": {
+    "title": "Help",
+    "emptyTitle": "Ask Homesika",
+    "emptyBody": "Ask about your rent, payments, receipts or lease. You can write in English or Pidgin.",
+    "emergency": "In an emergency call 112. Homesika is not an emergency service.",
+    "suggestionsLabel": "Try asking",
+    "suggestions": {
+      "owe": "How much do I owe?",
+      "receipts": "Send me my receipts",
+      "nextDue": "When is my next rent due?"
+    },
+    "inputLabel": "Message",
+    "placeholder": "Type your question",
+    "send": "Send",
+    "counter": "{{count}} of {{max}} characters",
+    "typing": "Homesika is typing…",
+    "you": "You",
+    "assistant": "Homesika assistant",
+    "fromPerson": "{{name}} from Homesika",
+    "sending": "Sending…",
+    "notSent": "Not sent. Tap to try again",
+    "payLink": "Open payment link",
+    "openLink": "Open {{host}}",
+    "confirmTitle": "Please confirm",
+    "confirm": "Confirm",
+    "cancelAction": "Cancel",
+    "escalated": "We've passed this to a person. They'll reply here in this chat during working hours (Lagos time).",
+    "menu": "More options",
+    "clear": "Clear chat",
+    "clearTitle": "Clear this chat?",
+    "clearBody": "This deletes your chat history with the Homesika assistant. It can't be undone.",
+    "clearConfirm": "Clear"
+  },
+  "find": {
+    "title": "Find a place",
+    "area": "Area",
+    "areaHint": "e.g. Lekki, Yaba, Ikeja",
+    "maxRent": "Highest rent",
+    "maxRentHint": "Leave empty for any price",
+    "maxRentInvalid": "Enter an amount, e.g. 1500000.",
+    "bedrooms": "Bedrooms",
+    "any": "Any",
+    "anyBedrooms": "Any number of bedrooms",
+    "bedroomsCount": "Bedrooms: {{n}}",
+    "bathroomsCount": "Bathrooms: {{n}}",
+    "search": "Search",
+    "empty": "No places match",
+    "emptyBody": "Try another area, a higher rent or any number of bedrooms.",
+    "perYear": "per year",
+    "perMonth": "per month",
+    "cardLabel": "{{title}}, {{price}}, {{place}}",
+    "photo": "Photo {{n}} of {{total}}",
+    "listedBy": "Listed by {{name}}",
+    "features": "Features",
+    "about": "About this place",
+    "viewTimes": "Viewing times",
+    "noSlots": "No viewing times are open right now. Ask about it and the landlord can get back to you.",
+    "yourDetails": "Your details",
+    "name": "Your name",
+    "phone": "Phone number",
+    "book": "Book viewing",
+    "booking": "Booking…",
+    "booked": "Your viewing is booked for {{time}}.",
+    "pickSlot": "Choose a viewing time first.",
+    "askMessage": "Your question",
+    "ask": "Ask about it",
+    "asked": "Sent. The landlord can now reach you on {{phone}}."
   }
 }

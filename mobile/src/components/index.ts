@@ -2,6 +2,7 @@ export { Badge, chargeBadgeStatus, type BadgeStatus } from "./Badge";
 export { Banner } from "./Banner";
 export { Button, type ButtonVariant } from "./Button";
 export { Card } from "./Card";
+export { ActionCard, ChatBubble, SuggestionChip, TypingIndicator } from "./Chat";
 export { Checkbox } from "./Checkbox";
 export { EmptyState } from "./EmptyState";
 export { ListRow } from "./ListRow";

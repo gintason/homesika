@@ -1,10 +1,13 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, View } from "react-native";
 
-import { Banner, Button, Card, Checkbox, Screen, Text } from "@/components";
-import { useMe } from "@/hooks/queries";
+import { whatsappApi, type WhatsAppPref } from "@/api";
+import { Banner, Button, Card, Checkbox, ListRow, Screen, Skeleton, Text } from "@/components";
+import { keys, useMe, useWhatsApp } from "@/hooks/queries";
 import { LANGUAGES } from "@/i18n";
 import { errorText } from "@/lib/api";
 import { formatPhone } from "@/lib/phone";
@@ -70,6 +73,12 @@ export default function Profile() {
         </View>
       </Card>
 
+      <WhatsAppCard />
+
+      <Card>
+        <ListRow title={t("profile.findPlace")} chevron onPress={() => router.push("/find")} />
+      </Card>
+
       {/* Turning it on happens on the lock screen (it needs the PIN once); here it can be turned off. */}
       {bioAvailable && biometricEnabled ? (
         <Card>
@@ -84,5 +93,42 @@ export default function Profile() {
         {t("profile.version", { version: Constants.expoConfig?.version ?? "" })}
       </Text>
     </Screen>
+  );
+}
+
+/** GET/PUT /me/whatsapp/: reminders and receipts on WhatsApp instead of SMS. */
+function WhatsAppCard() {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const pref = useWhatsApp();
+  const save = useMutation({
+    mutationFn: whatsappApi.set,
+    onSuccess: (data) => qc.setQueryData<WhatsAppPref>(keys.whatsapp, data),
+  });
+  const optedIn = save.isPending && save.variables !== undefined ? save.variables : (pref.data?.opted_in ?? false);
+
+  return (
+    <Card>
+      <Text variant="label" accessibilityRole="header">
+        {t("profile.whatsapp.title")}
+      </Text>
+      <Text className="text-ink-600">{t("profile.whatsapp.body")}</Text>
+      {pref.isPending && !pref.error ? (
+        <Skeleton className="h-12 w-full" />
+      ) : pref.error && !pref.data ? (
+        <Banner message={errorText(pref.error)} onRetry={() => pref.refetch()} retryLabel={t("common.retry")} />
+      ) : (
+        <Checkbox
+          checked={optedIn}
+          disabled={save.isPending}
+          onChange={(next) => save.mutate(next)}
+          label={t("profile.whatsapp.toggle")}
+        >
+          <Text>{t("profile.whatsapp.toggle")}</Text>
+        </Checkbox>
+      )}
+      {save.error ? <Banner message={errorText(save.error)} /> : null}
+      <Text variant="caption">{t("profile.whatsapp.stop")}</Text>
+    </Card>
   );
 }

@@ -178,3 +178,125 @@ export async function allOutstandingCharges(): Promise<Charge[]> {
   }
   return out;
 }
+
+/* ---- Phase 2 -------------------------------------------------------------------------------
+ *   assistant -> backend/apps/assistant/{views,serializers}.py (ChatView, ActionView, ReplySerializer)
+ *                messages: backend/apps/messaging/serializers.py (MessageSerializer)
+ *   whatsapp  -> backend/apps/messaging/views.py (MyWhatsAppView, OptInSerializer)
+ *   listings  -> backend/apps/listings/views.py (Public* views; PublicListingSerializer)
+ */
+
+export type PendingActionStatus = "proposed" | "executed" | "rejected" | "expired" | "failed";
+
+export type PendingAction = {
+  id: string;
+  tool: string;
+  summary: string;
+  status: PendingActionStatus;
+  expires_at: string;
+};
+
+export type ChatMessage = {
+  id: string;
+  /** "in" = from the person (me), "out" = to the person (assistant, staff or system). */
+  direction: "in" | "out";
+  sender: "person" | "assistant" | "staff" | "system";
+  kind: string;
+  body: string;
+  status: string;
+  error: string;
+  sent_by_name: string | null;
+  created_at: string;
+};
+
+export type ChatHistory = {
+  conversation: string | null;
+  messages: ChatMessage[];
+  pending_action: PendingAction | null;
+  /** A person has been asked to reply (an open escalation). Older servers may omit it. */
+  escalated?: boolean;
+};
+
+/** POST /assistant/messages/ and POST /assistant/actions/{id}/{confirm|reject}/. */
+export type AssistantReply = {
+  conversation: string;
+  text: string;
+  pending_action: PendingAction | null;
+  escalated: boolean;
+};
+
+/** The backend rejects longer messages (guardrails.MAX_INPUT_CHARS). */
+export const MAX_CHAT_CHARS = 2000;
+
+export const assistantApi = {
+  history: () => api<ChatHistory>("/api/v1/assistant/messages/?channel=app"),
+  /** idempotencyKey: one per message, reused on retry, so the server never stores a message twice. */
+  send: (text: string, idempotencyKey: string) =>
+    api<AssistantReply>("/api/v1/assistant/messages/", { method: "POST", body: { text, channel: "app" }, idempotencyKey }),
+  decide: (actionId: string, decision: "confirm" | "reject") =>
+    api<AssistantReply>(`/api/v1/assistant/actions/${encodeURIComponent(actionId)}/${decision}/`, { method: "POST" }),
+  clear: () => api<void>("/api/v1/assistant/messages/", { method: "DELETE" }),
+};
+
+export type WhatsAppPref = { opted_in: boolean };
+
+export const whatsappApi = {
+  get: () => api<WhatsAppPref>("/api/v1/me/whatsapp/"),
+  set: (opted_in: boolean) => api<WhatsAppPref>("/api/v1/me/whatsapp/", { method: "PUT", body: { opted_in } }),
+};
+
+export type ListingPhoto = { id: string; url: string; caption: string; position: number };
+export type ViewingSlot = { id: string; starts_at: string; ends_at: string };
+
+export type PublicListing = {
+  ref: string;
+  title: string;
+  description: string;
+  /** JSONField (a list of short strings in practice); render defensively. */
+  features: unknown;
+  area: string;
+  city: string;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  rent_amount: string;
+  rent_period: "year" | "month";
+  currency: string;
+  landlord: string;
+  photos: ListingPhoto[];
+  published_at: string | null;
+};
+
+export type PublicListingDetail = PublicListing & { slots: ViewingSlot[] };
+
+export type ListingFilters = { area?: string; max_rent?: string; bedrooms?: number | null };
+
+export type EnquiryInput = { name: string; phone_number: string; message?: string };
+
+const publicGet = <T>(path: string) => api<T>(path, { auth: false });
+
+export const listingsApi = {
+  /** Not paginated: at most 30 published listings, cheapest first. */
+  search: (f: ListingFilters = {}) => {
+    const q = new URLSearchParams();
+    if (f.area?.trim()) q.set("area", f.area.trim());
+    if (f.max_rent) q.set("max_rent", f.max_rent);
+    if (f.bedrooms) q.set("bedrooms", String(f.bedrooms));
+    const qs = q.toString();
+    return publicGet<PublicListing[]>(`/api/v1/listings/${qs ? `?${qs}` : ""}`);
+  },
+  detail: (ref: string) => publicGet<PublicListingDetail>(`/api/v1/listings/${encodeURIComponent(ref)}/`),
+  book: (ref: string, input: EnquiryInput & { slot: string }) =>
+    api<{ status: "booked"; starts_at: string }>(`/api/v1/listings/${encodeURIComponent(ref)}/book/`, {
+      method: "POST",
+      auth: false,
+      body: input,
+    }),
+  enquire: (ref: string, input: EnquiryInput) =>
+    api<{ status: "received" }>(`/api/v1/listings/${encodeURIComponent(ref)}/enquire/`, { method: "POST", auth: false, body: input }),
+};
+
+/** Features as display strings (the API field is free-form JSON). */
+export function listingFeatures(features: unknown): string[] {
+  if (!Array.isArray(features)) return [];
+  return features.filter((f): f is string | number => typeof f === "string" || typeof f === "number").map(String).filter(Boolean);
+}

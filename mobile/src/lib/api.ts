@@ -35,7 +35,7 @@ export class ApiError extends Error {
 }
 
 export type ApiOptions = {
-  method?: "GET" | "POST" | "PATCH" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   /** Sent as Idempotency-Key (POST /me/pay/). Reuse the same key when retrying the same submit. */
   idempotencyKey?: string;
@@ -175,6 +175,8 @@ const KNOWN_CODES = [
   "otp_delivery_failed",
   "setup_expired",
   "request_in_progress",
+  "slot_unavailable",
+  "listing_unavailable",
 ] as const;
 
 /** A message to show the user for any thrown value, in their language where we can. */

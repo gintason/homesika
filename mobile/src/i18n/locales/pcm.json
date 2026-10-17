@@ -14,7 +14,8 @@
     "home": "Home",
     "charges": "Wetin I owe",
     "payments": "Payments",
-    "profile": "My profile"
+    "profile": "My profile",
+    "help": "Help"
   },
   "errors": {
     "generic": "Something no work well. Abeg try again.",
@@ -34,7 +35,9 @@
       "otp_resend_limited": "Abeg wait small before you ask for another code.",
       "otp_delivery_failed": "We no fit send the code now. Try again, or make we send am to your email.",
       "setup_expired": "Dis step don expire. Abeg start again.",
-      "request_in_progress": "We still dey work on your last request. Abeg wait small."
+      "request_in_progress": "We still dey work on your last request. Abeg wait small.",
+      "slot_unavailable": "Person don already take dat viewing time. Abeg pick another one.",
+      "listing_unavailable": "Dis place no dey available again."
     }
   },
   "welcome": {
@@ -113,7 +116,8 @@
     "notLinkedBody": "Tell your landlord make e add your number {{phone}} for Homesika. Your rent and wetin you owe go show here once e add am.",
     "myHome": "My house",
     "landlordLine": "Landlord: {{name}}",
-    "seePayments": "See payments and receipts"
+    "seePayments": "See payments and receipts",
+    "findPlace": "Find house wey you fit rent"
   },
   "charges": {
     "title": "Wetin I owe",
@@ -200,7 +204,14 @@
     "signOut": "Sign out",
     "signOutTitle": "Sign out from dis phone?",
     "signOutBody": "You go need your phone number, PIN and code to sign in again.",
-    "version": "Version {{version}}"
+    "version": "Version {{version}}",
+    "findPlace": "Find house wey you fit rent",
+    "whatsapp": {
+      "title": "WhatsApp messages",
+      "body": "Make your rent reminder and receipt dey come for WhatsApp instead of SMS.",
+      "toggle": "Send reminder and receipt for WhatsApp",
+      "stop": "Any time wey you want, reply STOP for WhatsApp to off am."
+    }
   },
   "language": {
     "en": "English",
@@ -210,5 +221,73 @@
     "selected": "don pick",
     "notSelected": "never pick",
     "refresh": "Pull down make e refresh"
+  },
+  "help": {
+    "title": "Help",
+    "emptyTitle": "Ask Homesika",
+    "emptyBody": "Ask about your rent, payment, receipt or lease. You fit write for English or Pidgin.",
+    "emergency": "If na emergency, call 112 sharp sharp. Homesika no be emergency service.",
+    "suggestionsLabel": "You fit ask",
+    "suggestions": {
+      "owe": "Abeg how much I dey owe?",
+      "receipts": "Send my receipts give me",
+      "nextDue": "When my next rent go due?"
+    },
+    "inputLabel": "Message",
+    "placeholder": "Type wetin you wan ask",
+    "send": "Send",
+    "counter": "{{count}} out of {{max}} letters",
+    "typing": "Homesika dey type…",
+    "you": "You",
+    "assistant": "Homesika assistant",
+    "fromPerson": "{{name}} from Homesika",
+    "sending": "E dey send…",
+    "notSent": "E no send. Tap am make you try again",
+    "payLink": "Open payment link",
+    "openLink": "Open {{host}}",
+    "confirmTitle": "Abeg confirm",
+    "confirm": "Confirm am",
+    "cancelAction": "Cancel am",
+    "escalated": "We don give dis matter to person. Dem go reply you for dis chat during work hours (Lagos time).",
+    "menu": "More options",
+    "clear": "Clear chat",
+    "clearTitle": "You wan clear dis chat?",
+    "clearBody": "Dis one go delete all your chat with Homesika assistant. You no fit bring am back.",
+    "clearConfirm": "Clear am"
+  },
+  "find": {
+    "title": "Find house",
+    "area": "Area",
+    "areaHint": "Like Lekki, Yaba, Ikeja",
+    "maxRent": "The highest rent wey you fit pay",
+    "maxRentHint": "Leave am empty for any price",
+    "maxRentInvalid": "Put amount, like 1500000.",
+    "bedrooms": "Bedroom",
+    "any": "Any",
+    "anyBedrooms": "Any number of bedroom",
+    "bedroomsCount": "Bedroom: {{n}}",
+    "bathroomsCount": "Bathroom: {{n}}",
+    "search": "Search",
+    "empty": "No house match",
+    "emptyBody": "Try another area, higher rent, or any number of bedroom.",
+    "perYear": "every year",
+    "perMonth": "every month",
+    "cardLabel": "{{title}}, {{price}}, {{place}}",
+    "photo": "Picture {{n}} out of {{total}}",
+    "listedBy": "Na {{name}} put am",
+    "features": "Wetin e get",
+    "about": "About dis place",
+    "viewTimes": "Time to come see am",
+    "noSlots": "No viewing time dey open now. Ask about am, the landlord fit get back to you.",
+    "yourDetails": "Your details",
+    "name": "Your name",
+    "phone": "Phone number",
+    "book": "Book viewing",
+    "booking": "E dey book…",
+    "booked": "We don book your viewing for {{time}}.",
+    "pickSlot": "Pick viewing time first.",
+    "askMessage": "Wetin you wan ask",
+    "ask": "Ask about am",
+    "asked": "E don send. The landlord fit reach you now for {{phone}}."
   }
 }

@@ -16,6 +16,8 @@ type Props = {
   /** Navy header with this title (tab screens). */
   title?: string;
   back?: boolean;
+  /** Extra header controls on the right (e.g. a menu button). */
+  headerRight?: ReactNode;
   scroll?: boolean;
   footer?: ReactNode;
   /** Pull-to-refresh. */
@@ -28,7 +30,7 @@ type Props = {
  * Standard screen: safe area, app background, optional navy header (primary.800) or back button,
  * offline banner, keyboard-aware scroll with pull-to-refresh, and a pinned footer.
  */
-export function Screen({ children, title, back, scroll = true, footer, onRefresh, refreshing = false, className = "" }: Props) {
+export function Screen({ children, title, back, headerRight, scroll = true, footer, onRefresh, refreshing = false, className = "" }: Props) {
   const { t } = useTranslation();
   const online = useOnline();
   const navy = Boolean(title);
@@ -63,6 +65,7 @@ export function Screen({ children, title, back, scroll = true, footer, onRefresh
               {title}
             </Text>
           ) : null}
+          {headerRight}
         </View>
       ) : null}
       <KeyboardAvoidingView

@@ -53,6 +53,7 @@ export default function Home() {
           icon="call-outline"
           title={t("home.notLinkedTitle")}
           body={t("home.notLinkedBody", { phone: formatPhone(profile?.phone) })}
+          action={<Button title={t("home.findPlace")} variant="secondary" onPress={() => router.push("/find")} />}
         />
       );
     } else {
@@ -124,6 +125,7 @@ export default function Home() {
           ))}
 
           <Button title={t("home.seePayments")} variant="secondary" onPress={() => router.push("/payments")} />
+          <Button title={t("home.findPlace")} variant="ghost" onPress={() => router.push("/find")} />
         </View>
       );
     }

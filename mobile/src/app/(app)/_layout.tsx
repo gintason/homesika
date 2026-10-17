@@ -10,6 +10,8 @@ export default function AppLayout() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="charge/[id]" />
       <Stack.Screen name="pay/[reference]" options={{ gestureEnabled: false }} />
+      <Stack.Screen name="find/index" />
+      <Stack.Screen name="find/[ref]" />
     </Stack>
   );
 }

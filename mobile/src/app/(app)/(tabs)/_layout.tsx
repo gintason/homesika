@@ -29,6 +29,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="index" options={{ title: t("tabs.home"), tabBarIcon: icon("home") }} />
       <Tabs.Screen name="charges" options={{ title: t("tabs.charges"), tabBarIcon: icon("receipt") }} />
       <Tabs.Screen name="payments" options={{ title: t("tabs.payments"), tabBarIcon: icon("card") }} />
+      <Tabs.Screen name="help" options={{ title: t("tabs.help"), tabBarIcon: icon("chatbubbles") }} />
       <Tabs.Screen name="profile" options={{ title: t("tabs.profile"), tabBarIcon: icon("person-circle") }} />
     </Tabs>
   );
