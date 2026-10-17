@@ -277,7 +277,11 @@ BILLS_MAX_STATUS_CHECKS = env.int("BILLS_MAX_STATUS_CHECKS", default=12)
 # fixed rules deciding and anything unclear going to a person. "manual": staff review everything.
 ID_VERIFICATION_PROVIDER = env("ID_VERIFICATION_PROVIDER", default="nin")
 # The licensed NIN lookup provider. Only "mock" exists until one is chosen (apps/artisans/nin.py).
-NIN_PROVIDER = env("NIN_PROVIDER", default="mock")
+NIN_PROVIDER = env("NIN_PROVIDER", default="mock")  # "smileid" once the sandbox check is done
+SMILEID_PARTNER_ID = env("SMILEID_PARTNER_ID", default="")
+SMILEID_API_KEY = env("SMILEID_API_KEY", default="")
+SMILEID_PRODUCTION = env.bool("SMILEID_PRODUCTION", default=False)  # False = Smile ID's sandbox server
+SMILEID_NIN_ID_TYPE = env("SMILEID_NIN_ID_TYPE", default="NIN_V2")  # TODO(verify) in the sandbox
 ASSISTANT_EFFORT_VERIFY = env("ASSISTANT_EFFORT_VERIFY", default="medium")
 ARTISAN_DOCUMENT_RETENTION_DAYS = env.int("ARTISAN_DOCUMENT_RETENTION_DAYS", default=90)
 ARTISAN_PROOF_MAX_AGE_DAYS = env.int("ARTISAN_PROOF_MAX_AGE_DAYS", default=92)  # "last 3 months"

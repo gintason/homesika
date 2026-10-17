@@ -9,10 +9,12 @@ example Prembly/IdentityPass, Dojah, Smile ID, QoreID, Youverify, VerifyMe). NIN
     ...1111  a record with someone else's name
     ...2222  a matching record with no address
     anything else: a record that matches what the artisan entered.
-* A real provider is NOT built yet. We don't write API calls we can't check against the provider's
-  documentation, and none could be reached from the build environment. TODO(verify): once you choose
-  a provider, add its adapter here (endpoint, auth headers, request fields, the response's name /
-  date-of-birth / phone / address fields, error codes, and their NDPA data-processing terms).
+* "smileid": Smile ID Enhanced KYC through Smile ID's official SDK (`smile-id-core`). The request side
+  (IdApi, job type 5, signing, country/id_type/id_number/first_name/last_name/dob) comes from that
+  SDK's code. TODO(verify) against your Smile ID sandbox before going live: the NIN `id_type` value
+  (SMILEID_NIN_ID_TYPE, default "NIN_V2") and the response field names read in `_record()` below.
+  `python manage.py smileid_check <nin>` prints a sandbox response's shape (values hidden) so we can
+  confirm them together.
 """
 
 from dataclasses import dataclass
@@ -70,7 +72,65 @@ class MockNin:
         )
 
 
-_PROVIDERS = {"mock": MockNin}
+class SmileIdNin:
+    """Smile ID Enhanced KYC (NIN lookup). See the module docstring for what still needs checking."""
+
+    name = "smileid"
+    # TODO(verify): result codes Smile ID uses for "ID found / exact match" on Enhanced KYC.
+    FOUND_CODES = {"1012", "1020", "1021"}
+    NOT_FOUND_CODES = {"1013", "1022"}
+
+    def __init__(self):
+        from smile_id_core import IdApi
+
+        self.api = IdApi(
+            settings.SMILEID_PARTNER_ID, settings.SMILEID_API_KEY, 1 if settings.SMILEID_PRODUCTION else 0
+        )
+
+    def raw_lookup(self, claimed: Claimed, job_id: str) -> dict:
+        from smile_id_core.ServerError import ServerError
+
+        partner_params = {"job_id": job_id, "user_id": job_id, "job_type": 5}
+        id_params = {
+            "country": "NG",
+            "id_type": settings.SMILEID_NIN_ID_TYPE,
+            "id_number": claimed.nin,
+            "first_name": claimed.first_name,
+            "last_name": claimed.last_name,
+            "dob": claimed.date_of_birth,
+            "entered": "true",
+        }
+        try:
+            return self.api.submit_job(partner_params, id_params)
+        except (ServerError, ValueError, OSError) as exc:
+            raise NinUnavailable(str(exc)[:200]) from exc
+
+    def lookup(self, claimed: Claimed) -> NinRecord:
+        import secrets
+
+        return self._record(self.raw_lookup(claimed, f"hsk-{secrets.token_hex(8)}"))
+
+    def _record(self, data: dict) -> NinRecord:
+        # TODO(verify): field names of the Enhanced KYC response.
+        code = str(data.get("ResultCode", ""))
+        if code in self.NOT_FOUND_CODES:
+            return NinRecord(found=False, provider=self.name)
+        if code not in self.FOUND_CODES:
+            raise NinUnavailable(f"Unexpected Smile ID result code {code!r}")
+        full = data.get("FullData") or {}
+        return NinRecord(
+            found=True,
+            first_name=str(full.get("firstname") or full.get("FirstName") or ""),
+            middle_name=str(full.get("middlename") or full.get("MiddleName") or ""),
+            last_name=str(full.get("surname") or full.get("LastName") or ""),
+            date_of_birth=str(data.get("DOB") or "")[:10],
+            phone=str(data.get("PhoneNumber") or ""),
+            address=str(data.get("Address") or ""),
+            provider=self.name,
+        )
+
+
+_PROVIDERS = {"mock": MockNin, "smileid": SmileIdNin}
 
 
 def get():

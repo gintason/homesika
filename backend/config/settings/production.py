@@ -45,6 +45,10 @@ if ENVIRONMENT == "production" and ID_VERIFICATION_PROVIDER == "nin" and NIN_PRO
     raise ImproperlyConfigured(
         "NIN_PROVIDER must be a real provider in production (or set ID_VERIFICATION_PROVIDER=manual)."
     )
+if ENVIRONMENT == "production" and NIN_PROVIDER == "smileid" and not SMILEID_PRODUCTION:  # noqa: F405
+    raise ImproperlyConfigured(
+        "SMILEID_PRODUCTION must be true in production (it selects Smile ID's live server)."
+    )
 if ENVIRONMENT == "production" and WHATSAPP_PROVIDER == "mock":  # noqa: F405
     raise ImproperlyConfigured("WHATSAPP_PROVIDER must be 'cloud' or 'off' in production.")
 if SENTRY_DSN:

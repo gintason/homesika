@@ -18,6 +18,7 @@ const PublicSearch = lazy(() => import("./screens/public").then((m) => ({ defaul
 const BillDone = lazy(() => import("./screens/bills/BillDone"));
 // Guarantor / reference confirmation page, opened from an SMS: its own tiny chunk.
 const VouchPage = lazy(() => import("./screens/vouch/VouchPage"));
+const PrivacyPage = lazy(() => import("./screens/privacy/PrivacyPage"));
 
 export function FullPageLoading() {
   return (
@@ -48,6 +49,14 @@ export function AppRoutes() {
         element={
           <Suspense fallback={<FullPageLoading />}>
             <BillDone />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/privacy"
+        element={
+          <Suspense fallback={<FullPageLoading />}>
+            <PrivacyPage />
           </Suspense>
         }
       />

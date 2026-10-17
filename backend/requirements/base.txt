@@ -34,6 +34,9 @@ boto3==1.43.114
 # AI assistant (official SDK)
 anthropic==1.15.0
 
+# NIN lookup for artisan checks (Smile ID's official server-side SDK)
+smile-id-core==3.0.1
+
 # Observability
 sentry-sdk==2.72.0
 python-json-logger==4.2.0

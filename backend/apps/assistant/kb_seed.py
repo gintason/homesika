@@ -101,14 +101,20 @@ ARTICLES = [
             "en": (
                 "Your data and privacy",
                 "Homesika follows Nigeria's Data Protection Act (NDPA). Your landlord sees your tenancy and payment records; other "
-                "tenants never see your details. Sensitive details such as ID numbers are encrypted. You can ask for a copy of "
-                "your data, or for your account and data to be deleted, in the app under Profile > Privacy.",
+                "tenants never see your details. Sensitive details such as ID numbers are encrypted. Some work is done for us by "
+                "trusted providers under contract, for example Anthropic (the AI behind the assistant), Smile ID (NIN checks), "
+                "Paystack and Flutterwave (payments) and Termii (SMS). You can ask for a copy of your data, or for your account "
+                "and data to be deleted, in the app under Profile > Privacy. The full privacy notice is on the Homesika website "
+                "at /privacy.",
             ),
             "pcm": (
                 "Your data and privacy",
                 "Homesika dey follow Nigeria Data Protection Act (NDPA). Your landlord dey see your tenancy and payment record; "
-                "other tenant no go ever see your details. Important details like ID number dey locked (encrypted). You fit ask "
-                "for copy of your data, or make dem delete your account and data, for the app under Profile > Privacy.",
+                "other tenant no go ever see your details. Important details like ID number dey locked (encrypted). Some work na "
+                "trusted companies dey do am for us under contract, like Anthropic (the AI wey dey run the assistant), Smile ID "
+                "(NIN check), Paystack and Flutterwave (payment) and Termii (SMS). You fit ask for copy of your data, or make dem "
+                "delete your account and data, for the app under Profile > Privacy. The full privacy notice dey Homesika website "
+                "for /privacy.",
             ),
         },
     ),

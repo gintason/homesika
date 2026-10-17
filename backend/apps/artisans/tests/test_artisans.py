@@ -541,3 +541,92 @@ def test_production_refuses_mock_id_check(monkeypatch):
     with pytest.raises(ImproperlyConfigured, match="NIN_PROVIDER"):
         importlib.import_module("config.settings.production")
     monkeypatch.delitem(sys.modules, "config.settings.production", raising=False)
+
+
+def test_smileid_adapter_builds_the_sdk_request_and_reads_the_response(settings, monkeypatch):
+    from smile_id_core import IdApi
+
+    from apps.artisans import nin
+
+    settings.NIN_PROVIDER, settings.SMILEID_PARTNER_ID, settings.SMILEID_API_KEY = "smileid", "123", "key"
+    sent = {}
+
+    def fake_submit(self, partner_params, id_params, options_params=None):
+        sent.update(partner_params=partner_params, id_params=id_params, url=self.url)
+        return {
+            "ResultCode": "1012",
+            "DOB": "1990-05-01",
+            "PhoneNumber": "08055550001",
+            "Address": "4 Ado Road, Ajah",
+            "FullData": {"firstname": "MUSA", "middlename": "ADE", "surname": "BELLO"},
+        }
+
+    monkeypatch.setattr(IdApi, "submit_job", fake_submit)
+    claimed = nin.Claimed("12345678901", "Musa", "Bello", "1990-05-01", "+2348055550001", "4 Ado Road")
+    record = nin.get().lookup(claimed)
+    assert record == nin.NinRecord(
+        True, "MUSA", "ADE", "BELLO", "1990-05-01", "08055550001", "4 Ado Road, Ajah", "smileid"
+    )
+    assert sent["partner_params"]["job_type"] == 5 and sent["partner_params"]["job_id"].startswith("hsk-")
+    assert sent["id_params"] == {
+        "country": "NG",
+        "id_type": "NIN_V2",
+        "id_number": "12345678901",
+        "first_name": "Musa",
+        "last_name": "Bello",
+        "dob": "1990-05-01",
+        "entered": "true",
+    }
+    assert "testapi" in sent["url"]  # sandbox unless SMILEID_PRODUCTION
+
+    monkeypatch.setattr(IdApi, "submit_job", lambda self, *a, **k: {"ResultCode": "1013"})
+    assert nin.get().lookup(claimed).found is False
+    monkeypatch.setattr(IdApi, "submit_job", lambda self, *a, **k: {"ResultCode": "9999"})
+    with pytest.raises(nin.NinUnavailable):  # an unknown answer is never treated as a pass
+        nin.get().lookup(claimed)
+
+
+def test_a_check_stuck_for_hours_goes_to_a_person(api_client, artisan_user, monkeypatch, settings):
+    from apps.artisans import nin
+
+    apply(api_client)
+
+    def down(self, claimed):
+        raise nin.NinUnavailable("down")
+
+    monkeypatch.setattr(nin.MockNin, "lookup", down)
+    assert checks_of(submit(api_client, "12345678901"))["id"]["status"] == "processing"
+    out = services.housekeeping(timezone.now() + timedelta(hours=7))
+    assert out["to_person"] == 1
+    assert VerificationCheck.objects.get(kind="id").status == "pending"
+
+
+def test_production_needs_smileid_live_server(monkeypatch):
+    import importlib
+    import os
+    import sys
+
+    from django.core.exceptions import ImproperlyConfigured
+
+    env = {
+        "DJANGO_SECRET_KEY": "x" * 60,
+        "DATABASE_URL": "sqlite:///:memory:",
+        "ENVIRONMENT": "production",
+        "PAYMENT_GATEWAYS": "paystack",
+        "ASSISTANT_PROVIDER": "anthropic",
+        "WHATSAPP_PROVIDER": "off",
+        "BILLS_PROVIDERS": "vtung",
+        "ID_VERIFICATION_PROVIDER": "nin",
+        "NIN_PROVIDER": "smileid",
+        "SMILEID_PRODUCTION": "false",
+        "DJANGO_ALLOWED_HOSTS": "x",
+    }
+    for k, v in env.items():
+        monkeypatch.setitem(os.environ, k, v)
+    import config.settings.base as base
+
+    importlib.reload(base)
+    monkeypatch.delitem(sys.modules, "config.settings.production", raising=False)
+    with pytest.raises(ImproperlyConfigured, match="SMILEID_PRODUCTION"):
+        importlib.import_module("config.settings.production")
+    monkeypatch.delitem(sys.modules, "config.settings.production", raising=False)

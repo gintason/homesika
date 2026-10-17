@@ -58,7 +58,11 @@ envVarGroups:
       - key: ID_VERIFICATION_PROVIDER
         value: nin                     # NIN lookup + AI document reading; "manual" = staff review
       - key: NIN_PROVIDER
-        value: mock                    # change once a licensed NIN provider is chosen and its adapter built
+        value: mock                    # change to "smileid" after the sandbox check (docs/DEPLOY_RENDER.md)
+      - key: SMILEID_PARTNER_ID
+        sync: false
+      - key: SMILEID_API_KEY
+        sync: false
       - key: BILLS_PROVIDERS
         value: mock                    # change to "vtung,flutterwave" once VTU.ng is funded and keys are set
       - key: VTUNG_USERNAME

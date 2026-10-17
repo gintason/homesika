@@ -111,6 +111,13 @@ Staging starts with the **mock** bill provider: nothing real is bought.
    `ANTHROPIC_API_KEY` are needed for real reading). Staging can use `NIN_PROVIDER=mock`; production
    refuses it until a real provider adapter is added. Until then, production can run with
    `ID_VERIFICATION_PROVIDER=manual`, where staff review everything in the admin.
+   **Switching on Smile ID:**
+   1. Sign up at portal.usesmileid.com and get the **sandbox** partner ID and API key.
+   2. Put them in `backend/.env` (`SMILEID_PARTNER_ID`, `SMILEID_API_KEY`, `SMILEID_PRODUCTION=false`).
+   3. Run `docker compose exec api python manage.py smileid_check <a sandbox test NIN>` and send me the
+      printed shape (it hides every value). I'll confirm the field names, then you set
+      `NIN_PROVIDER=smileid` on staging.
+   4. For live, use the production keys with `SMILEID_PRODUCTION=true`.
 3. **Addresses (automatic):** an address passes when it's the same place as the NIN record's address,
    or from a proof of address (bill, statement or tenancy paper, last 3 months) read by AI. Anything
    unclear, and anything an artisan asks a person to look at, appears in the admin under
@@ -124,6 +131,10 @@ Staging starts with the **mock** bill provider: nothing real is bought.
    the model was down, and deletes old photos. `maintenance-housekeeping` runs every 30 minutes on the worker. It expires
    job offers nobody answered (24 hours), reminds tenants to confirm (after 2 days), and confirms
    repairs automatically after 7 days.
+
+**Privacy notice:** it's served at `WEB_APP_URL/privacy`. Set `EXPO_PUBLIC_PRIVACY_URL` to that address
+when you build the app, so sign-up links to it. The text is a **draft for legal review**
+(`docs/PRIVACY_NOTICE.md`).
 
 ## Every later release
 

@@ -529,11 +529,19 @@ def housekeeping(now=None) -> dict:
     """Hourly: retry automatic checks stuck while a service was down; delete ID and address photos
     ARTISAN_DOCUMENT_RETENTION_DAYS after the check passed (type, last 4 digits and result are kept)."""
     now = now or timezone.now()
-    counts = {"retried": 0, "deleted": 0}
+    counts = {"retried": 0, "to_person": 0, "deleted": 0}
     stuck = VerificationCheck.objects.filter(
         status=VerificationCheck.Status.PROCESSING, updated_at__lt=now - timedelta(minutes=10)
     )
     for check in stuck:
+        if check.updated_at < now - timedelta(hours=6):  # still failing after ~6 tries: a person decides
+            _to_person(
+                check,
+                str(_("A person at Homesika will check this (usually within 1 working day).")),
+                {"reason": "automatic check unavailable"},
+            )
+            counts["to_person"] += 1
+            continue
         _queue("run_id_check" if check.kind == VerificationCheck.Kind.ID else "run_address_check", check.pk)
         counts["retried"] += 1
     old = VerificationCheck.objects.filter(
