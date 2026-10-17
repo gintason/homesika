@@ -58,6 +58,7 @@ const tv = [
     name: "DStv",
     customer_label: "Smartcard / IUC number",
     requires_verification: true,
+    fee: "100.00",
     plans: [plan("p-compact", "vtung-c", "Compact", "15700.00", 30)],
   }),
 ];
@@ -306,6 +307,26 @@ describe("bills: catalogue and forms", () => {
     fireEvent.press(screen.getByRole("button", { name: "Pay ₦600.00" }));
     await waitFor(() => expect(WebBrowser.openBrowserAsync).toHaveBeenCalledTimes(1));
     expect(calls.filter((c) => c.method === "POST")).toHaveLength(1); // the same order, not a new one
+  });
+
+  it("shows the catalogue fee up front and goes straight to checkout when the total matches", async () => {
+    const calls = mockFetch((c) => {
+      if (c.url.endsWith("/bills/verify/")) return json(200, { customer_id: "7012345678", name: "ADA OBI", details: {} });
+      if (c.url.endsWith("/bills/orders/"))
+        return json(201, order({ category: "cable_tv", amount: "15700.00", fee: "100.00", total: "15800.00" }));
+      return catalogue(c);
+    });
+    renderForm("cable_tv");
+    fireEvent.changeText(await screen.findByLabelText("Smartcard / IUC number"), "7012345678");
+    fireEvent.press(screen.getByRole("button", { name: "Check smartcard number" }));
+    expect(await screen.findByText(/ADA OBI/)).toBeTruthy();
+    fireEvent.press(screen.getByRole("radio", { name: /Compact/ }));
+    fireEvent.press(screen.getByRole("button", { name: "Continue" }));
+    expect(await screen.findByText("₦100.00")).toBeTruthy(); // the fee row, before any order exists
+    fireEvent.press(screen.getByRole("button", { name: "Pay ₦15,800.00" }));
+    await waitFor(() => expect(WebBrowser.openBrowserAsync).toHaveBeenCalledTimes(1)); // no second ask
+    expect(screen.queryByText(/A service fee of/)).toBeNull();
+    expect(calls.filter((c) => c.method === "POST" && c.url.endsWith("/bills/orders/"))).toHaveLength(1);
   });
 
   it("explains a daily limit error", async () => {

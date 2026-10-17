@@ -149,7 +149,8 @@ def create_order(
 ) -> Order:
     customer_id = normalise_customer(biller, customer_id)
     amount, fee, total = quote(biller, plan, amount)
-    if _spent_today(user, phone) + total > settings.BILLS_DAILY_LIMIT:
+    limit = settings.BILLS_DAILY_LIMIT
+    if limit and _spent_today(user, phone) + total > limit:
         raise LimitReached()
     customer_name = ""
     if biller.requires_verification:

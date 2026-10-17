@@ -333,6 +333,8 @@ export type Biller = {
   requires_verification: boolean;
   min_amount: string | null;
   max_amount: string | null;
+  /** Homesika's fee per order (naira), added to the total. Optional: older servers don't send it. */
+  fee?: string;
   plans: BillPlan[];
 };
 

@@ -75,10 +75,12 @@ def test_catalogue_is_seeded_and_samples_load(api_client):
     assert catalogue.load_samples() > 0
     dstv = api_client.get(reverse("v1:bills-catalogue"), {"category": "cable_tv"}).json()[0]
     assert dstv["plans"][0]["price"] == "4000.00" and "sample" in dstv["plans"][0]["name"]
-    assert dstv["fee"] == "0.00"
-    with override_settings(BILLS_FEES={"electricity": 100_00}):
+    # default fees: NGN 100 on electricity and cable TV, nothing on airtime or data
+    fees = {b["category"]: b["fee"] for b in api_client.get(reverse("v1:bills-catalogue")).json()}
+    assert fees == {"airtime": "0.00", "data": "0.00", "cable_tv": "100.00", "electricity": "100.00"}
+    with override_settings(BILLS_FEES={}):
         disco = api_client.get(reverse("v1:bills-catalogue"), {"category": "electricity"}).json()[0]
-    assert disco["fee"] == "100.00"
+    assert disco["fee"] == "0.00"
 
 
 def test_quote_rules():
@@ -282,6 +284,19 @@ def test_refund_failure_is_retried_by_reconciliation(api_client, buyer, monkeypa
     services.reconcile()
     order.refresh_from_db()
     assert order.status == "refunded"
+
+
+def test_no_daily_limit_by_default(api_client, buyer, settings):
+    assert settings.BILLS_DAILY_LIMIT == 0
+    for n in range(5):  # NGN 250,000 in a day, above the old NGN 200,000 default
+        r = buy(
+            api_client,
+            biller=str(mtn().pk),
+            customer_id="08031110001",
+            amount="50000",
+            key=f"bill-key-nolimit-{n:04d}",
+        )
+        assert r.status_code == 201
 
 
 def test_daily_limit(api_client, buyer, settings):

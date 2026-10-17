@@ -92,7 +92,11 @@ Staging starts with the **mock** bill provider: nothing real is bought.
    Run it again weekly; it's safe to repeat.
 4. **Set `BILLS_PROVIDERS`** to `vtung`. Add `,flutterwave` only after you've entered Flutterwave
    bill codes for each biller in the admin (Bills → Billers → provider codes).
-5. **Optional:** set `BILLS_FEES` (e.g. `{"electricity": 10000}` = NGN 100) and `BILLS_DAILY_LIMIT`.
+5. **Fees and limits (defaults already set):** NGN 100 per order on electricity and cable TV, nothing
+   on airtime and data, and no daily spending limit. To change them, set `BILLS_FEES` (kobo, e.g.
+   `{"electricity": 10000, "cable_tv": 10000}`) or `BILLS_DAILY_LIMIT` (kobo; `0` = no limit).
+   **Fund the VTU.ng wallet before switching `BILLS_PROVIDERS` to `vtung`.** With no balance, every
+   order is refunded.
 6. **Watch the admin:** orders flagged **needs review** are payments we couldn't settle
    automatically (wrong amount, or no final status from the provider). Check them daily.
 

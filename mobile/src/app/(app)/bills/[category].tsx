@@ -19,7 +19,7 @@ import {
   quickAmounts,
   type AmountError,
 } from "@/lib/bills";
-import { formatKobo, formatMoney } from "@/lib/money";
+import { formatKobo, formatMoney, fromKobo, toKobo } from "@/lib/money";
 import { formatPhone, normalisePhone } from "@/lib/phone";
 import { useSession } from "@/store/session";
 
@@ -199,7 +199,11 @@ function BillForm({ category }: { category: BillCategory }) {
     const what = [biller.name, plan ? planLabel(t, plan) : null].filter(Boolean).join(" · ");
     const forWhom = PHONE_CATEGORIES.includes(category) ? formatPhone(customerId) : customerId;
     const address = detailText(verifiedCustomer?.details, "customer_address");
-    const payAmount = created ? created.total : amount;
+    // The fee from the catalogue is shown up front; if the server's total still differs, the
+    // created order's figures replace these and the person is asked again.
+    const fee = created ? created.fee : (biller.fee ?? "0.00");
+    const total = created ? created.total : fromKobo(toKobo(amount) + toKobo(fee));
+    const payAmount = total;
     return (
       <Screen
         title={t("bills.review.title")}
@@ -210,7 +214,7 @@ function BillForm({ category }: { category: BillCategory }) {
               title={t("bills.pay", { amount: formatMoney(payAmount) })}
               loading={checkout.busy}
               loadingLabel={t("bills.starting")}
-              onPress={() => input && checkout.submit(input, amount)}
+              onPress={() => input && checkout.submit(input, total)}
             />
             <Button title={t("bills.review.edit")} variant="ghost" onPress={editAgain} disabled={checkout.busy} />
           </View>
@@ -223,14 +227,8 @@ function BillForm({ category }: { category: BillCategory }) {
           {address ? <SummaryRow label={t("bills.review.address")} value={address} /> : null}
           <View className="h-px bg-surface-line" />
           <SummaryRow label={t("bills.review.amount")} value={formatMoney(created ? created.amount : amount)} />
-          {created ? (
-            <>
-              <SummaryRow label={t("bills.review.fee")} value={formatMoney(created.fee)} />
-              <SummaryRow label={t("bills.review.total")} value={formatMoney(created.total)} strong />
-            </>
-          ) : (
-            <SummaryRow label={t("bills.review.total")} value={formatMoney(amount)} strong />
-          )}
+          {toKobo(fee) > 0 ? <SummaryRow label={t("bills.review.fee")} value={formatMoney(fee)} /> : null}
+          <SummaryRow label={t("bills.review.total")} value={formatMoney(total)} strong />
         </Card>
         {created ? (
           <Banner tone="info" message={t("bills.review.feeAdded", { fee: formatMoney(created.fee), total: formatMoney(created.total) })} />

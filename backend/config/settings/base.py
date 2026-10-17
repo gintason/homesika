@@ -241,8 +241,9 @@ VTUNG_PASSWORD = env("VTUNG_PASSWORD", default="")
 VTUNG_USER_PIN = env("VTUNG_USER_PIN", default="")  # signs VTU.ng webhooks
 BILLS_DATA_MARKUP_PERCENT = env.float("BILLS_DATA_MARKUP_PERCENT", default=0.0)
 BILLS_TV_MARKUP_PERCENT = env.float("BILLS_TV_MARKUP_PERCENT", default=0.0)
-BILLS_FEES = env.json("BILLS_FEES", default={})  # kobo per category, e.g. {"electricity": 10000}
-BILLS_DAILY_LIMIT = env.int("BILLS_DAILY_LIMIT", default=200_000_00)  # kobo per person per 24h
+# Kobo per order, by category. Default: NGN 100 on electricity and cable TV, nothing on airtime/data.
+BILLS_FEES = env.json("BILLS_FEES", default={"electricity": 100_00, "cable_tv": 100_00})
+BILLS_DAILY_LIMIT = env.int("BILLS_DAILY_LIMIT", default=0)  # kobo per person per 24h; 0 = no limit
 BILLS_PAYMENT_TTL_MINUTES = env.int("BILLS_PAYMENT_TTL_MINUTES", default=60)
 BILLS_STATUS_POLL_SECONDS = env.int("BILLS_STATUS_POLL_SECONDS", default=30)
 BILLS_MAX_STATUS_CHECKS = env.int("BILLS_MAX_STATUS_CHECKS", default=12)

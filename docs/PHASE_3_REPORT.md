@@ -141,3 +141,15 @@
    * the platform fee;
    * the Anthropic key and evaluation budget;
    * WhatsApp Business readiness.
+
+## Decisions after review (applied)
+
+1. **Licence:** Homesika has a reselling agreement with VTU.ng.
+2. **Fees:** NGN 100 per order on **electricity and cable TV**, and nothing on airtime or data. This
+   is now the default `BILLS_FEES`. The app shows the fee and total on the review screen before
+   payment, so there is no second confirmation unless the server's fee differs.
+3. **Daily limit:** none. `BILLS_DAILY_LIMIT` now defaults to `0`, meaning no limit; the setting
+   still exists if you ever want one.
+4. **VTU.ng wallet:** not funded yet. Keep `BILLS_PROVIDERS=mock` on staging until it is funded.
+   With an empty wallet, every live order would be refunded.
+5. **Copy button:** now uses `expo-clipboard`, with the share sheet as a fallback.
