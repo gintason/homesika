@@ -32,7 +32,8 @@ export function ListRow({ title, subtitle, trailing, leading, onPress, accessibi
       {chevron ? <Ionicons name="chevron-forward" size={20} color={tokens.color.ink[500]} /> : null}
     </View>
   );
-  if (!onPress) return body;
+  // Not tappable: still read as one item ("ID check, Done") when a label is given.
+  if (!onPress) return accessibilityLabel ? <View accessible accessibilityLabel={accessibilityLabel}>{body}</View> : body;
   return (
     <Pressable
       onPress={onPress}

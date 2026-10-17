@@ -60,6 +60,22 @@ jest.mock("expo-sharing", () => ({
 
 jest.mock("@react-native-community/netinfo", () => require("@react-native-community/netinfo/jest/netinfo-mock.js"));
 
+// Camera / gallery: tests set what the picker "returns" with mockResolvedValueOnce.
+jest.mock("expo-image-picker", () => ({
+  requestCameraPermissionsAsync: jest.fn(async () => ({ granted: true })),
+  requestMediaLibraryPermissionsAsync: jest.fn(async () => ({ granted: true })),
+  launchCameraAsync: jest.fn(async () => ({ canceled: false, assets: [{ uri: "file:///camera.jpg", width: 4000, height: 3000 }] })),
+  launchImageLibraryAsync: jest.fn(async () => ({ canceled: false, assets: [{ uri: "file:///gallery.jpg", width: 800, height: 600 }] })),
+}));
+
+jest.mock("expo-image-manipulator", () => {
+  const ctx = {
+    resize: jest.fn(() => ctx),
+    renderAsync: jest.fn(async () => ({ saveAsync: jest.fn(async () => ({ uri: "file:///small.jpg", width: 1600, height: 1200 })) })),
+  };
+  return { ImageManipulator: { manipulate: jest.fn(() => ctx) }, SaveFormat: { JPEG: "jpeg", PNG: "png" }, __ctx: ctx };
+});
+
 // Icons render nothing under Jest (avoids font loading); the accessible text lives elsewhere.
 jest.mock("@expo/vector-icons", () => ({ Ionicons: () => null }));
 

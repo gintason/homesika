@@ -77,6 +77,7 @@ export default function Profile() {
 
       <Card>
         <ListRow title={t("profile.findPlace")} chevron onPress={() => router.push("/find")} />
+        <ListRow title={t("profile.work")} chevron onPress={() => router.push("/work")} />
       </Card>
 
       {/* Turning it on happens on the lock screen (it needs the PIN once); here it can be turned off. */}

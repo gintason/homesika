@@ -36,6 +36,14 @@
         {
           "faceIDPermission": "Allow Homesika to use Face ID to unlock the app."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Homesika to use your photos so you can show what needs repairing.",
+          "cameraPermission": "Allow Homesika to use the camera so you can take photos of repairs and ID.",
+          "microphonePermission": false
+        }
       ]
     ],
     "experiments": {

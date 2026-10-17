@@ -127,13 +127,15 @@ export async function api<T>(path: string, opts: ApiOptions = {}): Promise<T> {
       Accept: "application/json",
       "Accept-Language": i18n.language || "en",
     };
-    if (body !== undefined) headers["Content-Type"] = "application/json";
+    // FormData (photo uploads) goes as multipart: fetch sets Content-Type with the boundary.
+    const isForm = typeof FormData !== "undefined" && body instanceof FormData;
+    if (body !== undefined && !isForm) headers["Content-Type"] = "application/json";
     if (idempotencyKey) headers["Idempotency-Key"] = idempotencyKey;
     if (auth && access) headers.Authorization = `Bearer ${access}`;
     return fetch(absoluteUrl(path), {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
       signal,
     });
   };

@@ -395,3 +395,242 @@ export const billsApi = {
   order: (id: string) => api<BillOrder>(`/api/v1/bills/orders/${encodeURIComponent(id)}/`),
   receiptPath: (id: string) => `/api/v1/bills/orders/${encodeURIComponent(id)}/receipt/`,
 };
+
+/* ---- Phase 4: repairs and artisans ----------------------------------------------------------------
+ *   backend/apps/maintenance/{views,serializers}.py (TicketSerializer viewer=tenant, ArtisanJobSerializer)
+ *   backend/apps/artisans/{views,serializers}.py (MyArtisanSerializer)
+ *   No money moves here: the price of repair work is agreed with the artisan.
+ */
+
+export type Trade =
+  | "plumbing"
+  | "electrical"
+  | "carpentry"
+  | "painting"
+  | "ac"
+  | "generator"
+  | "roofing"
+  | "tiling"
+  | "welding"
+  | "appliance"
+  | "pest"
+  | "cleaning"
+  | "locksmith"
+  | "other";
+export const TRADES: Trade[] = [
+  "plumbing",
+  "electrical",
+  "carpentry",
+  "painting",
+  "ac",
+  "generator",
+  "roofing",
+  "tiling",
+  "welding",
+  "appliance",
+  "pest",
+  "cleaning",
+  "locksmith",
+  "other",
+];
+export type TicketStatus = "awaiting_approval" | "approved" | "assigned" | "in_progress" | "done" | "confirmed" | "rejected" | "cancelled";
+export type TicketPriority = "low" | "normal" | "urgent" | "emergency";
+export type JobStatus = "offered" | "accepted" | "declined" | "on_site" | "completed" | "confirmed" | "cancelled";
+
+export type TicketPhoto = { id: string; stage: "report" | "completion"; url: string | null; created_at: string };
+export type TicketEvent = {
+  id: string;
+  kind: string;
+  actor_role: "tenant" | "staff" | "artisan" | "system" | "";
+  actor_name: string;
+  note: string;
+  internal: boolean;
+  created_at: string;
+};
+export type TicketJob = {
+  id: string;
+  status: JobStatus;
+  artisan: {
+    id: string;
+    display_name: string;
+    is_verified: boolean;
+    rating_avg: number | null;
+    rating_count: number;
+    jobs_completed: number;
+    /** Only once they've accepted. */
+    phone_number: string | null;
+  };
+  offer_expires_at: string;
+  scheduled_for: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  completion_note: string;
+};
+/** GET /me/tickets/ and /me/tickets/{id}/ (the tenant's view). */
+export type Ticket = {
+  id: string;
+  reference: string;
+  status: TicketStatus;
+  category: Trade;
+  priority: TicketPriority;
+  title: string;
+  description: string;
+  access_notes: string;
+  channel: "app" | "web" | "whatsapp";
+  unit: { id: string; label: string; property: string; address: string; city: string; organization: string };
+  closed_reason: string;
+  done_at: string | null;
+  confirmed_at: string | null;
+  auto_confirmed: boolean;
+  created_at: string;
+  photos: TicketPhoto[];
+  job: TicketJob | null;
+  rating: { score: number; comment: string } | null;
+  events: TicketEvent[];
+  can: ("cancel" | "confirm" | "reopen" | "rate" | "comment" | "photo")[];
+};
+export type ReportInput = {
+  lease: string;
+  category: Trade;
+  priority: TicketPriority;
+  title: string;
+  description: string;
+  access_notes?: string;
+};
+
+export type CheckStatus = "not_started" | "pending" | "passed" | "failed";
+export type VoucherKind = "guarantor" | "reference";
+export type MyVoucher = {
+  id: string;
+  kind: VoucherKind;
+  full_name: string;
+  phone_number: string;
+  relationship: string;
+  occupation: string;
+  status: "pending" | "confirmed" | "declined" | "expired";
+  link_sent_at: string | null;
+  sends: number;
+  responded_at: string | null;
+};
+/** GET/PATCH /artisans/me/ */
+export type MyArtisan = {
+  id: string;
+  display_name: string;
+  trades: Trade[];
+  service_areas: string[];
+  address: string;
+  city: string;
+  state: string;
+  bio: string;
+  years_experience: number | null;
+  is_available: boolean;
+  status: "pending" | "verified" | "suspended" | "removed";
+  status_reason: string;
+  is_verified: boolean;
+  verified_at: string | null;
+  rating_avg: number | null;
+  rating_count: number;
+  jobs_completed: number;
+  checks: { kind: "id" | "phone" | "address"; status: CheckStatus; note: string; id_type: string; id_number_last4: string; attempts: number }[];
+  vouchers: MyVoucher[];
+  requirements: {
+    id: boolean;
+    phone: boolean;
+    address: boolean;
+    guarantors: number;
+    guarantors_needed: number;
+    references: number;
+    references_needed: number;
+    complete: boolean;
+  };
+};
+export type ApplyInput = {
+  display_name: string;
+  trades: Trade[];
+  service_areas: string[];
+  address: string;
+  city?: string;
+  state?: string;
+  bio?: string;
+  years_experience?: number | null;
+  consent: boolean;
+};
+export type VoucherInput = {
+  kind: VoucherKind;
+  full_name: string;
+  phone_number: string;
+  relationship: string;
+  occupation?: string;
+  address?: string;
+};
+export const ID_TYPES = ["nin", "drivers_licence", "voters_card", "passport"] as const;
+export type IdType = (typeof ID_TYPES)[number];
+
+/** GET /artisans/me/jobs/ (the artisan's view: address and tenant contact only once accepted). */
+export type ArtisanJob = {
+  id: string;
+  status: JobStatus;
+  organization: string;
+  offer_note: string;
+  offer_expires_at: string;
+  scheduled_for: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  completion_note: string;
+  confirmed_at: string | null;
+  created_at: string;
+  ticket: {
+    id: string;
+    reference: string;
+    status: TicketStatus;
+    category: Trade;
+    priority: TicketPriority;
+    title: string;
+    description: string;
+    access_notes: string;
+    photos: TicketPhoto[];
+    events: TicketEvent[];
+  };
+  location: { area: string; state: string; address?: string; property?: string; unit?: string };
+  contact: { name: string; phone_number: string } | null;
+  rating: { score: number; comment: string } | null;
+  can: ("accept" | "decline" | "schedule" | "start" | "complete" | "comment" | "photo")[];
+};
+
+const enc = encodeURIComponent;
+
+export const repairsApi = {
+  list: (cursor?: string | null) => page<Ticket>(cursor ?? "/api/v1/me/tickets/?status=all"),
+  get: (id: string) => api<Ticket>(`/api/v1/me/tickets/${enc(id)}/`),
+  report: (input: ReportInput, idempotencyKey: string) =>
+    api<Ticket>("/api/v1/me/tickets/", { method: "POST", body: input, idempotencyKey }),
+  addPhoto: (id: string, form: FormData) => api<TicketPhoto>(`/api/v1/me/tickets/${enc(id)}/photos/`, { method: "POST", body: form }),
+  cancel: (id: string, reason: string) => api<Ticket>(`/api/v1/me/tickets/${enc(id)}/cancel/`, { method: "POST", body: { reason } }),
+  confirm: (id: string) => api<Ticket>(`/api/v1/me/tickets/${enc(id)}/confirm/`, { method: "POST" }),
+  reopen: (id: string, note: string) => api<Ticket>(`/api/v1/me/tickets/${enc(id)}/reopen/`, { method: "POST", body: { note } }),
+  rate: (id: string, score: number, comment: string) =>
+    api<Ticket>(`/api/v1/me/tickets/${enc(id)}/rate/`, { method: "POST", body: { score, comment } }),
+  comment: (id: string, note: string) => api<TicketEvent>(`/api/v1/me/tickets/${enc(id)}/comments/`, { method: "POST", body: { note } }),
+};
+
+export const artisanApi = {
+  me: () => api<MyArtisan>("/api/v1/artisans/me/"),
+  apply: (input: ApplyInput) => api<MyArtisan>("/api/v1/artisans/apply/", { method: "POST", body: input }),
+  update: (patch: Partial<Pick<MyArtisan, "is_available" | "trades" | "service_areas" | "address" | "city" | "state" | "bio">>) =>
+    api<MyArtisan>("/api/v1/artisans/me/", { method: "PATCH", body: patch }),
+  submitId: (form: FormData) => api<MyArtisan>("/api/v1/artisans/me/verification/id/", { method: "POST", body: form }),
+  addVoucher: (input: VoucherInput) => api<MyVoucher>("/api/v1/artisans/me/verification/vouchers/", { method: "POST", body: input }),
+  resendVoucher: (id: string) => api<MyVoucher>(`/api/v1/artisans/me/verification/vouchers/${enc(id)}/resend/`, { method: "POST" }),
+  removeVoucher: (id: string) => api<void>(`/api/v1/artisans/me/verification/vouchers/${enc(id)}/`, { method: "DELETE" }),
+  jobs: (status: "active" | "history", cursor?: string | null) => page<ArtisanJob>(cursor ?? `/api/v1/artisans/me/jobs/?status=${status}`),
+  job: (id: string) => api<ArtisanJob>(`/api/v1/artisans/me/jobs/${enc(id)}/`),
+  accept: (id: string, scheduled_for: string | null) =>
+    api<ArtisanJob>(`/api/v1/artisans/me/jobs/${enc(id)}/accept/`, { method: "POST", body: { scheduled_for } }),
+  decline: (id: string, reason: string) => api<ArtisanJob>(`/api/v1/artisans/me/jobs/${enc(id)}/decline/`, { method: "POST", body: { reason } }),
+  schedule: (id: string, scheduled_for: string) =>
+    api<ArtisanJob>(`/api/v1/artisans/me/jobs/${enc(id)}/schedule/`, { method: "POST", body: { scheduled_for } }),
+  start: (id: string) => api<ArtisanJob>(`/api/v1/artisans/me/jobs/${enc(id)}/start/`, { method: "POST" }),
+  complete: (id: string, note: string) => api<ArtisanJob>(`/api/v1/artisans/me/jobs/${enc(id)}/complete/`, { method: "POST", body: { note } }),
+  addPhoto: (id: string, form: FormData) => api<TicketPhoto>(`/api/v1/artisans/me/jobs/${enc(id)}/photos/`, { method: "POST", body: form }),
+  comment: (id: string, note: string) => api<TicketEvent>(`/api/v1/artisans/me/jobs/${enc(id)}/comments/`, { method: "POST", body: { note } }),
+};

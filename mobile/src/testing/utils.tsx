@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react-native";
 import type { ReactElement } from "react";
 
-export type Call = { url: string; method: string; headers: Record<string, string>; body: unknown };
+export type Call = { url: string; method: string; headers: Record<string, string>; body: unknown; /** The raw body (e.g. FormData for uploads). */ raw?: unknown };
 export type Route = (call: Call) => Response | Promise<Response> | undefined;
 
 export function json(status: number, body?: unknown, headers: Record<string, string> = {}) {
@@ -22,6 +22,7 @@ export function mockFetch(route: Route): Call[] {
       method: init.method ?? "GET",
       headers: (init.headers as Record<string, string>) ?? {},
       body: typeof init.body === "string" ? JSON.parse(init.body) : undefined,
+      raw: init.body,
     };
     calls.push(call);
     const res = await route(call);

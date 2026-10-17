@@ -139,6 +139,7 @@ export default function Home() {
       refreshing={refreshing}
     >
       {content}
+      {(leases.data ?? []).some((l) => l.status === "active") ? <RepairsCard /> : null}
       <BillsCard />
     </Screen>
   );
@@ -154,6 +155,21 @@ function LeaseCard({ lease }: { lease: MyLease }) {
       </Text>
       {lease.property_address ? <Text className="text-ink-600">{lease.property_address}</Text> : null}
       <Text className="text-ink-600">{t("home.landlordLine", { name: lease.landlord })}</Text>
+    </Card>
+  );
+}
+
+/** Repairs entry for tenants with a home: report a problem, or see my requests. */
+function RepairsCard() {
+  const { t } = useTranslation();
+  return (
+    <Card accessibilityLabel={t("repairs.title")}>
+      <Text variant="heading" accessibilityRole="header">
+        {t("repairs.homeTitle")}
+      </Text>
+      <Text className="text-ink-600">{t("repairs.homeBody")}</Text>
+      <Button title={t("repairs.report")} variant="secondary" onPress={() => router.push("/repairs/new")} />
+      <Button title={t("repairs.myRequests")} variant="ghost" onPress={() => router.push("/repairs")} />
     </Card>
   );
 }
