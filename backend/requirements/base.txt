@@ -37,6 +37,10 @@ anthropic==1.15.0
 # NIN lookup for artisan checks (Smile ID's official server-side SDK)
 smile-id-core==3.0.1
 
+# Push notifications through Expo (official server SDK) for alerts and announcements
+exponent_server_sdk==2.2.0
+six==1.17.0
+
 # Observability
 sentry-sdk==2.72.0
 python-json-logger==4.2.0

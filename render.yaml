@@ -55,6 +55,10 @@ envVarGroups:
         sync: false
       - key: ANTHROPIC_MODEL
         value: claude-opus-5-5
+      - key: PUSH_PROVIDER
+        value: expo                    # panic alerts and announcements (Expo push service)
+      - key: EXPO_ACCESS_TOKEN
+        sync: false
       - key: ID_VERIFICATION_PROVIDER
         value: nin                     # NIN lookup + AI document reading; "manual" = staff review
       - key: NIN_PROVIDER

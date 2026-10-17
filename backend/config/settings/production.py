@@ -49,6 +49,9 @@ if ENVIRONMENT == "production" and NIN_PROVIDER == "smileid" and not SMILEID_PRO
     raise ImproperlyConfigured(
         "SMILEID_PRODUCTION must be true in production (it selects Smile ID's live server)."
     )
+# Panic alerts depend on push: the mock sends nothing.
+if ENVIRONMENT == "production" and PUSH_PROVIDER == "mock":  # noqa: F405
+    raise ImproperlyConfigured("PUSH_PROVIDER must be 'expo' in production.")
 if ENVIRONMENT == "production" and WHATSAPP_PROVIDER == "mock":  # noqa: F405
     raise ImproperlyConfigured("WHATSAPP_PROVIDER must be 'cloud' or 'off' in production.")
 if SENTRY_DSN:

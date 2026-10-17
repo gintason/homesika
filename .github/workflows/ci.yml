@@ -63,6 +63,7 @@ jobs:
           WHATSAPP_PROVIDER: cloud
           BILLS_PROVIDERS: vtung,flutterwave
           ID_VERIFICATION_PROVIDER: manual
+          PUSH_PROVIDER: expo
       - name: Tests (Postgres + Redis)
         run: pytest
 
@@ -128,5 +129,5 @@ jobs:
           docker run --rm -e DJANGO_SETTINGS_MODULE=config.settings.production \
             -e DJANGO_SECRET_KEY=ci-only-not-a-real-secret-key-for-image-checks-0123456789abcdef \
             -e DATABASE_URL=sqlite:////tmp/ci.db -e PAYMENT_GATEWAYS=paystack -e ASSISTANT_PROVIDER=anthropic \
-            -e WHATSAPP_PROVIDER=off -e BILLS_PROVIDERS=vtung -e ID_VERIFICATION_PROVIDER=manual -e DJANGO_ALLOWED_HOSTS=localhost -e SKIP_MIGRATIONS=1 \
+            -e WHATSAPP_PROVIDER=off -e BILLS_PROVIDERS=vtung -e ID_VERIFICATION_PROVIDER=manual -e PUSH_PROVIDER=expo -e DJANGO_ALLOWED_HOSTS=localhost -e SKIP_MIGRATIONS=1 \
             homesika-api:ci python manage.py check

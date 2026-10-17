@@ -1121,6 +1121,171 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+  /api/v1/me/alerts/:
+    get:
+      operationId: me_alerts_list
+      description: Panic alerts I raised. POST raises one (safe to retry with the
+        same client_id).
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMyAlertList'
+          description: ''
+    post:
+      operationId: me_alerts_create
+      description: Panic alerts I raised. POST raises one (safe to retry with the
+        same client_id).
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Trigger'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Trigger'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Trigger'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyAlert'
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyAlert'
+          description: ''
+  /api/v1/me/alerts/{id}/:
+    get:
+      operationId: me_alerts_retrieve
+      description: Panic alerts I raised. POST raises one (safe to retry with the
+        same client_id).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this panic alert.
+        required: true
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyAlert'
+          description: ''
+  /api/v1/me/alerts/{id}/cancel/:
+    post:
+      operationId: me_alerts_cancel_create
+      description: '''I''m safe now''.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this panic alert.
+        required: true
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyAlert'
+          description: ''
+  /api/v1/me/alerts/{id}/kind/:
+    post:
+      operationId: me_alerts_kind_create
+      description: Panic alerts I raised. POST raises one (safe to retry with the
+        same client_id).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this panic alert.
+        required: true
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Kind'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Kind'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Kind'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyAlert'
+          description: ''
+  /api/v1/me/alerts/{id}/received/:
+    post:
+      operationId: me_alerts_received_create
+      description: The app calls this when an alert push is opened or shown, so the
+        desk knows it reached you.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this panic alert.
+        required: true
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/me/charges/:
     get:
       operationId: me_charges_list
@@ -1277,6 +1442,201 @@ paths:
               schema:
                 $ref: '#/components/schemas/DataRequest'
           description: ''
+  /api/v1/me/estates/:
+    get:
+      operationId: me_estates_list
+      description: Estates I belong to (or asked to join).
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMyEstateList'
+          description: ''
+  /api/v1/me/estates/announcements/:
+    get:
+      operationId: me_estates_announcements_list
+      description: Estates I belong to (or asked to join).
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: estate
+        schema:
+          type: string
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAnnouncementList'
+          description: ''
+  /api/v1/me/estates/join/:
+    post:
+      operationId: me_estates_join_create
+      description: Estates I belong to (or asked to join).
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Join'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Join'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Join'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyEstate'
+          description: ''
+  /api/v1/me/gate-passes/:
+    get:
+      operationId: me_gate_passes_list
+      description: Gate passes I made for my visitors.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - all
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGatePassList'
+          description: ''
+    post:
+      operationId: me_gate_passes_create
+      description: Gate passes I made for my visitors.
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatePassCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GatePassCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GatePassCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatePass'
+          description: ''
+  /api/v1/me/gate-passes/{id}/:
+    get:
+      operationId: me_gate_passes_retrieve
+      description: Gate passes I made for my visitors.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this gate pass.
+        required: true
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatePass'
+          description: ''
+  /api/v1/me/gate-passes/{id}/cancel/:
+    post:
+      operationId: me_gate_passes_cancel_create
+      description: Gate passes I made for my visitors.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this gate pass.
+        required: true
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatePass'
+          description: ''
   /api/v1/me/leases/:
     get:
       operationId: me_leases_list
@@ -1393,6 +1753,41 @@ paths:
                 type: string
                 format: binary
           description: ''
+  /api/v1/me/push-devices/:
+    post:
+      operationId: me_push_devices_create
+      description: The app registers its Expo push token after sign-in, and removes
+        it on sign-out.
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushDevice'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PushDevice'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PushDevice'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+    delete:
+      operationId: me_push_devices_destroy
+      description: The app registers its Expo push token after sign-in, and removes
+        it on sign-out.
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/me/tickets/:
     get:
       operationId: me_tickets_list
@@ -1836,6 +2231,451 @@ paths:
               schema:
                 $ref: '#/components/schemas/Organization'
           description: ''
+  /api/v1/orgs/{org_id}/alerts/:
+    get:
+      operationId: orgs_alerts_list
+      description: Panic alerts in the organization's estates.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: estate
+        schema:
+          type: string
+        description: Only this estate
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: open (default), closed or all
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAlertList'
+          description: ''
+  /api/v1/orgs/{org_id}/alerts/{id}/:
+    get:
+      operationId: orgs_alerts_retrieve
+      description: Panic alerts in the organization's estates.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this panic alert.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertDetail'
+          description: ''
+  /api/v1/orgs/{org_id}/alerts/{id}/acknowledge/:
+    post:
+      operationId: orgs_alerts_acknowledge_create
+      description: Panic alerts in the organization's estates.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this panic alert.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertDetail'
+          description: ''
+  /api/v1/orgs/{org_id}/alerts/{id}/false-alarm/:
+    post:
+      operationId: orgs_alerts_false_alarm_create
+      description: Panic alerts in the organization's estates.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this panic alert.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Close'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Close'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Close'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertDetail'
+          description: ''
+  /api/v1/orgs/{org_id}/alerts/{id}/kind/:
+    post:
+      operationId: orgs_alerts_kind_create
+      description: Panic alerts in the organization's estates.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this panic alert.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Kind'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Kind'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Kind'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertDetail'
+          description: ''
+  /api/v1/orgs/{org_id}/alerts/{id}/notes/:
+    post:
+      operationId: orgs_alerts_notes_create
+      description: Panic alerts in the organization's estates.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this panic alert.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Close'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Close'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Close'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncidentNote'
+          description: ''
+  /api/v1/orgs/{org_id}/alerts/{id}/resolve/:
+    post:
+      operationId: orgs_alerts_resolve_create
+      description: Panic alerts in the organization's estates.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this panic alert.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Close'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Close'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Close'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertDetail'
+          description: ''
+  /api/v1/orgs/{org_id}/alerts/{id}/respond/:
+    post:
+      operationId: orgs_alerts_respond_create
+      description: Panic alerts in the organization's estates.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this panic alert.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertNote'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AlertNote'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AlertNote'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertDetail'
+          description: ''
+  /api/v1/orgs/{org_id}/alerts/drill/:
+    post:
+      operationId: orgs_alerts_drill_create
+      description: Send a clearly marked TEST alert to security and managers to prove
+        delivery works.
+      parameters:
+      - in: query
+        name: estate
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertDetail'
+          description: ''
+  /api/v1/orgs/{org_id}/alerts/report/:
+    get:
+      operationId: orgs_alerts_report_retrieve
+      description: Panic alerts in the organization's estates.
+      parameters:
+      - in: query
+        name: days
+        schema:
+          type: integer
+      - in: query
+        name: estate
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeliveryReport'
+          description: ''
+  /api/v1/orgs/{org_id}/announcements/:
+    get:
+      operationId: orgs_announcements_list
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: estate
+        schema:
+          type: string
+        description: Only this estate
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAnnouncementList'
+          description: ''
+    post:
+      operationId: orgs_announcements_create
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Announcement'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Announcement'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Announcement'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Announcement'
+          description: ''
   /api/v1/orgs/{org_id}/arrears/:
     get:
       operationId: orgs_arrears_retrieve
@@ -2255,6 +3095,648 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /api/v1/orgs/{org_id}/dues-plans/:
+    get:
+      operationId: orgs_dues_plans_list
+      description: Estate dues. Creating or changing a plan raises charges for verified
+        residents straight away.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: estate
+        schema:
+          type: string
+        description: Only this estate
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDuesPlanList'
+          description: ''
+    post:
+      operationId: orgs_dues_plans_create
+      description: Estate dues. Creating or changing a plan raises charges for verified
+        residents straight away.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DuesPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DuesPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DuesPlan'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuesPlan'
+          description: ''
+  /api/v1/orgs/{org_id}/dues-plans/{id}/:
+    get:
+      operationId: orgs_dues_plans_retrieve
+      description: Estate dues. Creating or changing a plan raises charges for verified
+        residents straight away.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this dues plan.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuesPlan'
+          description: ''
+    patch:
+      operationId: orgs_dues_plans_partial_update
+      description: Estate dues. Creating or changing a plan raises charges for verified
+        residents straight away.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this dues plan.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDuesPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDuesPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDuesPlan'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuesPlan'
+          description: ''
+  /api/v1/orgs/{org_id}/estate-members/:
+    get:
+      operationId: orgs_estate_members_list
+      description: Residents. ?estate=&status=pending|approved|suspended|removed
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: estate
+        schema:
+          type: string
+        description: Only this estate
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMemberList'
+          description: ''
+    post:
+      operationId: orgs_estate_members_create
+      description: Residents. ?estate=&status=pending|approved|suspended|removed
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MemberCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MemberCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
+  /api/v1/orgs/{org_id}/estate-members/{id}/:
+    get:
+      operationId: orgs_estate_members_retrieve
+      description: Residents. ?estate=&status=pending|approved|suspended|removed
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this estate member.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
+  /api/v1/orgs/{org_id}/estate-members/{id}/approve/:
+    post:
+      operationId: orgs_estate_members_approve_create
+      description: Residents. ?estate=&status=pending|approved|suspended|removed
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this estate member.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Approve'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Approve'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Approve'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
+  /api/v1/orgs/{org_id}/estate-members/{id}/remove/:
+    post:
+      operationId: orgs_estate_members_remove_create
+      description: Residents. ?estate=&status=pending|approved|suspended|removed
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this estate member.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberReason'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MemberReason'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MemberReason'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
+  /api/v1/orgs/{org_id}/estate-members/{id}/suspend/:
+    post:
+      operationId: orgs_estate_members_suspend_create
+      description: Residents. ?estate=&status=pending|approved|suspended|removed
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this estate member.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberReason'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MemberReason'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MemberReason'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
+  /api/v1/orgs/{org_id}/estates/:
+    get:
+      operationId: orgs_estates_list
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEstateList'
+          description: ''
+    post:
+      operationId: orgs_estates_create
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EstateCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EstateCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EstateCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Estate'
+          description: ''
+  /api/v1/orgs/{org_id}/estates/{id}/:
+    get:
+      operationId: orgs_estates_retrieve
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this estate.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Estate'
+          description: ''
+    patch:
+      operationId: orgs_estates_partial_update
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this estate.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEstate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEstate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEstate'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Estate'
+          description: ''
+  /api/v1/orgs/{org_id}/estates/{id}/houses/:
+    get:
+      operationId: orgs_estates_houses_list
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this estate.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHouseList'
+          description: ''
+    post:
+      operationId: orgs_estates_houses_create
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this estate.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Houses'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Houses'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Houses'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HousesAdded'
+          description: ''
+  /api/v1/orgs/{org_id}/estates/{id}/regenerate-code/:
+    post:
+      operationId: orgs_estates_regenerate_code_create
+      description: |-
+        For views nested under /orgs/<org_id>/. After permissions run, self.org and self.membership are set.
+
+        Views declare `capabilities = {"list": "property.view", "create": "property.manage", ...}`; actions
+        missing from the map default to "<scope>.view" for safe methods and "<scope>.manage" otherwise.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this estate.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Estate'
+          description: ''
   /api/v1/orgs/{org_id}/expenses/:
     get:
       operationId: orgs_expenses_list
@@ -2454,6 +3936,238 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/orgs/{org_id}/gate/:
+    get:
+      operationId: orgs_gate_list
+      description: 'The gate: verify a code, check visitors in and out. GET lists
+        today''s and recent passes (the log).'
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: query
+        name: estate
+        schema:
+          type: string
+        description: Only this estate
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGateCheckList'
+          description: ''
+  /api/v1/orgs/{org_id}/gate/{id}/:
+    get:
+      operationId: orgs_gate_retrieve
+      description: 'The gate: verify a code, check visitors in and out. GET lists
+        today''s and recent passes (the log).'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this gate pass.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GateCheck'
+          description: ''
+  /api/v1/orgs/{org_id}/gate/{id}/check-in/:
+    post:
+      operationId: orgs_gate_check_in_create
+      description: 'The gate: verify a code, check visitors in and out. GET lists
+        today''s and recent passes (the log).'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this gate pass.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GateNote'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GateNote'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GateNote'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GateCheck'
+          description: ''
+  /api/v1/orgs/{org_id}/gate/{id}/check-out/:
+    post:
+      operationId: orgs_gate_check_out_create
+      description: 'The gate: verify a code, check visitors in and out. GET lists
+        today''s and recent passes (the log).'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this gate pass.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GateNote'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GateNote'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GateNote'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GateEvent'
+          description: ''
+  /api/v1/orgs/{org_id}/gate/{id}/deny/:
+    post:
+      operationId: orgs_gate_deny_create
+      description: 'The gate: verify a code, check visitors in and out. GET lists
+        today''s and recent passes (the log).'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this gate pass.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GateNote'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GateNote'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GateNote'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GateEvent'
+          description: ''
+  /api/v1/orgs/{org_id}/gate/verify/:
+    post:
+      operationId: orgs_gate_verify_create
+      description: 'The gate: verify a code, check visitors in and out. GET lists
+        today''s and recent passes (the log).'
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GateVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GateVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GateVerify'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GateCheck'
+          description: ''
   /api/v1/orgs/{org_id}/kb-articles/:
     get:
       operationId: orgs_kb_articles_list
@@ -5736,6 +7450,306 @@ components:
             3 months.
       required:
       - document
+    Alert:
+      type: object
+      description: The security desk's view.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        estate:
+          type: string
+          format: uuid
+          readOnly: true
+        estate_name:
+          type: string
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/PanicAlertKindEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PanicAlertStatusEnum'
+          readOnly: true
+        silent:
+          type: boolean
+          readOnly: true
+          description: Only security and managers are told; no sound.
+        channel:
+          type: string
+          readOnly: true
+          description: app, web or whatsapp
+        raised_by_name:
+          type: string
+          readOnly: true
+        raised_by_phone:
+          type: string
+          readOnly: true
+        house:
+          type: string
+          readOnly: true
+        location:
+          allOf:
+          - $ref: '#/components/schemas/AlertLocation'
+          nullable: true
+          readOnly: true
+        false_alarms_90d:
+          type: integer
+          readOnly: true
+          description: How many of this person's alerts were false alarms in the last
+            90 days.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        acknowledged_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        responding_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        closed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        close_note:
+          type: string
+          readOnly: true
+      required:
+      - acknowledged_at
+      - channel
+      - close_note
+      - closed_at
+      - created_at
+      - estate
+      - estate_name
+      - false_alarms_90d
+      - house
+      - id
+      - kind
+      - location
+      - raised_by_name
+      - raised_by_phone
+      - responding_at
+      - silent
+      - status
+    AlertDeliveryAudienceEnum:
+      enum:
+      - staff
+      - resident
+      - raiser
+      type: string
+      description: |-
+        * `staff` - Security / estate staff
+        * `resident` - Resident
+        * `raiser` - The person who raised it
+    AlertDeliveryChannelEnum:
+      enum:
+      - push
+      - sms
+      - ws
+      type: string
+      description: |-
+        * `push` - Push
+        * `sms` - SMS
+        * `ws` - Security desk screen
+    AlertDeliveryStatusEnum:
+      enum:
+      - queued
+      - sent
+      - delivered
+      - acknowledged
+      - failed
+      type: string
+      description: |-
+        * `queued` - Queued
+        * `sent` - Sent
+        * `delivered` - Delivered
+        * `acknowledged` - Seen
+        * `failed` - Failed
+    AlertDetail:
+      type: object
+      description: The security desk's view.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        estate:
+          type: string
+          format: uuid
+          readOnly: true
+        estate_name:
+          type: string
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/PanicAlertKindEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PanicAlertStatusEnum'
+          readOnly: true
+        silent:
+          type: boolean
+          readOnly: true
+          description: Only security and managers are told; no sound.
+        channel:
+          type: string
+          readOnly: true
+          description: app, web or whatsapp
+        raised_by_name:
+          type: string
+          readOnly: true
+        raised_by_phone:
+          type: string
+          readOnly: true
+        house:
+          type: string
+          readOnly: true
+        location:
+          allOf:
+          - $ref: '#/components/schemas/AlertLocation'
+          nullable: true
+          readOnly: true
+        false_alarms_90d:
+          type: integer
+          readOnly: true
+          description: How many of this person's alerts were false alarms in the last
+            90 days.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        acknowledged_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        responding_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        closed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        close_note:
+          type: string
+          readOnly: true
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/IncidentNote'
+          readOnly: true
+        deliveries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Delivery'
+          readOnly: true
+        metrics:
+          allOf:
+          - $ref: '#/components/schemas/Metrics'
+          readOnly: true
+      required:
+      - acknowledged_at
+      - channel
+      - close_note
+      - closed_at
+      - created_at
+      - deliveries
+      - estate
+      - estate_name
+      - false_alarms_90d
+      - house
+      - id
+      - kind
+      - location
+      - metrics
+      - notes
+      - raised_by_name
+      - raised_by_phone
+      - responding_at
+      - silent
+      - status
+    AlertLocation:
+      type: object
+      properties:
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+        accuracy:
+          type: number
+          format: double
+      required:
+      - lat
+      - lng
+    AlertNote:
+      type: object
+      properties:
+        note:
+          type: string
+          default: ''
+          maxLength: 1000
+    Announcement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        estate:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 120
+        body:
+          type: string
+          maxLength: 2000
+        audience:
+          $ref: '#/components/schemas/AnnouncementAudienceEnum'
+        urgent:
+          type: boolean
+          description: Also by SMS to everyone (costs SMS credit).
+        push_sent:
+          type: integer
+          readOnly: true
+        sms_sent:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - body
+      - created_at
+      - estate
+      - id
+      - push_sent
+      - sms_sent
+      - title
+    AnnouncementAudienceEnum:
+      enum:
+      - all
+      - exco
+      type: string
+      description: |-
+        * `all` - Everyone
+        * `exco` - Executive committee
     Apply:
       type: object
       properties:
@@ -5784,6 +7798,16 @@ components:
       - display_name
       - service_areas
       - trades
+    Approve:
+      type: object
+      properties:
+        unit:
+          type: string
+          format: uuid
+          nullable: true
+          description: If the house they typed didn't match.
+        role:
+          $ref: '#/components/schemas/EstateMemberRoleEnum'
     ArtisanBrief:
       type: object
       properties:
@@ -6055,6 +8079,16 @@ components:
       - min_amount
       - name
       - plans
+    ByChannel:
+      type: object
+      properties:
+        push:
+          $ref: '#/components/schemas/ChannelMetrics'
+        sms:
+          $ref: '#/components/schemas/ChannelMetrics'
+      required:
+      - push
+      - sms
     ChangeLoginPIN:
       type: object
       properties:
@@ -6072,6 +8106,24 @@ components:
       - current_pin
       - pin
       - pin_confirm
+    ChannelMetrics:
+      type: object
+      properties:
+        sent:
+          type: integer
+        delivered:
+          type: integer
+        failed:
+          type: integer
+        first_delivery_seconds:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - delivered
+      - failed
+      - first_delivery_seconds
+      - sent
     Charge:
       type: object
       properties:
@@ -6260,6 +8312,15 @@ components:
       required:
       - can_request_review
       - kind
+    Close:
+      type: object
+      properties:
+        note:
+          type: string
+          description: What happened, for the incident log.
+          maxLength: 1000
+      required:
+      - note
     Comment:
       type: object
       properties:
@@ -6542,6 +8603,63 @@ components:
           type: string
           default: ''
           maxLength: 300
+    Delivery:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        audience:
+          $ref: '#/components/schemas/AlertDeliveryAudienceEnum'
+        channel:
+          $ref: '#/components/schemas/AlertDeliveryChannelEnum'
+        status:
+          $ref: '#/components/schemas/AlertDeliveryStatusEnum'
+        name:
+          type: string
+          readOnly: true
+        phone_number:
+          type: string
+          maxLength: 16
+        error:
+          type: string
+          maxLength: 200
+        sent_at:
+          type: string
+          format: date-time
+          nullable: true
+        delivered_at:
+          type: string
+          format: date-time
+          nullable: true
+        fallback_for:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - audience
+      - channel
+      - id
+      - name
+    DeliveryReport:
+      type: object
+      properties:
+        alerts:
+          type: integer
+        drills:
+          type: integer
+        false_alarms:
+          type: integer
+        median_first_delivery_seconds:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - alerts
+      - drills
+      - false_alarms
+      - median_first_delivery_seconds
     DirectionEnum:
       enum:
       - in
@@ -6613,6 +8731,50 @@ components:
       - is_verified
       - jobs_with_us
       - rating_avg
+    DuesPlan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        estate:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: e.g. Security levy, Service charge
+          maxLength: 100
+        amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: In kobo, e.g. 1500000 for ₦15,000.
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          readOnly: true
+        frequency:
+          $ref: '#/components/schemas/RentFrequencyEnum'
+        start_date:
+          type: string
+          format: date
+          description: First due date; later ones follow the frequency.
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount
+      - created_at
+      - currency
+      - estate
+      - id
+      - name
+      - start_date
     Enquiry:
       type: object
       properties:
@@ -6675,6 +8837,115 @@ components:
         * `open` - Open
         * `assigned` - Being handled
         * `resolved` - Resolved
+    Estate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        address:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          maxLength: 80
+        state:
+          type: string
+          maxLength: 80
+        join_code:
+          type: string
+          readOnly: true
+          description: Residents enter this in the app to join.
+        is_active:
+          type: boolean
+        panic_enabled:
+          type: boolean
+        alert_residents:
+          type: boolean
+          description: Non-silent panic alerts also go to verified residents, not
+            only security.
+        gate_instructions:
+          type: string
+          description: Shown to visitors with their code.
+          maxLength: 300
+        property:
+          type: string
+          format: uuid
+          readOnly: true
+        houses:
+          type: integer
+          readOnly: true
+        verified_residents:
+          type: integer
+          readOnly: true
+        pending_residents:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - address
+      - created_at
+      - houses
+      - id
+      - join_code
+      - name
+      - pending_residents
+      - property
+      - verified_residents
+    EstateCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 150
+        address:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          default: ''
+          maxLength: 80
+        state:
+          type: string
+          default: ''
+          maxLength: 80
+        houses:
+          type: array
+          items:
+            type: string
+            maxLength: 60
+          description: House or flat labels, e.g. ['A1', 'A2', 'B1'].
+          maxItems: 2000
+      required:
+      - address
+      - name
+    EstateMemberRoleEnum:
+      enum:
+      - resident
+      - exco
+      type: string
+      description: |-
+        * `resident` - Resident
+        * `exco` - Executive committee
+    EstateMemberStatusEnum:
+      enum:
+      - pending
+      - approved
+      - suspended
+      - removed
+      type: string
+      description: |-
+        * `pending` - Waiting for approval
+        * `approved` - Verified resident
+        * `suspended` - Suspended
+        * `removed` - Removed
     Event:
       type: object
       properties:
@@ -6782,6 +9053,287 @@ components:
           type: string
       required:
       - identifier
+    GateArtisan:
+      type: object
+      properties:
+        display_name:
+          type: string
+        is_verified:
+          type: boolean
+        trade:
+          type: string
+      required:
+      - display_name
+      - is_verified
+      - trade
+    GateCheck:
+      type: object
+      description: 'What the gate sees: who, for which house, and whether they can
+        come in. No visitor phone.'
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        estate:
+          type: string
+          format: uuid
+          readOnly: true
+        visitor_name:
+          type: string
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/GatePassKindEnum'
+          readOnly: true
+        host_name:
+          type: string
+          readOnly: true
+        house:
+          type: string
+          readOnly: true
+        artisan:
+          allOf:
+          - $ref: '#/components/schemas/GateArtisan'
+          nullable: true
+          readOnly: true
+        valid_from:
+          type: string
+          format: date-time
+          readOnly: true
+        valid_to:
+          type: string
+          format: date-time
+          readOnly: true
+        max_uses:
+          type: integer
+          readOnly: true
+        uses:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/GatePassStatusEnum'
+          readOnly: true
+        note:
+          type: string
+          readOnly: true
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/GateEvent'
+          readOnly: true
+      required:
+      - artisan
+      - estate
+      - events
+      - host_name
+      - house
+      - id
+      - kind
+      - max_uses
+      - note
+      - status
+      - uses
+      - valid_from
+      - valid_to
+      - visitor_name
+    GateEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        kind:
+          $ref: '#/components/schemas/GateEventKindEnum'
+        note:
+          type: string
+          maxLength: 200
+        by_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - by_name
+      - created_at
+      - id
+      - kind
+    GateEventKindEnum:
+      enum:
+      - check_in
+      - check_out
+      - denied
+      type: string
+      description: |-
+        * `check_in` - Checked in
+        * `check_out` - Checked out
+        * `denied` - Turned away
+    GateNote:
+      type: object
+      properties:
+        note:
+          type: string
+          default: ''
+          maxLength: 200
+    GatePass:
+      type: object
+      description: The host's view (the code is theirs to share).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        estate:
+          type: string
+          format: uuid
+          readOnly: true
+        estate_name:
+          type: string
+          readOnly: true
+        visitor_name:
+          type: string
+          readOnly: true
+        visitor_phone:
+          type: string
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/GatePassKindEnum'
+          readOnly: true
+        job:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+          description: 'For an artisan pass: the repair job (shows the Verified badge
+            at the gate).'
+        code:
+          type: string
+          readOnly: true
+        valid_from:
+          type: string
+          format: date-time
+          readOnly: true
+        valid_to:
+          type: string
+          format: date-time
+          readOnly: true
+        max_uses:
+          type: integer
+          readOnly: true
+        uses:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/GatePassStatusEnum'
+          readOnly: true
+          default: active
+        note:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - estate
+      - estate_name
+      - id
+      - job
+      - kind
+      - max_uses
+      - note
+      - status
+      - uses
+      - valid_from
+      - valid_to
+      - visitor_name
+      - visitor_phone
+    GatePassCreate:
+      type: object
+      properties:
+        estate:
+          type: string
+          format: uuid
+        visitor_name:
+          type: string
+          default: ''
+          maxLength: 120
+        visitor_phone:
+          type: string
+          default: ''
+          description: If given, the code is sent to them by SMS.
+          maxLength: 20
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/GatePassKindEnum'
+          default: visitor
+        valid_from:
+          type: string
+          format: date-time
+          nullable: true
+        hours:
+          type: integer
+          maximum: 168
+          minimum: 1
+          default: 12
+        max_uses:
+          type: integer
+          maximum: 50
+          minimum: 1
+          default: 1
+        job:
+          type: string
+          format: uuid
+          nullable: true
+          description: An accepted repair job (artisan pass).
+        note:
+          type: string
+          default: ''
+          maxLength: 200
+      required:
+      - estate
+    GatePassKindEnum:
+      enum:
+      - visitor
+      - artisan
+      - delivery
+      type: string
+      description: |-
+        * `visitor` - Visitor
+        * `artisan` - Artisan
+        * `delivery` - Delivery
+    GatePassStatusEnum:
+      enum:
+      - active
+      - used
+      - expired
+      - cancelled
+      type: string
+      description: |-
+        * `active` - Active
+        * `used` - Used up
+        * `expired` - Expired
+        * `cancelled` - Cancelled
+    GateVerify:
+      type: object
+      properties:
+        estate:
+          type: string
+          format: uuid
+        code:
+          type: string
+          maxLength: 12
+      required:
+      - code
+      - estate
     GatewayEnum:
       enum:
       - paystack
@@ -6845,6 +9397,39 @@ components:
       - area
       - kind
       - rent_amount
+    House:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        label:
+          type: string
+          description: e.g. Flat 2B, Shop 4
+          maxLength: 60
+      required:
+      - id
+      - label
+    Houses:
+      type: object
+      properties:
+        labels:
+          type: array
+          items:
+            type: string
+            maxLength: 60
+          maxItems: 2000
+          minItems: 1
+      required:
+      - labels
+    HousesAdded:
+      type: object
+      properties:
+        created:
+          type: integer
+      required:
+      - created
     IdSubmit:
       type: object
       properties:
@@ -6880,6 +9465,31 @@ components:
         * `drivers_licence` - Driver's licence
         * `voters_card` - Permanent voter's card
         * `passport` - International passport
+    IncidentNote:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        kind:
+          type: string
+          description: note, or the status it moved to
+          maxLength: 14
+        note:
+          type: string
+          maxLength: 1000
+        author_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - author_name
+      - created_at
+      - id
     JobBrief:
       type: object
       properties:
@@ -6933,6 +9543,18 @@ components:
         * `completed` - Completed, waiting for tenant
         * `confirmed` - Confirmed by tenant
         * `cancelled` - Cancelled
+    Join:
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 12
+        house:
+          type: string
+          default: ''
+          maxLength: 60
+      required:
+      - code
     KbArticle:
       type: object
       properties:
@@ -6974,6 +9596,13 @@ components:
       description: |-
         * `draft` - Draft
         * `published` - Published
+    Kind:
+      type: object
+      properties:
+        kind:
+          $ref: '#/components/schemas/PanicKindEnum'
+      required:
+      - kind
     LanguageEnum:
       enum:
       - en
@@ -7258,6 +9887,27 @@ components:
         * `published` - Published
         * `let` - Let (no longer available)
         * `archived` - Archived
+    Location:
+      type: object
+      properties:
+        lat:
+          type: number
+          format: double
+          maximum: 90
+          minimum: -90
+        lng:
+          type: number
+          format: double
+          maximum: 180
+          minimum: -180
+        accuracy:
+          type: number
+          format: double
+          minimum: 0
+          nullable: true
+      required:
+      - lat
+      - lng
     LoginStart:
       type: object
       properties:
@@ -7280,6 +9930,104 @@ components:
           maxLength: 64
       required:
       - refresh
+    Member:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        estate:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        phone_number:
+          type: string
+          readOnly: true
+        unit:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        house:
+          type: string
+          readOnly: true
+        house_label:
+          type: string
+          readOnly: true
+          description: What they typed when joining.
+        role:
+          allOf:
+          - $ref: '#/components/schemas/EstateMemberRoleEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/EstateMemberStatusEnum'
+          readOnly: true
+          default: pending
+        status_reason:
+          type: string
+          readOnly: true
+        approved_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        has_app:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - approved_at
+      - created_at
+      - estate
+      - full_name
+      - has_app
+      - house
+      - house_label
+      - id
+      - phone_number
+      - role
+      - status
+      - status_reason
+      - unit
+    MemberCreate:
+      type: object
+      properties:
+        estate:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+          maxLength: 160
+        phone_number:
+          type: string
+          maxLength: 20
+        unit:
+          type: string
+          format: uuid
+        role:
+          allOf:
+          - $ref: '#/components/schemas/EstateMemberRoleEnum'
+          default: resident
+      required:
+      - estate
+      - full_name
+      - phone_number
+      - unit
+    MemberReason:
+      type: object
+      properties:
+        reason:
+          type: string
+          default: ''
+          maxLength: 200
     Membership:
       type: object
       properties:
@@ -7294,7 +10042,7 @@ components:
           type: string
           readOnly: true
         role:
-          $ref: '#/components/schemas/RoleEnum'
+          $ref: '#/components/schemas/MembershipRoleEnum'
         status:
           allOf:
           - $ref: '#/components/schemas/MembershipStatusEnum'
@@ -7310,6 +10058,24 @@ components:
       - phone_number
       - role
       - status
+    MembershipRoleEnum:
+      enum:
+      - owner
+      - manager
+      - agent
+      - accountant
+      - estate_admin
+      - security
+      - viewer
+      type: string
+      description: |-
+        * `owner` - Owner
+        * `manager` - Manager
+        * `agent` - Agent
+        * `accountant` - Accountant
+        * `estate_admin` - Estate admin
+        * `security` - Security desk
+        * `viewer` - Viewer (read only)
     MembershipStatusEnum:
       enum:
       - active
@@ -7372,6 +10138,84 @@ components:
         * `delivered` - Delivered
         * `read` - Read
         * `failed` - Failed
+    Metrics:
+      type: object
+      properties:
+        recipients:
+          type: integer
+        by_channel:
+          $ref: '#/components/schemas/ByChannel'
+        staff_reached:
+          type: integer
+        staff_total:
+          type: integer
+        acknowledge_seconds:
+          type: number
+          format: double
+          nullable: true
+      required:
+      - acknowledge_seconds
+      - by_channel
+      - recipients
+      - staff_reached
+      - staff_total
+    MyAlert:
+      type: object
+      description: The raiser's view.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        estate:
+          type: string
+          format: uuid
+          readOnly: true
+        estate_name:
+          type: string
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/PanicAlertKindEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/PanicAlertStatusEnum'
+          readOnly: true
+        silent:
+          type: boolean
+          readOnly: true
+          description: Only security and managers are told; no sound.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        acknowledged_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        responding_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        closed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - acknowledged_at
+      - closed_at
+      - created_at
+      - estate
+      - estate_name
+      - id
+      - kind
+      - responding_at
+      - silent
+      - status
     MyArtisan:
       type: object
       description: The artisan's own profile and their progress towards the Verified
@@ -7478,6 +10322,57 @@ components:
       - verification_mode
       - verified_at
       - vouchers
+    MyEstate:
+      type: object
+      description: One of my estate memberships.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        estate_id:
+          type: string
+          format: uuid
+          readOnly: true
+        estate_name:
+          type: string
+          readOnly: true
+        address:
+          type: string
+          readOnly: true
+        organization:
+          type: string
+          format: uuid
+          readOnly: true
+        panic_enabled:
+          type: boolean
+          readOnly: true
+        house:
+          type: string
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/EstateMemberRoleEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/EstateMemberStatusEnum'
+          readOnly: true
+        dues_outstanding:
+          type: integer
+          readOnly: true
+          description: Kobo owed on estate dues.
+      required:
+      - address
+      - dues_outstanding
+      - estate_id
+      - estate_name
+      - house
+      - id
+      - organization
+      - panic_enabled
+      - role
+      - status
     MyLease:
       type: object
       properties:
@@ -7783,6 +10678,44 @@ components:
       description: |-
         * `sms` - SMS
         * `email` - Email
+    PaginatedAlertList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'
+    PaginatedAnnouncementList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Announcement'
     PaginatedArtisanJobList:
       type: object
       required:
@@ -7859,6 +10792,44 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DirectoryArtisan'
+    PaginatedDuesPlanList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DuesPlan'
+    PaginatedEstateList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Estate'
     PaginatedExpenseList:
       type: object
       required:
@@ -7878,6 +10849,63 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Expense'
+    PaginatedGateCheckList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/GateCheck'
+    PaginatedGatePassList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/GatePass'
+    PaginatedHouseList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/House'
     PaginatedLeadList:
       type: object
       required:
@@ -7916,6 +10944,63 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Listing'
+    PaginatedMemberList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Member'
+    PaginatedMyAlertList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MyAlert'
+    PaginatedMyEstateList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MyEstate'
     PaginatedOrderList:
       type: object
       required:
@@ -7992,6 +11077,144 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Ticket'
+    PanicAlertKindEnum:
+      enum:
+      - help
+      - robbery
+      - kidnapping
+      - fire
+      - medical
+      - suspicious_person
+      - drill
+      type: string
+      description: |-
+        * `help` - Help needed
+        * `robbery` - Robbery / break-in
+        * `kidnapping` - Kidnapping
+        * `fire` - Fire
+        * `medical` - Medical emergency
+        * `suspicious_person` - Suspicious person
+        * `drill` - Test (drill)
+    PanicAlertStatusEnum:
+      enum:
+      - triggered
+      - acknowledged
+      - responding
+      - resolved
+      - false_alarm
+      - cancelled
+      type: string
+      description: |-
+        * `triggered` - Raised
+        * `acknowledged` - Seen by security
+        * `responding` - Security on the way
+        * `resolved` - Resolved
+        * `false_alarm` - False alarm
+        * `cancelled` - Cancelled by the resident
+    PanicKindEnum:
+      enum:
+      - help
+      - robbery
+      - kidnapping
+      - fire
+      - medical
+      - suspicious_person
+      type: string
+      description: |-
+        * `help` - Help needed
+        * `robbery` - Robbery / break-in
+        * `kidnapping` - Kidnapping
+        * `fire` - Fire
+        * `medical` - Medical emergency
+        * `suspicious_person` - Suspicious person
+    PatchedDuesPlan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        estate:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: e.g. Security levy, Service charge
+          maxLength: 100
+        amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: In kobo, e.g. 1500000 for ₦15,000.
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          readOnly: true
+        frequency:
+          $ref: '#/components/schemas/RentFrequencyEnum'
+        start_date:
+          type: string
+          format: date
+          description: First due date; later ones follow the frequency.
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedEstate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        address:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          maxLength: 80
+        state:
+          type: string
+          maxLength: 80
+        join_code:
+          type: string
+          readOnly: true
+          description: Residents enter this in the app to join.
+        is_active:
+          type: boolean
+        panic_enabled:
+          type: boolean
+        alert_residents:
+          type: boolean
+          description: Non-silent panic alerts also go to verified residents, not
+            only security.
+        gate_instructions:
+          type: string
+          description: Shown to visitors with their code.
+          maxLength: 300
+        property:
+          type: string
+          format: uuid
+          readOnly: true
+        houses:
+          type: integer
+          readOnly: true
+        verified_residents:
+          type: integer
+          readOnly: true
+        pending_residents:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedExpense:
       type: object
       properties:
@@ -8273,7 +11496,7 @@ components:
           type: string
           readOnly: true
         role:
-          $ref: '#/components/schemas/RoleEnum'
+          $ref: '#/components/schemas/MembershipRoleEnum'
         status:
           allOf:
           - $ref: '#/components/schemas/MembershipStatusEnum'
@@ -8913,6 +12136,14 @@ components:
       - pin
       - pin_confirm
       - setup_token
+    PlatformEnum:
+      enum:
+      - android
+      - ios
+      type: string
+      description: |-
+        * `android` - Android
+        * `ios` - iOS
     PreferredLanguageEnum:
       enum:
       - en
@@ -9166,6 +12397,18 @@ components:
         * `whatsapp` - WhatsApp messages
         * `marketing` - Marketing
         * `location` - Location for safety alerts
+    PushDevice:
+      type: object
+      properties:
+        token:
+          type: string
+          maxLength: 200
+          pattern: ^Expo(nent)?PushToken\[[^\]]{10,180}\]$
+        platform:
+          $ref: '#/components/schemas/PlatformEnum'
+      required:
+      - platform
+      - token
     Rate:
       type: object
       properties:
@@ -9359,24 +12602,6 @@ components:
       description: |-
         * `id` - ID check
         * `address` - Address
-    RoleEnum:
-      enum:
-      - owner
-      - manager
-      - agent
-      - accountant
-      - estate_admin
-      - security
-      - viewer
-      type: string
-      description: |-
-        * `owner` - Owner
-        * `manager` - Manager
-        * `agent` - Agent
-        * `accountant` - Accountant
-        * `estate_admin` - Estate admin
-        * `security` - Security desk
-        * `viewer` - Viewer (read only)
     Schedule:
       type: object
       properties:
@@ -9875,6 +13100,31 @@ components:
       - login_pin
       - pin
       - pin_confirm
+    Trigger:
+      type: object
+      properties:
+        estate:
+          type: string
+          format: uuid
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/PanicKindEnum'
+          default: help
+        silent:
+          type: boolean
+          default: false
+        location:
+          allOf:
+          - $ref: '#/components/schemas/Location'
+          nullable: true
+          description: Only if the person agreed to share their location.
+        client_id:
+          type: string
+          description: The phone's own id for this alert; a retry returns the same
+            alert.
+          maxLength: 64
+      required:
+      - estate
     Unit:
       type: object
       properties:

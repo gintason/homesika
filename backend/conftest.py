@@ -23,6 +23,15 @@ def _sms_outbox():
 
 
 @pytest.fixture(autouse=True)
+def _push_outbox():
+    from apps.notifications.push import MockPush
+
+    MockPush.outbox.clear()
+    MockPush.receipts_map.clear()
+    yield MockPush.outbox
+
+
+@pytest.fixture(autouse=True)
 def _run_on_commit_immediately(monkeypatch):
     """Tests run inside a rolled-back transaction; run on_commit hooks inline (Celery is eager in tests)."""
     from django.db import transaction

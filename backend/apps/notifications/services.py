@@ -49,3 +49,47 @@ def notify(
             )
             return note
     return notify_sms(to=to, body=body, kind=kind, user=user, organization=organization)
+
+
+def push_or_sms(
+    *, recipients, title: str, body: str, kind: str, data=None, sms: str = "fallback", organization=None
+) -> dict:
+    """Tell people by push where they have the app, and by SMS otherwise.
+
+    recipients: iterable of (user or None, phone). sms: "fallback" (only those without a working push
+    device), "always" (everyone also gets an SMS) or "never". Returns counts. Not for panic alerts,
+    which track every delivery (apps.security)."""
+    from . import push
+
+    people = [(u, p) for u, p in recipients if u is not None or p]
+    tokens = push.active_tokens({u.pk for u, _p in people if u is not None})
+    messages, owners = [], []
+    for u, phone in people:
+        for token in tokens.get(getattr(u, "pk", None), []):
+            messages.append(push.Push(token=token, title=title, body=body, data=data or {}))
+            owners.append((u, phone))
+    reached: set = set()
+    dead: list[str] = []
+    if messages:
+        try:
+            tickets = push.provider().send(messages)
+        except push.PushError:
+            tickets = [push.Ticket(False, error="unreachable")] * len(messages)
+        for msg, (u, _p), t in zip(messages, owners, tickets, strict=False):
+            if t.ok:
+                reached.add(u.pk)
+            elif t.error == "DeviceNotRegistered":
+                dead.append(msg.token)
+        push.deactivate(dead)
+    sms_sent = 0
+    if sms != "never":
+        seen: set = set()
+        for u, phone in people:
+            if not phone or phone in seen:
+                continue
+            if sms == "fallback" and u is not None and u.pk in reached:
+                continue
+            seen.add(phone)
+            notify_sms(to=phone, body=f"{title}: {body}"[:480], kind=kind, user=u, organization=organization)
+            sms_sent += 1
+    return {"push": len(reached), "sms": sms_sent}

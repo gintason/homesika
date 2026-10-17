@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     "apps.bills",
     "apps.artisans",
     "apps.maintenance",
+    "apps.estates",
+    "apps.security",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -185,6 +187,8 @@ REST_FRAMEWORK = {
         "bills": env("THROTTLE_BILLS", default="30/min"),
         "tickets": env("THROTTLE_TICKETS", default="30/hour"),
         "vouch": env("THROTTLE_VOUCH", default="20/hour"),
+        "estate_join": env("THROTTLE_ESTATE_JOIN", default="10/hour"),
+        "gate_verify": env("THROTTLE_GATE_VERIFY", default="60/min"),
     },
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardCursorPagination",
 }
@@ -272,6 +276,18 @@ BILLS_PAYMENT_TTL_MINUTES = env.int("BILLS_PAYMENT_TTL_MINUTES", default=60)
 BILLS_STATUS_POLL_SECONDS = env.int("BILLS_STATUS_POLL_SECONDS", default=30)
 BILLS_MAX_STATUS_CHECKS = env.int("BILLS_MAX_STATUS_CHECKS", default=12)
 
+# Push notifications (Phase 5): "expo" (Expo's push service) or "mock".
+PUSH_PROVIDER = env("PUSH_PROVIDER", default="mock")
+EXPO_ACCESS_TOKEN = env("EXPO_ACCESS_TOKEN", default="")  # optional: Expo "enhanced push security"
+
+# Estates and security (Phase 5).
+ANNOUNCEMENT_SMS_FALLBACK = env.bool(
+    "ANNOUNCEMENT_SMS_FALLBACK", default=True
+)  # SMS residents without the app
+PANIC_PUSH_FALLBACK_SECONDS = env.int("PANIC_PUSH_FALLBACK_SECONDS", default=45)  # then SMS if not delivered
+PANIC_SMS_STAFF_ALWAYS = env.bool("PANIC_SMS_STAFF_ALWAYS", default=True)  # security/managers: push AND SMS
+PANIC_MAX_PER_HOUR = env.int("PANIC_MAX_PER_HOUR", default=5)  # per resident; duplicates within 2 min merge
+
 # Maintenance and artisans (Phase 4).
 # "nin" (default): NIN looked up through NIN_PROVIDER + the ID photo and proof of address read by AI, with
 # fixed rules deciding and anything unclear going to a person. "manual": staff review everything.
@@ -340,6 +356,26 @@ SPECTACULAR_SETTINGS = {
         "TicketEventKindEnum": "apps.maintenance.models.TicketEvent.Kind",
         "TicketPhotoStageEnum": "apps.maintenance.models.TicketPhoto.Stage",
         "JobStatusEnum": "apps.maintenance.models.Job.Status",
+        "EstateMemberStatusEnum": "apps.estates.models.EstateMember.Status",
+        "EstateMemberRoleEnum": "apps.estates.models.EstateMember.Role",
+        "GatePassStatusEnum": "apps.estates.models.GatePass.Status",
+        "GatePassKindEnum": "apps.estates.models.GatePass.Kind",
+        "GateEventKindEnum": "apps.estates.models.GateEvent.Kind",
+        "AnnouncementAudienceEnum": "apps.estates.models.Announcement.Audience",
+        "PanicAlertStatusEnum": "apps.security.models.PanicAlert.Status",
+        "PanicAlertKindEnum": "apps.security.models.PanicAlert.Kind",
+        "PanicKindEnum": [
+            ("help", "Help needed"),
+            ("robbery", "Robbery / break-in"),
+            ("kidnapping", "Kidnapping"),
+            ("fire", "Fire"),
+            ("medical", "Medical emergency"),
+            ("suspicious_person", "Suspicious person"),
+        ],
+        "RentFrequencyEnum": "apps.leasing.models.Frequency",
+        "AlertDeliveryStatusEnum": "apps.security.models.AlertDelivery.Status",
+        "AlertDeliveryChannelEnum": "apps.security.models.AlertDelivery.Channel",
+        "AlertDeliveryAudienceEnum": "apps.security.models.AlertDelivery.Audience",
         "ManualPaymentChannelEnum": [
             ("cash", "Cash"),
             ("bank_transfer", "Bank transfer"),
@@ -372,6 +408,14 @@ CELERY_BEAT_SCHEDULE = {
     "bills-reconcile": {
         "task": "apps.bills.tasks.reconcile_bills",
         "schedule": 5 * 60.0,
+    },
+    "estates-daily": {
+        "task": "apps.estates.tasks.daily",
+        "schedule": crontab(hour=8, minute=13),
+    },
+    "security-housekeeping": {
+        "task": "apps.security.tasks.housekeeping",
+        "schedule": 60.0,  # SMS fallback for alerts whose push wasn't delivered
     },
     "artisans-housekeeping": {
         "task": "apps.artisans.tasks.housekeeping",

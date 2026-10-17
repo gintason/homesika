@@ -25,7 +25,7 @@ COPY --chown=homesika:homesika . .
 # ones (secrets, gateways, providers) come from the host's environment when the container runs.
 RUN DJANGO_SECRET_KEY=build-only-not-a-secret DATABASE_URL=sqlite:////tmp/build.db \
     PAYMENT_GATEWAYS=paystack ASSISTANT_PROVIDER=anthropic WHATSAPP_PROVIDER=off BILLS_PROVIDERS=vtung \
-    ID_VERIFICATION_PROVIDER=manual python manage.py collectstatic --noinput \
+    ID_VERIFICATION_PROVIDER=manual PUSH_PROVIDER=expo python manage.py collectstatic --noinput \
     && rm -f /tmp/build.db && chown -R homesika:homesika /app
 USER homesika
 EXPOSE 8000

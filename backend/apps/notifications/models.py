@@ -38,3 +38,24 @@ class Notification(TimeStampedModel):
 
     class Meta:
         ordering = ("-created_at",)
+
+
+class PushDevice(TimeStampedModel):
+    """A phone that can receive push notifications (an Expo push token), registered by the app after
+    sign-in. Turned off when Expo says the device is no longer registered."""
+
+    class Platform(models.TextChoices):
+        ANDROID = "android", "Android"
+        IOS = "ios", "iOS"
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="push_devices")
+    token = models.CharField(max_length=200, unique=True)
+    platform = models.CharField(max_length=8, choices=Platform.choices)
+    is_active = models.BooleanField(default=True)
+    last_seen_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-last_seen_at",)
+
+    def __str__(self):
+        return f"{self.user} {self.platform}"

@@ -12,6 +12,8 @@ from apps.assistant.urls import urls as assistant_urls
 from apps.bills import views as bill_views
 from apps.bills.urls import urls as bill_urls
 from apps.core import views as core_views
+from apps.estates.urls import me_urls as my_estate_urls
+from apps.estates.urls import org_urls as estate_org_urls
 from apps.leasing.urls import me_urls as my_leasing_urls
 from apps.leasing.urls import org_urls as leasing_org_urls
 from apps.listings.urls import org_urls as listing_org_urls
@@ -22,11 +24,14 @@ from apps.maintenance.urls import org_urls as ticket_org_urls
 from apps.messaging import views as messaging_views
 from apps.messaging.urls import me_urls as my_messaging_urls
 from apps.messaging.urls import org_urls as messaging_org_urls
+from apps.notifications.urls import me_urls as my_push_urls
 from apps.payments import views as payment_views
 from apps.payments.urls import me_urls as my_payment_urls
 from apps.payments.urls import org_urls as payment_org_urls
 from apps.payments.urls import public_urls as pay_urls
 from apps.payments.urls import receipt_urls
+from apps.security.urls import me_urls as my_alert_urls
+from apps.security.urls import org_urls as alert_org_urls
 
 api_v1 = [
     path("auth/", include(auth_urls)),
@@ -47,11 +52,16 @@ api_v1 = [
     path("pay/", include(pay_urls)),
     path("receipts/", include(receipt_urls)),
     path("me/", include(my_ticket_urls)),
+    path("me/", include(my_push_urls)),
     path("orgs/<uuid:org_id>/", include(ticket_org_urls)),
     path("orgs/<uuid:org_id>/", include(artisan_org_urls)),
     path("artisans/", include(artisan_urls)),
     path("artisans/me/", include(artisan_job_urls)),
     path("vouch/", include(vouch_urls)),
+    path("me/", include(my_estate_urls)),
+    path("me/", include(my_alert_urls)),
+    path("orgs/<uuid:org_id>/", include(estate_org_urls)),
+    path("orgs/<uuid:org_id>/", include(alert_org_urls)),
 ]
 
 urlpatterns = [

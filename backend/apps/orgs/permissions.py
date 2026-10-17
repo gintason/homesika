@@ -39,6 +39,11 @@ CAPABILITIES: dict[str, set[str]] = {
         "maintenance.view",
         "maintenance.manage",
         "maintenance.approve",
+        "estate.view",
+        "estate.manage",
+        "security.view",
+        "security.respond",
+        "gate.verify",
     },
     Role.ACCOUNTANT: {
         "org.view",
@@ -54,6 +59,7 @@ CAPABILITIES: dict[str, set[str]] = {
         "listing.view",
         "inbox.view",
         "maintenance.view",
+        "estate.view",
     },
     Role.AGENT: {
         "org.view",
@@ -76,9 +82,24 @@ CAPABILITIES: dict[str, set[str]] = {
         "listing.view",
         "inbox.view",
         "maintenance.view",
+        "estate.view",
     },
-    Role.ESTATE_ADMIN: {"org.view", "property.view", "members.view", "maintenance.view"},
-    Role.SECURITY: {"org.view"},
+    Role.ESTATE_ADMIN: {
+        "org.view",
+        "property.view",
+        "property.manage",
+        "members.view",
+        "tenant.view",
+        "payment.view",
+        "payment.link",
+        "maintenance.view",
+        "estate.view",
+        "estate.manage",
+        "security.view",
+        "security.respond",
+        "gate.verify",
+    },
+    Role.SECURITY: {"org.view", "security.view", "security.respond", "gate.verify"},
 }
 
 
