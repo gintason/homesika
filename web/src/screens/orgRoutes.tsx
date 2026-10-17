@@ -1,5 +1,6 @@
 import { Navigate, Route } from "react-router";
 
+import { Analytics } from "./analytics/Analytics";
 import { Arrears } from "./charges/Arrears";
 import { ConversationView } from "./inbox/ConversationView";
 import { InboxList } from "./inbox/InboxList";
@@ -65,6 +66,7 @@ export const orgRoutes = (
     <Route path="expenses/new" element={<ExpenseForm />} />
     <Route path="expenses/:expenseId/edit" element={<ExpenseForm />} />
     <Route path="statement" element={<Statement />} />
+    <Route path="analytics" element={<Analytics />} />
     <Route path="settings" element={<Settings />} />
     <Route path="settings/help-articles" element={<HelpArticles />} />
     <Route path="listings" element={<ListingsList />} />

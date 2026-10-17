@@ -2596,6 +2596,36 @@ paths:
               schema:
                 $ref: '#/components/schemas/DeliveryReport'
           description: ''
+  /api/v1/orgs/{org_id}/analytics/:
+    get:
+      operationId: orgs_analytics_retrieve
+      description: 'GET /orgs/{id}/analytics/?months=6: month-by-month collection,
+        plus today''s snapshot.'
+      parameters:
+      - in: query
+        name: months
+        schema:
+          type: integer
+          maximum: 24
+          minimum: 1
+          default: 6
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analytics'
+          description: ''
   /api/v1/orgs/{org_id}/announcements/:
     get:
       operationId: orgs_announcements_list
@@ -7360,6 +7390,30 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /api/v1/platform/metrics/:
+    get:
+      operationId: platform_metrics_retrieve
+      description: 'GET /platform/metrics/: Homesika''s own numbers (staff accounts
+        only). Amounts in NGN.'
+      parameters:
+      - in: query
+        name: months
+        schema:
+          type: integer
+          maximum: 24
+          minimum: 1
+          default: 6
+      tags:
+      - platform
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformMetrics'
+          description: ''
   /api/v1/receipts/{token}/:
     get:
       operationId: receipts_retrieve
@@ -7703,6 +7757,123 @@ components:
           type: string
           default: ''
           maxLength: 1000
+    Analytics:
+      type: object
+      properties:
+        currency:
+          type: string
+        months:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalyticsMonth'
+        now:
+          $ref: '#/components/schemas/AnalyticsSnapshot'
+      required:
+      - currency
+      - months
+      - now
+    AnalyticsMonth:
+      type: object
+      properties:
+        month:
+          type: string
+          format: date
+        billed:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,2})?$
+        collected:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,2})?$
+        payments:
+          type: integer
+        paid_against_billed:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,2})?$
+        collection_rate:
+          type: number
+          format: double
+          nullable: true
+          description: '% of the month''s charges paid so far'
+        charges:
+          type: integer
+        paid_on_time:
+          type: integer
+        on_time_rate:
+          type: number
+          format: double
+          nullable: true
+        dues_billed:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,2})?$
+        dues_collected:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,2})?$
+      required:
+      - billed
+      - charges
+      - collected
+      - collection_rate
+      - dues_billed
+      - dues_collected
+      - month
+      - on_time_rate
+      - paid_against_billed
+      - paid_on_time
+      - payments
+    AnalyticsSnapshot:
+      type: object
+      properties:
+        units:
+          type: integer
+        occupied:
+          type: integer
+        occupancy_rate:
+          type: number
+          format: double
+          nullable: true
+        arrears:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,2})?$
+        tenants_in_arrears:
+          type: integer
+        repairs_open:
+          type: integer
+        repairs_reported_30d:
+          type: integer
+        repair_median_days_90d:
+          type: number
+          format: double
+          nullable: true
+        leads_30d:
+          type: integer
+        leads_won_30d:
+          type: integer
+        viewings_30d:
+          type: integer
+        alerts_30d:
+          type: integer
+        false_alarms_30d:
+          type: integer
+      required:
+      - alerts_30d
+      - arrears
+      - false_alarms_30d
+      - leads_30d
+      - leads_won_30d
+      - occupancy_rate
+      - occupied
+      - repair_median_days_90d
+      - repairs_open
+      - repairs_reported_30d
+      - tenants_in_arrears
+      - units
+      - viewings_30d
     Announcement:
       type: object
       properties:
@@ -12142,6 +12313,77 @@ components:
       description: |-
         * `android` - Android
         * `ios` - iOS
+    PlatformMetrics:
+      type: object
+      properties:
+        users:
+          type: integer
+        active_users_30d:
+          type: integer
+          description: Paid, bought a bill, reported a repair or raised an alert
+        organizations:
+          type: object
+          additionalProperties:
+            type: integer
+          description: By kind
+        organizations_with_payments_30d:
+          type: integer
+        referrals:
+          type: object
+          additionalProperties:
+            type: integer
+        months:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlatformMonth'
+      required:
+      - active_users_30d
+      - months
+      - organizations
+      - organizations_with_payments_30d
+      - users
+    PlatformMonth:
+      type: object
+      properties:
+        month:
+          type: string
+          format: date
+        new_users:
+          type: integer
+        new_organizations:
+          type: integer
+        rent_and_dues_online:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,2})?$
+        recorded_offline:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,2})?$
+        platform_fees:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,2})?$
+        bills_delivered:
+          type: integer
+        bills_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,2})?$
+        bills_fees:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,14}(?:\.\d{0,2})?$
+      required:
+      - bills_delivered
+      - bills_fees
+      - bills_value
+      - month
+      - new_organizations
+      - new_users
+      - platform_fees
+      - recorded_offline
+      - rent_and_dues_online
     PreferredLanguageEnum:
       enum:
       - en

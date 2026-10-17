@@ -823,3 +823,39 @@ export interface DeliveryReport {
   false_alarms: number;
   median_first_delivery_seconds: number | null;
 }
+
+// ---- Analytics (Phase 6) ----------------------------------------------------------------------------
+
+/** GET /orgs/{org}/analytics/: money is decimal strings, rates are % (null when nothing was due). */
+export interface AnalyticsMonth {
+  month: ISODate;
+  billed: string;
+  collected: string;
+  payments: number;
+  paid_against_billed: string;
+  collection_rate: number | null;
+  charges: number;
+  paid_on_time: number;
+  on_time_rate: number | null;
+  dues_billed: string;
+  dues_collected: string;
+}
+export interface Analytics {
+  currency: string;
+  months: AnalyticsMonth[];
+  now: {
+    units: number;
+    occupied: number;
+    occupancy_rate: number | null;
+    arrears: string;
+    tenants_in_arrears: number;
+    repairs_open: number;
+    repairs_reported_30d: number;
+    repair_median_days_90d: number | null;
+    leads_30d: number;
+    leads_won_30d: number;
+    viewings_30d: number;
+    alerts_30d: number;
+    false_alarms_30d: number;
+  };
+}

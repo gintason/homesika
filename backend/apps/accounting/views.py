@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
-from rest_framework import serializers, viewsets
+from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -16,7 +16,7 @@ from apps.core.money import to_major
 from apps.orgs.permissions import OrgScopedMixin
 from apps.properties.views import OrgContextMixin
 
-from . import statements
+from . import analytics, statements
 from .models import Expense
 from .serializers import ExpenseSerializer
 
@@ -176,3 +176,125 @@ def _csv(org, data, ccy, month: date) -> HttpResponse:
     resp = HttpResponse(buf.getvalue(), content_type="text/csv; charset=utf-8")
     resp["Content-Disposition"] = f'attachment; filename="statement-{month:%Y-%m}.csv"'
     return resp
+
+
+# ---- Analytics (Phase 6) --------------------------------------------------------------------------
+
+MONEY_KEYS = {
+    "billed",
+    "collected",
+    "paid_against_billed",
+    "dues_billed",
+    "dues_collected",
+    "arrears",
+    "rent_and_dues_online",
+    "recorded_offline",
+    "platform_fees",
+    "bills_value",
+    "bills_fees",
+}
+
+
+def _money(obj, ccy="NGN"):
+    """Kobo ints -> decimal strings for the keys that are money."""
+    if isinstance(obj, list):
+        return [_money(x, ccy) for x in obj]
+    if isinstance(obj, dict):
+        return {k: (str(to_major(v, ccy)) if k in MONEY_KEYS else _money(v, ccy)) for k, v in obj.items()}
+    return obj
+
+
+class AnalyticsMonthSerializer(serializers.Serializer):
+    month = serializers.DateField()
+    billed = serializers.DecimalField(max_digits=16, decimal_places=2)
+    collected = serializers.DecimalField(max_digits=16, decimal_places=2)
+    payments = serializers.IntegerField()
+    paid_against_billed = serializers.DecimalField(max_digits=16, decimal_places=2)
+    collection_rate = serializers.FloatField(
+        allow_null=True, help_text="% of the month's charges paid so far"
+    )
+    charges = serializers.IntegerField()
+    paid_on_time = serializers.IntegerField()
+    on_time_rate = serializers.FloatField(allow_null=True)
+    dues_billed = serializers.DecimalField(max_digits=16, decimal_places=2)
+    dues_collected = serializers.DecimalField(max_digits=16, decimal_places=2)
+
+
+class AnalyticsSnapshotSerializer(serializers.Serializer):
+    units = serializers.IntegerField()
+    occupied = serializers.IntegerField()
+    occupancy_rate = serializers.FloatField(allow_null=True)
+    arrears = serializers.DecimalField(max_digits=16, decimal_places=2)
+    tenants_in_arrears = serializers.IntegerField()
+    repairs_open = serializers.IntegerField()
+    repairs_reported_30d = serializers.IntegerField()
+    repair_median_days_90d = serializers.FloatField(allow_null=True)
+    leads_30d = serializers.IntegerField()
+    leads_won_30d = serializers.IntegerField()
+    viewings_30d = serializers.IntegerField()
+    alerts_30d = serializers.IntegerField()
+    false_alarms_30d = serializers.IntegerField()
+
+
+class AnalyticsSerializer(serializers.Serializer):
+    currency = serializers.CharField()
+    months = AnalyticsMonthSerializer(many=True)
+    now = AnalyticsSnapshotSerializer()
+
+
+class AnalyticsQuery(serializers.Serializer):
+    months = serializers.IntegerField(min_value=1, max_value=24, default=6)
+
+
+class AnalyticsView(OrgScopedMixin, APIView):
+    """GET /orgs/{id}/analytics/?months=6: month-by-month collection, plus today's snapshot."""
+
+    capabilities = {"get": "report.view"}
+
+    @extend_schema(parameters=[AnalyticsQuery], responses=AnalyticsSerializer)
+    def get(self, request, *args, **kwargs):
+        q = AnalyticsQuery(data=request.query_params)
+        q.is_valid(raise_exception=True)
+        ccy = self.org.currency
+        return Response(
+            {
+                "currency": ccy,
+                "months": _money(analytics.monthly(self.org, months=q.validated_data["months"]), ccy),
+                "now": _money(analytics.snapshot(self.org), ccy),
+            }
+        )
+
+
+class PlatformMonthSerializer(serializers.Serializer):
+    month = serializers.DateField()
+    new_users = serializers.IntegerField()
+    new_organizations = serializers.IntegerField()
+    rent_and_dues_online = serializers.DecimalField(max_digits=16, decimal_places=2)
+    recorded_offline = serializers.DecimalField(max_digits=16, decimal_places=2)
+    platform_fees = serializers.DecimalField(max_digits=16, decimal_places=2)
+    bills_delivered = serializers.IntegerField()
+    bills_value = serializers.DecimalField(max_digits=16, decimal_places=2)
+    bills_fees = serializers.DecimalField(max_digits=16, decimal_places=2)
+
+
+class PlatformMetricsSerializer(serializers.Serializer):
+    users = serializers.IntegerField()
+    active_users_30d = serializers.IntegerField(
+        help_text="Paid, bought a bill, reported a repair or raised an alert"
+    )
+    organizations = serializers.DictField(child=serializers.IntegerField(), help_text="By kind")
+    organizations_with_payments_30d = serializers.IntegerField()
+    referrals = serializers.DictField(child=serializers.IntegerField(), required=False)
+    months = PlatformMonthSerializer(many=True)
+
+
+class PlatformMetricsView(APIView):
+    """GET /platform/metrics/: Homesika's own numbers (staff accounts only). Amounts in NGN."""
+
+    permission_classes = [permissions.IsAdminUser]
+
+    @extend_schema(parameters=[AnalyticsQuery], responses=PlatformMetricsSerializer)
+    def get(self, request):
+        q = AnalyticsQuery(data=request.query_params)
+        q.is_valid(raise_exception=True)
+        return Response(_money(analytics.platform(months=q.validated_data["months"])))

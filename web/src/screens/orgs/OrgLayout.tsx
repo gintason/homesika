@@ -31,6 +31,7 @@ const NAV: Array<{ path: string; label: string; cap: Capability }> = [
   { path: "viewings", label: strings.nav.viewings, cap: "listing.view" },
   { path: "expenses", label: strings.nav.expenses, cap: "expense.view" },
   { path: "statement", label: strings.nav.statement, cap: "report.view" },
+  { path: "analytics", label: strings.nav.analytics, cap: "report.view" },
   { path: "settings", label: strings.nav.settings, cap: "org.view" },
 ];
 

@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 from apps.accounting.urls import org_urls as accounting_org_urls
+from apps.accounting.urls import platform_urls
 from apps.accounts.urls import auth_urls, me_urls
 from apps.artisans.urls import org_urls as artisan_org_urls
 from apps.artisans.urls import public_urls as vouch_urls
@@ -58,6 +59,7 @@ api_v1 = [
     path("artisans/", include(artisan_urls)),
     path("artisans/me/", include(artisan_job_urls)),
     path("vouch/", include(vouch_urls)),
+    path("platform/", include(platform_urls)),
     path("me/", include(my_estate_urls)),
     path("me/", include(my_alert_urls)),
     path("orgs/<uuid:org_id>/", include(estate_org_urls)),
