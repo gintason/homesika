@@ -21,8 +21,12 @@ WORKDIR /app
 COPY --from=builder /wheels /wheels
 RUN pip install --no-index --find-links=/wheels /wheels/* && rm -rf /wheels
 COPY --chown=homesika:homesika . .
-RUN DJANGO_SECRET_KEY=build DATABASE_URL=sqlite:////tmp/build.db python manage.py collectstatic --noinput \
-    && chown -R homesika:homesika /app
+# Static files are collected with production settings at build time. Placeholder values only: the real
+# ones (secrets, gateways, providers) come from the host's environment when the container runs.
+RUN DJANGO_SECRET_KEY=build-only-not-a-secret DATABASE_URL=sqlite:////tmp/build.db \
+    PAYMENT_GATEWAYS=paystack ASSISTANT_PROVIDER=anthropic WHATSAPP_PROVIDER=off \
+    python manage.py collectstatic --noinput \
+    && rm -f /tmp/build.db && chown -R homesika:homesika /app
 USER homesika
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \

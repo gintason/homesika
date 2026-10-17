@@ -113,3 +113,18 @@ jobs:
         run: npm run check
       - name: WCAG contrast
         run: npm test
+
+  docker-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the production image (the one Render builds)
+        run: docker build --tag homesika-api:ci ./backend
+      - name: The image starts and answers its health check
+        run: |
+          docker run --rm homesika-api:ci python -c "import django; print(django.get_version())"
+          docker run --rm -e DJANGO_SETTINGS_MODULE=config.settings.production \
+            -e DJANGO_SECRET_KEY=ci-only-not-a-real-secret-key-for-image-checks-0123456789abcdef \
+            -e DATABASE_URL=sqlite:////tmp/ci.db -e PAYMENT_GATEWAYS=paystack -e ASSISTANT_PROVIDER=anthropic \
+            -e WHATSAPP_PROVIDER=off -e DJANGO_ALLOWED_HOSTS=localhost -e SKIP_MIGRATIONS=1 \
+            homesika-api:ci python manage.py check
