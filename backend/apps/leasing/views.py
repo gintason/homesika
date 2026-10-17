@@ -133,7 +133,9 @@ class ChargeViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
     http_method_names = ["get", "post"]
 
     def get_queryset(self):
-        qs = Charge.objects.filter(organization=self.org).select_related("tenant", "unit__property")
+        qs = Charge.objects.filter(organization=self.org).select_related(
+            "tenant", "unit__property", "organization"
+        )
         params = self.request.query_params
         status_ = params.get("status")
         if status_ == "outstanding":

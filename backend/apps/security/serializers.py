@@ -218,6 +218,8 @@ class AlertSerializer(serializers.ModelSerializer):
         return _location(obj)
 
     def get_false_alarms_90d(self, obj) -> int:
+        if hasattr(obj, "n_false_alarms"):  # annotated on the desk list (OrgAlertViewSet)
+            return obj.n_false_alarms
         from . import services
 
         return services.false_alarms(obj.raised_by)

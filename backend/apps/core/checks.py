@@ -13,3 +13,38 @@ def private_bucket(app_configs, **kwargs):
             )
         ]
     return []
+
+
+@checks.register(checks.Tags.security, deploy=True)
+def encryption_keys(app_configs, **kwargs):
+    """Encrypted columns (bank details, NIN, addresses, alert locations) need a valid key at start-up,
+    not at the first save."""
+    from django.core.exceptions import ImproperlyConfigured
+
+    from .crypto import _ciphers
+
+    try:
+        _ciphers.__wrapped__()  # uncached: check the settings as they are now
+    except (ImproperlyConfigured, ValueError) as exc:
+        return [
+            checks.Error(
+                str(exc) or "FIELD_ENCRYPTION_KEYS is not valid base64.",
+                hint="Set FIELD_ENCRYPTION_KEYS (base64 of 32 random bytes each).",
+                id="homesika.E002",
+            )
+        ]
+    return []
+
+
+@checks.register(checks.Tags.security, deploy=True)
+def cors_origins(app_configs, **kwargs):
+    if not getattr(settings, "CORS_ALLOWED_ORIGINS", []):
+        return [
+            checks.Warning(
+                "CORS_ALLOWED_ORIGINS is empty: the web dashboard can't call the API and the live security "
+                "desk socket is refused.",
+                hint="Set it to the web app's address, e.g. https://homesika-staging-web.onrender.com.",
+                id="homesika.W003",
+            )
+        ]
+    return []

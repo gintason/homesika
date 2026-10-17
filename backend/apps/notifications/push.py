@@ -65,6 +65,15 @@ class MockPush:
         return out
 
 
+def _sound(p: Push):
+    """iOS Critical Alerts ring even on silent / Do Not Disturb, but only with Apple's entitlement.
+    TODO(verify): Expo's sound object for critical alerts ({"critical": true, "name", "volume"}) against
+    Expo's push docs once the entitlement is granted. Android ignores it (the "alerts" channel is loud)."""
+    if p.urgent and settings.PUSH_IOS_CRITICAL_ALERTS:
+        return {"critical": True, "name": "default", "volume": 1.0}
+    return "default"
+
+
 class ExpoPush:
     name = "expo"
 
@@ -94,7 +103,7 @@ class ExpoPush:
                 title=p.title,
                 body=p.body,
                 data=p.data,
-                sound="default",
+                sound=_sound(p),
                 priority="high" if p.urgent else "default",
                 channel_id="alerts" if p.urgent else "default",
                 ttl=60 * 10 if p.urgent else 60 * 60 * 24,
@@ -157,4 +166,6 @@ def deactivate(tokens: list[str]) -> None:
     from .models import PushDevice
 
     if tokens:
-        PushDevice.objects.filter(token__in=tokens).update(is_active=False)
+        from django.utils import timezone
+
+        PushDevice.objects.filter(token__in=tokens).update(is_active=False, updated_at=timezone.now())

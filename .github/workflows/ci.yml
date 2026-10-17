@@ -64,6 +64,8 @@ jobs:
           BILLS_PROVIDERS: vtung,flutterwave
           ID_VERIFICATION_PROVIDER: manual
           PUSH_PROVIDER: expo
+          FIELD_ENCRYPTION_KEYS: Y2ktb25seS1rZXktbm90LWEtc2VjcmV0LTMyYnl0ZXM=  # ci-only, encrypts nothing real
+          CORS_ALLOWED_ORIGINS: https://app.homesika.example
       - name: Tests (Postgres + Redis)
         run: pytest
 

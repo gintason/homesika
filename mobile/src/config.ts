@@ -16,3 +16,6 @@ export const CHECKOUT_LOCK_GRACE_MS = 20 * 60 * 1000;
 
 /** The Homesika web dashboard (security staff open the live desk there). Unset: the button is hidden. */
 export const WEB_URL = (process.env.EXPO_PUBLIC_WEB_URL || "").replace(/\/$/, "") || null;
+
+/** "1" only in builds that carry Apple's Critical Alerts entitlement (see docs/DEPLOY_RENDER.md). */
+export const IOS_CRITICAL_ALERTS = process.env.EXPO_PUBLIC_IOS_CRITICAL_ALERTS === "1";

@@ -1,4 +1,6 @@
 from django.db import transaction
+from django.db.models import Count, OuterRef, Subquery
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, serializers, status, viewsets
@@ -8,6 +10,7 @@ from rest_framework.throttling import UserRateThrottle
 
 from apps.core.idempotency import idempotent
 from apps.orgs.permissions import OrgScopedMixin
+from apps.properties.models import Unit
 
 from . import services
 from .models import Announcement, DuesPlan, Estate, EstateMember, GatePass
@@ -71,7 +74,30 @@ class EstateViewSet(
     http_method_names = ["get", "post", "patch", "head", "options"]
 
     def get_queryset(self):
-        return Estate.objects.filter(organization=self.org).select_related("property")
+        units = (
+            Unit.objects.filter(property=OuterRef("property"))
+            .values("property")
+            .annotate(n=Count("id"))
+            .values("n")
+        )
+
+        def members(status):
+            return (
+                EstateMember.objects.filter(estate=OuterRef("pk"), status=status)
+                .values("estate")
+                .annotate(n=Count("id"))
+                .values("n")
+            )
+
+        return (
+            Estate.objects.filter(organization=self.org)
+            .select_related("property")
+            .annotate(
+                n_houses=Coalesce(Subquery(units), 0),
+                n_verified=Coalesce(Subquery(members(EstateMember.Status.APPROVED)), 0),
+                n_pending=Coalesce(Subquery(members(EstateMember.Status.PENDING)), 0),
+            )
+        )
 
     @extend_schema(request=EstateCreateSerializer, responses={201: EstateSerializer})
     @transaction.atomic

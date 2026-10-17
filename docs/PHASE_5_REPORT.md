@@ -194,3 +194,13 @@
 * **Render:** sync the blueprint so the new **alerts worker** starts. Without it no alert push or
   SMS goes out.
 * Answer the questions above. Then "Continue" for Phase 6.
+
+## Decisions after review
+
+1. Neighbours: keep the default (non-silent alerts go to every verified resident when the estate
+   allows it).
+2. Staff get SMS as well as push: yes (`PANIC_SMS_STAFF_ALWAYS=true`).
+3. SMS fallback after 45 seconds: yes.
+4. iOS Critical Alerts: yes, apply to Apple. The app and server are ready for it behind a switch
+   (Phase 6: `PUSH_IOS_CRITICAL_ALERTS`, off until Apple grants the entitlement).
+5. A 6-digit gate code is enough (no QR code).

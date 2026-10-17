@@ -42,13 +42,18 @@ class EstateSerializer(serializers.ModelSerializer):
             "created_at",
         )
 
+    # Lists annotate these (EstateViewSet.get_queryset); a single object falls back to counting.
     def get_houses(self, obj) -> int:
-        return obj.property.units.count()
+        return obj.n_houses if hasattr(obj, "n_houses") else obj.property.units.count()
 
     def get_verified_residents(self, obj) -> int:
+        if hasattr(obj, "n_verified"):
+            return obj.n_verified
         return obj.members.filter(status=EstateMember.Status.APPROVED).count()
 
     def get_pending_residents(self, obj) -> int:
+        if hasattr(obj, "n_pending"):
+            return obj.n_pending
         return obj.members.filter(status=EstateMember.Status.PENDING).count()
 
 

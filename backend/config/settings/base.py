@@ -278,6 +278,8 @@ BILLS_MAX_STATUS_CHECKS = env.int("BILLS_MAX_STATUS_CHECKS", default=12)
 
 # Push notifications (Phase 5): "expo" (Expo's push service) or "mock".
 PUSH_PROVIDER = env("PUSH_PROVIDER", default="mock")
+# Turn on only after Apple grants the Critical Alerts entitlement and the app is built with it.
+PUSH_IOS_CRITICAL_ALERTS = env.bool("PUSH_IOS_CRITICAL_ALERTS", default=False)
 EXPO_ACCESS_TOKEN = env("EXPO_ACCESS_TOKEN", default="")  # optional: Expo "enhanced push security"
 
 # Estates and security (Phase 5).
@@ -300,6 +302,11 @@ SMILEID_PRODUCTION = env.bool("SMILEID_PRODUCTION", default=False)  # False = Sm
 SMILEID_NIN_ID_TYPE = env("SMILEID_NIN_ID_TYPE", default="NIN_V2")  # TODO(verify) in the sandbox
 ASSISTANT_EFFORT_VERIFY = env("ASSISTANT_EFFORT_VERIFY", default="medium")
 ARTISAN_DOCUMENT_RETENTION_DAYS = env.int("ARTISAN_DOCUMENT_RETENTION_DAYS", default=90)
+# Retention (apps/core/retention.py, daily).
+NOTIFICATION_RETENTION_DAYS = env.int("NOTIFICATION_RETENTION_DAYS", default=180)
+ALERT_LOCATION_RETENTION_DAYS = env.int("ALERT_LOCATION_RETENTION_DAYS", default=90)
+GATE_PASS_RETENTION_DAYS = env.int("GATE_PASS_RETENTION_DAYS", default=90)
+PUSH_DEVICE_RETENTION_DAYS = env.int("PUSH_DEVICE_RETENTION_DAYS", default=90)
 ARTISAN_PROOF_MAX_AGE_DAYS = env.int("ARTISAN_PROOF_MAX_AGE_DAYS", default=92)  # "last 3 months"
 ARTISAN_VOUCHER_LINK_DAYS = env.int("ARTISAN_VOUCHER_LINK_DAYS", default=14)
 MAINTENANCE_MAX_PHOTOS = env.int("MAINTENANCE_MAX_PHOTOS", default=6)
@@ -424,6 +431,10 @@ CELERY_BEAT_SCHEDULE = {
     "maintenance-housekeeping": {
         "task": "apps.maintenance.tasks.housekeeping",
         "schedule": 30 * 60.0,
+    },
+    "core-retention": {
+        "task": "apps.core.tasks.purge_old_data",
+        "schedule": crontab(hour=3, minute=17),
     },
     "payments-rent-reminders": {
         "task": "apps.payments.tasks.send_rent_reminders",

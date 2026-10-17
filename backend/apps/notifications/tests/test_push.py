@@ -41,3 +41,13 @@ def test_push_or_sms(user, _sms_outbox, _push_outbox):
         recipients=[(user, user.phone_number)], title="Hi", body="There", kind="test", sms="always"
     )
     assert out == {"push": 1, "sms": 1}
+
+
+def test_critical_alert_sound_only_when_switched_on(settings):
+    from apps.notifications.push import Push, _sound
+
+    urgent, normal = Push("t", "a", "b", urgent=True), Push("t", "a", "b")
+    assert _sound(urgent) == "default"
+    settings.PUSH_IOS_CRITICAL_ALERTS = True
+    assert _sound(urgent) == {"critical": True, "name": "default", "volume": 1.0}
+    assert _sound(normal) == "default"

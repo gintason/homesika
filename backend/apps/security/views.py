@@ -1,5 +1,9 @@
-from django.db.models import Prefetch
+from datetime import timedelta
+
+from django.db.models import Count, OuterRef, Prefetch, Subquery
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
@@ -123,7 +127,18 @@ class OrgAlertViewSet(
     }
 
     def get_queryset(self):
-        qs = _alert_qs(PanicAlert.objects.filter(estate__organization=self.org))
+        since = timezone.now() - timedelta(days=90)
+        false_alarms = (
+            PanicAlert.objects.filter(
+                raised_by=OuterRef("raised_by"), status="false_alarm", created_at__gte=since
+            )
+            .values("raised_by")
+            .annotate(n=Count("id"))
+            .values("n")
+        )
+        qs = _alert_qs(PanicAlert.objects.filter(estate__organization=self.org)).annotate(
+            n_false_alarms=Coalesce(Subquery(false_alarms), 0)
+        )
         if self.action == "retrieve":
             qs = qs.prefetch_related(
                 Prefetch("notes", queryset=IncidentNote.objects.select_related("author")),

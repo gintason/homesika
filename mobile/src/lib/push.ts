@@ -4,6 +4,7 @@ import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 
 import { pushApi } from "@/api";
+import { IOS_CRITICAL_ALERTS } from "@/config";
 
 import { deleteSecure, getSecure, setSecure } from "./secure";
 
@@ -51,7 +52,13 @@ export async function registerForPush(names: { alerts: string; updates: string }
     if (!Device.isDevice) return "unavailable"; // simulators can't receive pushes
     await setupChannels(names);
     let { status } = await Notifications.getPermissionsAsync();
-    if (status !== "granted") status = (await Notifications.requestPermissionsAsync()).status;
+    if (status !== "granted")
+      status = (
+        await Notifications.requestPermissionsAsync(
+          // iOS Critical Alerts: only once Apple has granted the entitlement and the build includes it.
+          IOS_CRITICAL_ALERTS ? { ios: { allowAlert: true, allowSound: true, allowBadge: false, allowCriticalAlerts: true } } : undefined,
+        )
+      ).status;
     if (status !== "granted") return "denied";
     const projectId = easProjectId();
     if (!projectId) return "unavailable";
