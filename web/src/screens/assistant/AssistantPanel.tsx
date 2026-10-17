@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { Banner, Button, Dialog, LinkifiedText, LoadingBlock, TextArea, cx } from "../../components";
 import { fmt, strings } from "../../i18n";
+import { newIdempotencyKey } from "../../lib/idempotency";
 import { api, errorText } from "../../lib/api";
 import { formatDateTime } from "../../lib/dates";
 import type { AssistantHistory, AssistantReply, InboxMessage, PendingAction } from "../../lib/types";
@@ -73,7 +74,13 @@ export function AssistantPanel({ open, onClose }: { open: boolean; onClose: () =
     update((d) => ({ ...d, messages: [...d.messages, mine] }));
     setBusy("send");
     try {
-      applyReply(await api<AssistantReply>("/assistant/messages/", { method: "POST", body: { text: body, channel: "web" } }));
+      applyReply(
+        await api<AssistantReply>("/assistant/messages/", {
+          method: "POST",
+          body: { text: body, channel: "web" },
+          idempotencyKey: newIdempotencyKey(),
+        }),
+      );
     } catch (err) {
       update((d) => ({ ...d, messages: d.messages.filter((m) => m.id !== mine.id) }));
       setText(body);
@@ -128,7 +135,7 @@ export function AssistantPanel({ open, onClose }: { open: boolean; onClose: () =
             hideLabel
             placeholder={t.placeholder}
             rows={2}
-            maxLength={4000}
+            maxLength={2000}
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
