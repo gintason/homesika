@@ -1153,6 +1153,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/EnquiryReceived'
           description: ''
+  /api/v1/markets/:
+    get:
+      operationId: markets_retrieve
+      description: 'GET /markets/: countries and cities Homesika is switched on in,
+        with suggested areas (public).'
+      tags:
+      - markets
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Markets'
+          description: ''
   /api/v1/me/:
     get:
       operationId: me_retrieve
@@ -10322,6 +10338,71 @@ components:
           maxLength: 64
       required:
       - refresh
+    MarketCity:
+      type: object
+      properties:
+        slug:
+          type: string
+        name:
+          type: string
+        state:
+          type: string
+        country:
+          type: string
+        areas:
+          type: array
+          items:
+            type: string
+        discos:
+          type: array
+          items:
+            type: string
+          description: Electricity companies (bills codes)
+      required:
+      - areas
+      - country
+      - discos
+      - name
+      - slug
+      - state
+    MarketCountry:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        currency:
+          type: string
+        calling_code:
+          type: string
+        emergency:
+          type: string
+          description: The emergency number the apps show
+        bills:
+          type: boolean
+          description: Airtime, data, TV and electricity available
+      required:
+      - bills
+      - calling_code
+      - code
+      - currency
+      - emergency
+      - name
+    Markets:
+      type: object
+      properties:
+        countries:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketCountry'
+        cities:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketCity'
+      required:
+      - cities
+      - countries
     Member:
       type: object
       properties:

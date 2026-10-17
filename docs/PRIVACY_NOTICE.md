@@ -20,6 +20,8 @@ For landlords and agents: your organization, properties, units, team and payout 
 For artisans: your trades and work areas, address (encrypted), NIN and date of birth (encrypted), a photo of your NIN slip or card and, if needed, a proof of address; your guarantors' and references' names, phone numbers and answers.
 
 Messages you send to the Homesika assistant in the app or on WhatsApp.
+* If you invite friends or join with a code: who invited whom, and the free service fees you have and use.
+* If you send airtime abroad: the recipient's phone number and country.
 
 We collect your location only if you turn on "Share my location" for panic alerts, and only at the moment you raise an alert. It is stored encrypted and shown only to your estate's security and managers.
 * If you allow notifications, your phone's push notification token, so we can send you alerts and updates.
@@ -54,7 +56,7 @@ Service providers who process data for us under contract (data processors):
 
 * Paystack and Flutterwave (payments and refunds).
 
-* VTU.ng and Flutterwave (airtime, data, TV and electricity).
+* VTU.ng and Flutterwave (airtime, data, TV and electricity), and Reloadly (airtime to phones abroad: the recipient's number), United States.
 
 * Termii (SMS), Meta (WhatsApp messages) and Expo (push notifications to the app, passed on to Google and Apple), United States.
 
@@ -71,7 +73,8 @@ Payment records and receipts: as long as the law requires for financial records.
 Artisan ID and proof-of-address photos: deleted 90 days after the check passes (we keep the result, the ID type and the last 4 digits).
 
 Repair photos: kept with the repair record while your tenancy or account is active.
-* Emergency alerts and their incident log (including any location): kept as a safety record by the estate; gate pass records: kept for the estate's gate log.
+* Emergency alerts and their incident log: kept as a safety record by the estate; the location is erased 90 days after the alert closes. Gate passes: kept for the estate's gate log; the visitor's phone number is erased 90 days after the pass ends.
+* Messages we send you (SMS, WhatsApp, push): deleted after 180 days.
 
 Assistant messages: kept so the conversation works and for quality; you can clear them in the app.
 

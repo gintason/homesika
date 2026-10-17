@@ -315,6 +315,53 @@ ARTICLES += [
     ),
 ]
 
+ARTICLES += [
+    (
+        "invite-friends",
+        [],
+        {
+            "en": (
+                "Invite friends: free service fees",
+                "In the app, open Profile, then Invite friends, and share your code. When a friend signs up with "
+                "it, their next 3 electricity or cable TV service fees (₦100 each) are free. When they buy "
+                "something or pay rent online for the first time, your next 3 are free too. Free fees have no "
+                "cash value, can't be withdrawn or sent to anyone, and expire after 6 months. If you forgot to "
+                "enter a code when signing up, you can still add it in Invite friends within 14 days, before "
+                "your first purchase.",
+            ),
+            "pcm": (
+                "Invite your people: free service fee",
+                "For the app, open Profile, then Invite friends, and share your code. When your friend sign up "
+                "with am, im next 3 electricity or cable TV service fee (₦100 each) go free. When e buy "
+                "something or pay rent online for the first time, your own next 3 go free too. Free fee no be "
+                "money: you no fit withdraw am or send am to person, and e go expire after 6 months. If you "
+                "forget to put code when you dey sign up, you fit still add am for Invite friends inside 14 "
+                "days, before your first purchase.",
+            ),
+        },
+    ),
+    (
+        "airtime-abroad",
+        [],
+        {
+            "en": (
+                "Airtime for phones abroad",
+                "In the app, open Bills, then Airtime abroad. Choose the country, enter the full number and we "
+                "find the network. You pay in naira; we show an estimate of what arrives, and the network "
+                "decides the exact amount. If it can't be delivered, your money is refunded automatically. "
+                "Countries include Ghana, Kenya, South Africa, the UK, the US and Canada.",
+            ),
+            "pcm": (
+                "Airtime for phone for abroad",
+                "For the app, open Bills, then Airtime abroad. Choose the country, put the full number and we "
+                "go find the network. You go pay for naira; we go show estimate of wetin go reach, and na the "
+                "network go decide the exact amount. If e no fit deliver, your money go return by itself. "
+                "Countries dey like Ghana, Kenya, South Africa, UK, US and Canada.",
+            ),
+        },
+    ),
+]
+
 
 def seed(KbArticle) -> int:
     n = 0

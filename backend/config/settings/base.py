@@ -310,6 +310,9 @@ SMILEID_PRODUCTION = env.bool("SMILEID_PRODUCTION", default=False)  # False = Sm
 SMILEID_NIN_ID_TYPE = env("SMILEID_NIN_ID_TYPE", default="NIN_V2")  # TODO(verify) in the sandbox
 ASSISTANT_EFFORT_VERIFY = env("ASSISTANT_EFFORT_VERIFY", default="medium")
 ARTISAN_DOCUMENT_RETENTION_DAYS = env.int("ARTISAN_DOCUMENT_RETENTION_DAYS", default=90)
+# Markets (apps/core/markets.py): countries and cities that are switched on. Ghana is built but off.
+MARKETS_COUNTRIES = env("MARKETS_COUNTRIES", default="NG")
+MARKETS_CITIES = env("MARKETS_CITIES", default="lagos,abuja,accra")
 # Referrals (apps/referrals): rewarded with bill fee waivers only, never money.
 REFERRALS_ENABLED = env.bool("REFERRALS_ENABLED", default=True)
 REFERRAL_WAIVERS_NEW_USER = env.int("REFERRAL_WAIVERS_NEW_USER", default=3)

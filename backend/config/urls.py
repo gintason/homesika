@@ -13,6 +13,7 @@ from apps.assistant.urls import urls as assistant_urls
 from apps.bills import views as bill_views
 from apps.bills.urls import urls as bill_urls
 from apps.core import views as core_views
+from apps.core.api import MarketsView
 from apps.estates.urls import me_urls as my_estate_urls
 from apps.estates.urls import org_urls as estate_org_urls
 from apps.leasing.urls import me_urls as my_leasing_urls
@@ -61,6 +62,7 @@ api_v1 = [
     path("artisans/me/", include(artisan_job_urls)),
     path("vouch/", include(vouch_urls)),
     path("platform/", include(platform_urls)),
+    path("markets/", MarketsView.as_view(), name="markets"),
     path("me/", include(my_estate_urls)),
     path("me/", include(my_alert_urls)),
     path("me/", include(my_referral_urls)),

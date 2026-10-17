@@ -92,3 +92,28 @@ describe("Listing form + listing writer", () => {
     expect(m.calls.filter((c) => c.method === "POST")).toHaveLength(0);
   });
 });
+
+describe("Listing form: cities", () => {
+  it("offers the cities Homesika works in, and the chosen city's areas as suggestions", async () => {
+    mockFetch({
+      [`GET ${BASE}/units/`]: { body: [] },
+      "GET /api/v1/markets/": {
+        body: {
+          countries: [{ code: "NG", name: "Nigeria", currency: "NGN", calling_code: "+234", emergency: "112", bills: true }],
+          cities: [
+            { slug: "lagos", name: "Lagos", state: "Lagos", country: "NG", areas: ["Yaba", "Lekki"], discos: [] },
+            { slug: "abuja", name: "Abuja", state: "FCT", country: "NG", areas: ["Wuse 2", "Maitama"], discos: [] },
+          ],
+        },
+      },
+    });
+    const { container } = renderOrgScreen(<ListingForm />, { path: "listings/new", url: "listings/new" });
+    const city = await screen.findByRole("combobox", { name: "City" });
+    expect(screen.getByRole("option", { name: "Abuja" })).toBeInTheDocument();
+    fireEvent.change(city, { target: { value: "Abuja" } });
+    await waitFor(() =>
+      expect([...container.querySelectorAll("#listing-areas option")].map((o) => o.getAttribute("value"))).toEqual(["Wuse 2", "Maitama"]),
+    );
+    expect(screen.getByLabelText("Area")).toHaveAttribute("list", "listing-areas");
+  });
+});

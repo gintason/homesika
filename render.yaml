@@ -59,6 +59,20 @@ envVarGroups:
         value: expo                    # panic alerts and announcements (Expo push service)
       - key: EXPO_ACCESS_TOKEN
         sync: false
+      - key: PUSH_IOS_CRITICAL_ALERTS
+        value: "false"                 # true only after Apple grants the Critical Alerts entitlement
+      - key: INTL_TOPUP_ENABLED
+        value: "false"                 # international airtime: true after the Reloadly sandbox check
+      - key: RELOADLY_CLIENT_ID
+        sync: false
+      - key: RELOADLY_CLIENT_SECRET
+        sync: false
+      - key: RELOADLY_LIVE
+        value: "false"                 # staging uses Reloadly's sandbox
+      - key: MARKETS_COUNTRIES
+        value: NG                      # add GH only after the Ghana checklist (docs/MARKETS.md)
+      - key: REFERRALS_ENABLED
+        value: "true"
       - key: ID_VERIFICATION_PROVIDER
         value: nin                     # NIN lookup + AI document reading; "manual" = staff review
       - key: NIN_PROVIDER

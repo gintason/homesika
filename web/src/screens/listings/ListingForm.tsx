@@ -20,6 +20,7 @@ import { strings } from "../../i18n";
 import { api } from "../../lib/api";
 import { useForm } from "../../lib/form";
 import { formatPlainAmount, isPositive, parseMoneyInput } from "../../lib/money";
+import { useMarkets } from "../../lib/markets";
 import { useOrg } from "../../lib/org";
 import { normalisePhone } from "../../lib/phone";
 import { useInvalidateOrg, useOrgQuery } from "../../lib/queries";
@@ -170,8 +171,16 @@ export function ListingForm() {
               {form.formError && <Banner tone="error">{form.formError}</Banner>}
               <TextField label={t.listingTitle} hint={t.listingTitleHint} required maxLength={140} {...form.text("title")} />
               <div className="grid gap-4 sm:grid-cols-2">
-                <TextField label={t.area} hint={t.areaHint} required maxLength={80} {...form.text("area")} />
-                <TextField label={t.city} maxLength={80} {...form.text("city")} />
+                <TextField
+                  label={t.area}
+                  hint={t.areaHint}
+                  required
+                  maxLength={80}
+                  list="listing-areas"
+                  autoComplete="off"
+                  {...form.text("area")}
+                />
+                <CityField value={form.values.city} onChange={(v) => form.set("city", v)} />
               </div>
               <TextField label={t.address} hint={t.addressHint} optional maxLength={255} {...form.text("address")} />
               <div className="grid gap-4 sm:grid-cols-2">
@@ -238,6 +247,33 @@ export function ListingForm() {
           />
         </div>
       )}
+    </>
+  );
+}
+
+/** City from the markets list (Lagos, Abuja…), with its neighbourhoods offered as suggestions for Area. */
+function CityField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const markets = useMarkets();
+  const cities = markets.data?.cities ?? [];
+  const known = cities.some((c) => c.name === value);
+  const areas = cities.find((c) => c.name === value)?.areas ?? [];
+  return (
+    <>
+      {cities.length && (known || !value) ? (
+        <Select
+          label={t.city}
+          value={value}
+          options={cities.map((c) => ({ value: c.name, label: c.name }))}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      ) : (
+        <TextField label={t.city} maxLength={80} value={value} onChange={(e) => onChange(e.target.value)} />
+      )}
+      <datalist id="listing-areas">
+        {areas.map((a) => (
+          <option key={a} value={a} />
+        ))}
+      </datalist>
     </>
   );
 }

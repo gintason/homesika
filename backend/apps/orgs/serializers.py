@@ -31,6 +31,24 @@ class OrganizationSerializer(serializers.ModelSerializer):
         roles = self.context.get("roles") or {}
         return roles.get(obj.pk)
 
+    def validate(self, attrs):
+        from apps.core import markets
+
+        country = (attrs.get("country") or getattr(self.instance, "country", None) or "NG").upper()
+        if not markets.is_enabled(country):
+            raise serializers.ValidationError(
+                {"country": [_("Homesika isn't available in this country yet.")]}
+            )
+        m = markets.country(country)
+        if self.instance is None:  # new organization: the country decides the currency and time zone
+            attrs.setdefault("currency", m.currency)
+            attrs.setdefault("timezone", m.timezone)
+            if attrs["currency"] != m.currency:
+                raise serializers.ValidationError(
+                    {"currency": [_("Use %(c)s for this country.") % {"c": m.currency}]}
+                )
+        return attrs
+
     def validate_kind(self, value):
         if value == Organization.Kind.PLATFORM:
             raise serializers.ValidationError(_("This organization type can't be created here."))

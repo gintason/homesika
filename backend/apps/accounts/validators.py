@@ -24,13 +24,9 @@ def is_weak_pin(pin: str) -> bool:
     return len(set(digits)) == 1 or steps in ({1}, {-1})
 
 
-def normalise_phone(raw: str, default_country_code: str = "234") -> str:
-    """08012345678 / 2348012345678 / +234 801 234 5678 -> +2348012345678 (Nigeria default)."""
-    digits = "".join(ch for ch in raw if ch.isdigit() or ch == "+")
-    if digits.startswith("+"):
-        return digits
-    if digits.startswith(default_country_code):
-        return f"+{digits}"
-    if digits.startswith("0") and len(digits) == 11:
-        return f"+{default_country_code}{digits[1:]}"
-    return digits
+def normalise_phone(raw: str, country: str = "NG") -> str:
+    """08012345678 / 2348012345678 / +234 801 234 5678 -> +2348012345678. `country` (ISO code) decides
+    how a local number is read: GH 0241234567 -> +233241234567 (apps/core/markets.py)."""
+    from apps.core.markets import normalise_phone as by_market
+
+    return by_market(raw, country)

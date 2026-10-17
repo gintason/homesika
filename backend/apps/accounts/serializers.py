@@ -15,10 +15,12 @@ PIN6 = r"^\d{6}$"
 
 
 class PhoneField(serializers.CharField):
-    """Accepts 0801…, 234801…, +234 801…; stores E.164."""
+    """Accepts 0801…, 234801…, +234 801…; stores E.164. Local numbers are read for the organization's
+    country when the serializer context has one (a Ghana organization: 024… -> +23324…)."""
 
     def to_internal_value(self, data):
-        value = normalise_phone(super().to_internal_value(data))
+        org = self.context.get("org") if hasattr(self, "context") else None
+        value = normalise_phone(super().to_internal_value(data), getattr(org, "country", "NG") or "NG")
         phone_validator(value)
         return value
 
