@@ -4,6 +4,8 @@ from django.urls import include, path
 
 from apps.accounting.urls import org_urls as accounting_org_urls
 from apps.accounts.urls import auth_urls, me_urls
+from apps.assistant.urls import org_urls as assistant_org_urls
+from apps.assistant.urls import urls as assistant_urls
 from apps.core import views as core_views
 from apps.leasing.urls import me_urls as my_leasing_urls
 from apps.leasing.urls import org_urls as leasing_org_urls
@@ -30,6 +32,8 @@ api_v1 = [
     path("orgs/<uuid:org_id>/", include(messaging_org_urls)),
     path("orgs/<uuid:org_id>/", include(listing_org_urls)),
     path("listings/", include(public_listing_urls)),
+    path("orgs/<uuid:org_id>/", include(assistant_org_urls)),
+    path("assistant/", include(assistant_urls)),
     path("me/", include(my_messaging_urls)),
     path("pay/", include(pay_urls)),
     path("receipts/", include(receipt_urls)),

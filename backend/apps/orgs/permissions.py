@@ -35,6 +35,7 @@ CAPABILITIES: dict[str, set[str]] = {
         "listing.manage",
         "inbox.view",
         "inbox.reply",
+        "kb.manage",
     },
     Role.ACCOUNTANT: {
         "org.view",

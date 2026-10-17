@@ -18,7 +18,7 @@ from .serializers import (
     ConversationDetailSerializer,
     ConversationSerializer,
     OptInSerializer,
-    ReplySerializer,
+    StaffReplySerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -95,10 +95,10 @@ class InboxViewSet(OrgScopedMixin, mixins.ListModelMixin, mixins.RetrieveModelMi
         convo = services.release(self.get_object(), by=request.user, request=request)
         return Response(ConversationDetailSerializer(convo).data)
 
-    @extend_schema(request=ReplySerializer, responses=ConversationDetailSerializer)
+    @extend_schema(request=StaffReplySerializer, responses=ConversationDetailSerializer)
     @action(detail=True, methods=["post"])
     def reply(self, request, *args, **kwargs):
-        s = ReplySerializer(data=request.data)
+        s = StaffReplySerializer(data=request.data)
         s.is_valid(raise_exception=True)
         convo = self.get_object()
         services.staff_reply(convo, body=s.validated_data["body"], by=request.user)

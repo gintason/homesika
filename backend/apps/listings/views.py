@@ -1,6 +1,7 @@
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, parsers, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -103,7 +104,11 @@ class ListingViewSet(OrgScopedMixin, OrgContextMixin, viewsets.ModelViewSet):
             PhotoSerializer(photo, context={"request": request}).data, status=status.HTTP_201_CREATED
         )
 
-    @extend_schema(request=None, responses={204: None})
+    @extend_schema(
+        request=None,
+        responses={204: None},
+        parameters=[OpenApiParameter("photo_id", OpenApiTypes.UUID, OpenApiParameter.PATH)],
+    )
     @action(detail=True, methods=["delete"], url_path=r"photos/(?P<photo_id>[^/.]+)")
     def delete_photo(self, request, photo_id=None, *args, **kwargs):
         photo = get_object_or_404(self.get_object().photos, pk=photo_id)

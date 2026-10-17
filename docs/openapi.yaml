@@ -3,6 +3,88 @@ info:
   title: Homesika API
   version: 1.0.0
 paths:
+  /api/v1/assistant/actions/{id}/{decision}/:
+    post:
+      operationId: assistant_actions_create
+      parameters:
+      - in: path
+        name: decision
+        schema:
+          type: string
+          pattern: ^confirm|reject$
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-f-]{36}$
+        required: true
+      tags:
+      - assistant
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reply'
+          description: ''
+  /api/v1/assistant/messages/:
+    get:
+      operationId: assistant_messages_list
+      description: POST a message to the assistant (app or web); GET this channel's
+        recent messages.
+      tags:
+      - assistant
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+          description: ''
+    post:
+      operationId: assistant_messages_create
+      description: POST a message to the assistant (app or web); GET this channel's
+        recent messages.
+      tags:
+      - assistant
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Chat'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Chat'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Chat'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reply'
+          description: ''
+    delete:
+      operationId: assistant_messages_destroy
+      description: 'NDPA: erase my assistant conversations (app and web).'
+      tags:
+      - assistant
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/v1/auth/login/:
     post:
       operationId: auth_login_create
@@ -260,6 +342,98 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /api/v1/listings/:
+    get:
+      operationId: listings_list
+      tags:
+      - listings
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicListing'
+          description: ''
+  /api/v1/listings/{ref}/:
+    get:
+      operationId: listings_retrieve
+      parameters:
+      - in: path
+        name: ref
+        schema:
+          type: string
+        required: true
+      tags:
+      - listings
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicListing'
+          description: ''
+  /api/v1/listings/{ref}/book/:
+    post:
+      operationId: listings_book_create
+      parameters:
+      - in: path
+        name: ref
+        schema:
+          type: string
+        required: true
+      tags:
+      - listings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicBooking'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PublicBooking'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PublicBooking'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          description: No response body
+  /api/v1/listings/{ref}/enquire/:
+    post:
+      operationId: listings_enquire_create
+      parameters:
+      - in: path
+        name: ref
+        schema:
+          type: string
+        required: true
+      tags:
+      - listings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Enquiry'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Enquiry'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Enquiry'
+        required: true
+      security:
+      - {}
+      responses:
+        '201':
+          description: No response body
   /api/v1/me/:
     get:
       operationId: me_retrieve
@@ -592,6 +766,49 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/me/whatsapp/:
+    get:
+      operationId: me_whatsapp_retrieve
+      description: GET/PUT my WhatsApp preference (reminders and receipts on WhatsApp
+        instead of SMS).
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptIn'
+          description: ''
+    put:
+      operationId: me_whatsapp_update
+      description: GET/PUT my WhatsApp preference (reminders and receipts on WhatsApp
+        instead of SMS).
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptIn'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OptIn'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OptIn'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptIn'
+          description: ''
   /api/v1/orgs/:
     get:
       operationId: orgs_list
@@ -867,6 +1084,173 @@ paths:
               schema:
                 $ref: '#/components/schemas/Charge'
           description: ''
+  /api/v1/orgs/{org_id}/conversations/:
+    get:
+      operationId: orgs_conversations_list
+      description: 'Staff inbox: WhatsApp threads routed to this organization. ?status=bot|handoff|closed,
+        ?escalated=1'
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedConversationList'
+          description: ''
+  /api/v1/orgs/{org_id}/conversations/{id}/:
+    get:
+      operationId: orgs_conversations_retrieve
+      description: 'Staff inbox: WhatsApp threads routed to this organization. ?status=bot|handoff|closed,
+        ?escalated=1'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this conversation.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationDetail'
+          description: ''
+  /api/v1/orgs/{org_id}/conversations/{id}/release/:
+    post:
+      operationId: orgs_conversations_release_create
+      description: 'Staff inbox: WhatsApp threads routed to this organization. ?status=bot|handoff|closed,
+        ?escalated=1'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this conversation.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationDetail'
+          description: ''
+  /api/v1/orgs/{org_id}/conversations/{id}/reply/:
+    post:
+      operationId: orgs_conversations_reply_create
+      description: 'Staff inbox: WhatsApp threads routed to this organization. ?status=bot|handoff|closed,
+        ?escalated=1'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this conversation.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffReply'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffReply'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffReply'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationDetail'
+          description: ''
+  /api/v1/orgs/{org_id}/conversations/{id}/take-over/:
+    post:
+      operationId: orgs_conversations_take_over_create
+      description: 'Staff inbox: WhatsApp threads routed to this organization. ?status=bot|handoff|closed,
+        ?escalated=1'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this conversation.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationDetail'
+          description: ''
   /api/v1/orgs/{org_id}/dashboard/:
     get:
       operationId: orgs_dashboard_retrieve
@@ -1093,6 +1477,336 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/orgs/{org_id}/kb-articles/:
+    get:
+      operationId: orgs_kb_articles_list
+      description: An organization's own help articles (house rules, how to pay, office
+        hours).
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KbArticle'
+          description: ''
+    post:
+      operationId: orgs_kb_articles_create
+      description: An organization's own help articles (house rules, how to pay, office
+        hours).
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KbArticle'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/KbArticle'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/KbArticle'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KbArticle'
+          description: ''
+  /api/v1/orgs/{org_id}/kb-articles/{id}/:
+    get:
+      operationId: orgs_kb_articles_retrieve
+      description: An organization's own help articles (house rules, how to pay, office
+        hours).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this kb article.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KbArticle'
+          description: ''
+    put:
+      operationId: orgs_kb_articles_update
+      description: An organization's own help articles (house rules, how to pay, office
+        hours).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this kb article.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KbArticle'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/KbArticle'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/KbArticle'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KbArticle'
+          description: ''
+    patch:
+      operationId: orgs_kb_articles_partial_update
+      description: An organization's own help articles (house rules, how to pay, office
+        hours).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this kb article.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedKbArticle'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedKbArticle'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedKbArticle'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KbArticle'
+          description: ''
+    delete:
+      operationId: orgs_kb_articles_destroy
+      description: An organization's own help articles (house rules, how to pay, office
+        hours).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this kb article.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/orgs/{org_id}/leads/:
+    get:
+      operationId: orgs_leads_list
+      description: ?stage=new|contacted|..., ?listing=<id>
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLeadList'
+          description: ''
+    post:
+      operationId: orgs_leads_create
+      description: ?stage=new|contacted|..., ?listing=<id>
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lead'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Lead'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Lead'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+          description: ''
+  /api/v1/orgs/{org_id}/leads/{id}/:
+    get:
+      operationId: orgs_leads_retrieve
+      description: ?stage=new|contacted|..., ?listing=<id>
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this lead.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+          description: ''
+    patch:
+      operationId: orgs_leads_partial_update
+      description: ?stage=new|contacted|..., ?listing=<id>
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this lead.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLead'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLead'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLead'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+          description: ''
   /api/v1/orgs/{org_id}/leases/:
     get:
       operationId: orgs_leases_list
@@ -1351,6 +2065,368 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Lease'
+          description: ''
+  /api/v1/orgs/{org_id}/listings/:
+    get:
+      operationId: orgs_listings_list
+      description: ?status=draft|published|let|archived
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedListingList'
+          description: ''
+    post:
+      operationId: orgs_listings_create
+      description: ?status=draft|published|let|archived
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Listing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Listing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Listing'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
+  /api/v1/orgs/{org_id}/listings/{id}/:
+    get:
+      operationId: orgs_listings_retrieve
+      description: ?status=draft|published|let|archived
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this listing.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
+    put:
+      operationId: orgs_listings_update
+      description: ?status=draft|published|let|archived
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this listing.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Listing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Listing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Listing'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
+    patch:
+      operationId: orgs_listings_partial_update
+      description: ?status=draft|published|let|archived
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this listing.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedListing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedListing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedListing'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
+    delete:
+      operationId: orgs_listings_destroy
+      description: ?status=draft|published|let|archived
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this listing.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/orgs/{org_id}/listings/{id}/mark-let/:
+    post:
+      operationId: orgs_listings_mark_let_create
+      description: ?status=draft|published|let|archived
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this listing.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
+  /api/v1/orgs/{org_id}/listings/{id}/photos/:
+    post:
+      operationId: orgs_listings_photos_create
+      description: ?status=draft|published|let|archived
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this listing.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                caption:
+                  type: string
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+          description: ''
+  /api/v1/orgs/{org_id}/listings/{id}/photos/{photo_id}/:
+    delete:
+      operationId: orgs_listings_photos_destroy
+      description: ?status=draft|published|let|archived
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this listing.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: photo_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/orgs/{org_id}/listings/{id}/publish/:
+    post:
+      operationId: orgs_listings_publish_create
+      description: ?status=draft|published|let|archived
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this listing.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Listing'
+          description: ''
+  /api/v1/orgs/{org_id}/listings/generate/:
+    post:
+      operationId: orgs_listings_generate_create
+      description: ?status=draft|published|let|archived
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Generate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Generate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Generate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
           description: ''
   /api/v1/orgs/{org_id}/members/:
     get:
@@ -2744,6 +3820,259 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/orgs/{org_id}/viewing-slots/:
+    get:
+      operationId: orgs_viewing_slots_list
+      description: ?listing=<id>
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Slot'
+          description: ''
+    post:
+      operationId: orgs_viewing_slots_create
+      description: ?listing=<id>
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Slot'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Slot'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Slot'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Slot'
+          description: ''
+  /api/v1/orgs/{org_id}/viewing-slots/{id}/:
+    get:
+      operationId: orgs_viewing_slots_retrieve
+      description: ?listing=<id>
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this viewing slot.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Slot'
+          description: ''
+    put:
+      operationId: orgs_viewing_slots_update
+      description: ?listing=<id>
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this viewing slot.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Slot'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Slot'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Slot'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Slot'
+          description: ''
+    patch:
+      operationId: orgs_viewing_slots_partial_update
+      description: ?listing=<id>
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this viewing slot.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSlot'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSlot'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSlot'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Slot'
+          description: ''
+    delete:
+      operationId: orgs_viewing_slots_destroy
+      description: ?listing=<id>
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this viewing slot.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/orgs/{org_id}/viewings/:
+    get:
+      operationId: orgs_viewings_list
+      description: ?upcoming=1
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Viewing'
+          description: ''
+  /api/v1/orgs/{org_id}/viewings/{id}/:
+    patch:
+      operationId: orgs_viewings_partial_update
+      description: ?upcoming=1
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this viewing.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedViewing'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedViewing'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedViewing'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Viewing'
+          description: ''
   /api/v1/pay/{reference}/:
     get:
       operationId: pay_retrieve
@@ -2931,14 +4260,6 @@ components:
       - current_pin
       - pin
       - pin_confirm
-    ChannelEnum:
-      enum:
-      - sms
-      - email
-      type: string
-      description: |-
-        * `sms` - SMS
-        * `email` - Email
     Charge:
       type: object
       properties:
@@ -3064,6 +4385,26 @@ components:
         * `paid` - Paid
         * `waived` - Waived
         * `void` - Cancelled
+    Chat:
+      type: object
+      properties:
+        text:
+          type: string
+          maxLength: 4000
+        channel:
+          allOf:
+          - $ref: '#/components/schemas/ChatChannelEnum'
+          default: app
+      required:
+      - text
+    ChatChannelEnum:
+      enum:
+      - app
+      - web
+      type: string
+      description: |-
+        * `app` - app
+        * `web` - web
     Consent:
       type: object
       properties:
@@ -3091,6 +4432,147 @@ components:
       - purpose
       - version
       - withdrawn_at
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        channel:
+          $ref: '#/components/schemas/ConversationChannelEnum'
+        status:
+          $ref: '#/components/schemas/ConversationStatusEnum'
+        language:
+          $ref: '#/components/schemas/LanguageEnum'
+        contact_name:
+          type: string
+          readOnly: true
+          default: ''
+        contact_phone:
+          type: string
+          readOnly: true
+          default: ''
+        open_escalation:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        last_message:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        last_inbound_at:
+          type: string
+          format: date-time
+          nullable: true
+        last_message_at:
+          type: string
+          format: date-time
+          nullable: true
+        can_reply_freely:
+          type: boolean
+          readOnly: true
+        handoff_by:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - can_reply_freely
+      - channel
+      - contact_name
+      - contact_phone
+      - id
+      - last_message
+      - open_escalation
+    ConversationChannelEnum:
+      enum:
+      - whatsapp
+      - app
+      - web
+      type: string
+      description: |-
+        * `whatsapp` - WhatsApp
+        * `app` - Mobile app
+        * `web` - Web dashboard
+    ConversationDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        channel:
+          $ref: '#/components/schemas/ConversationChannelEnum'
+        status:
+          $ref: '#/components/schemas/ConversationStatusEnum'
+        language:
+          $ref: '#/components/schemas/LanguageEnum'
+        contact_name:
+          type: string
+          readOnly: true
+          default: ''
+        contact_phone:
+          type: string
+          readOnly: true
+          default: ''
+        open_escalation:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        last_message:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        last_inbound_at:
+          type: string
+          format: date-time
+          nullable: true
+        last_message_at:
+          type: string
+          format: date-time
+          nullable: true
+        can_reply_freely:
+          type: boolean
+          readOnly: true
+        handoff_by:
+          type: string
+          format: uuid
+          nullable: true
+        messages:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          readOnly: true
+        escalations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Escalation'
+          readOnly: true
+      required:
+      - can_reply_freely
+      - channel
+      - contact_name
+      - contact_phone
+      - escalations
+      - id
+      - last_message
+      - messages
+      - open_escalation
+    ConversationStatusEnum:
+      enum:
+      - bot
+      - handoff
+      - closed
+      type: string
+      description: |-
+        * `bot` - Assistant replying
+        * `handoff` - A person has taken over
+        * `closed` - Closed
     CurrencyEnum:
       enum:
       - NGN
@@ -3161,6 +4643,69 @@ components:
         * `in_progress` - In progress
         * `completed` - Completed
         * `rejected` - Rejected (legal retention)
+    DirectionEnum:
+      enum:
+      - in
+      - out
+      type: string
+      description: |-
+        * `in` - From the person
+        * `out` - To the person
+    Enquiry:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        phone_number:
+          type: string
+          maxLength: 20
+        message:
+          type: string
+          maxLength: 1000
+      required:
+      - name
+      - phone_number
+    Escalation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reason:
+          $ref: '#/components/schemas/ReasonEnum'
+        summary:
+          type: string
+          maxLength: 500
+        status:
+          $ref: '#/components/schemas/EscalationStatusEnum'
+        assigned_to:
+          type: string
+          format: uuid
+          nullable: true
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - reason
+    EscalationStatusEnum:
+      enum:
+      - open
+      - assigned
+      - resolved
+      type: string
+      description: |-
+        * `open` - Open
+        * `assigned` - Being handled
+        * `resolved` - Resolved
     Expense:
       type: object
       properties:
@@ -3228,6 +4773,158 @@ components:
         * `flutterwave` - Flutterwave
         * `mock` - Mock gateway (development only)
         * `manual` - Recorded manually
+    Generate:
+      type: object
+      description: Facts for the listing writer. Photos already uploaded to a listing
+        can be included by id.
+      properties:
+        listing:
+          type: string
+          format: uuid
+          nullable: true
+        kind:
+          type: string
+          description: e.g. 3-bedroom flat, self-contain, shop
+          maxLength: 60
+        area:
+          type: string
+          maxLength: 80
+        city:
+          type: string
+          default: Lagos
+          maxLength: 80
+        bedrooms:
+          type: integer
+          maximum: 20
+          minimum: 0
+          nullable: true
+        bathrooms:
+          type: integer
+          maximum: 20
+          minimum: 0
+          nullable: true
+        rent_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+        rent_period:
+          allOf:
+          - $ref: '#/components/schemas/RentPeriodEnum'
+          default: year
+        features:
+          type: array
+          items:
+            type: string
+            maxLength: 80
+          maxItems: 30
+        notes:
+          type: string
+          maxLength: 1500
+      required:
+      - area
+      - kind
+      - rent_amount
+    KbArticle:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 80
+          pattern: ^[-a-zA-Z0-9_]+$
+        title:
+          type: string
+          maxLength: 160
+        body:
+          type: string
+        language:
+          type: string
+          maxLength: 3
+        audience:
+          description: Roles that may see it; [] = everyone. e.g. ["tenant"]
+        status:
+          $ref: '#/components/schemas/KbArticleStatusEnum'
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - body
+      - id
+      - slug
+      - title
+      - updated_at
+    KbArticleStatusEnum:
+      enum:
+      - draft
+      - published
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `published` - Published
+    LanguageEnum:
+      enum:
+      - en
+      - pcm
+      type: string
+      description: |-
+        * `en` - English
+        * `pcm` - Nigerian Pidgin
+    Lead:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        listing:
+          type: string
+          format: uuid
+          nullable: true
+        listing_title:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        phone_number:
+          type: string
+          maxLength: 16
+        source:
+          allOf:
+          - $ref: '#/components/schemas/SourceEnum'
+          readOnly: true
+        stage:
+          $ref: '#/components/schemas/StageEnum'
+        message:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+        assigned_to:
+          type: string
+          format: uuid
+          nullable: true
+        viewings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Viewing'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - listing_title
+      - message
+      - phone_number
+      - source
+      - viewings
     Lease:
       type: object
       properties:
@@ -3326,6 +5023,114 @@ components:
         * `active` - Active
         * `ended` - Ended
         * `terminated` - Terminated early
+    Listing:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        ref:
+          type: string
+          readOnly: true
+        unit:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          maxLength: 140
+        description:
+          type: string
+        whatsapp_caption:
+          type: string
+          description: Short text for sharing on WhatsApp.
+        features: {}
+        area:
+          type: string
+          description: Neighbourhood, e.g. Lekki, Yaba.
+          maxLength: 80
+        city:
+          type: string
+          maxLength: 80
+        address:
+          type: string
+          description: Shown only after a viewing is booked.
+          maxLength: 255
+        bedrooms:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        bathrooms:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        rent_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+        rent_period:
+          $ref: '#/components/schemas/RentPeriodEnum'
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ListingStatusEnum'
+          readOnly: true
+        published_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        ai_generated:
+          type: boolean
+        contact_phone:
+          type: string
+          description: Who prospects can call.
+          maxLength: 16
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Photo'
+          readOnly: true
+        lead_count:
+          type: integer
+          readOnly: true
+          default: 0
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - area
+      - created_at
+      - currency
+      - id
+      - lead_count
+      - photos
+      - published_at
+      - ref
+      - rent_amount
+      - status
+      - title
+    ListingStatusEnum:
+      enum:
+      - draft
+      - published
+      - let
+      - archived
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `published` - Published
+        * `let` - Let (no longer available)
+        * `archived` - Archived
     LoginStart:
       type: object
       properties:
@@ -3388,6 +5193,58 @@ components:
         * `active` - Active
         * `invited` - Invited (no account yet)
         * `removed` - Removed
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        direction:
+          $ref: '#/components/schemas/DirectionEnum'
+        sender:
+          $ref: '#/components/schemas/SenderEnum'
+        kind:
+          type: string
+          description: text, template, interactive, media...
+          maxLength: 20
+        body:
+          type: string
+        status:
+          $ref: '#/components/schemas/MessageStatusEnum'
+        error:
+          type: string
+          maxLength: 255
+        sent_by_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - direction
+      - id
+      - sender
+      - sent_by_name
+      - status
+    MessageStatusEnum:
+      enum:
+      - received
+      - queued
+      - sent
+      - delivered
+      - read
+      - failed
+      type: string
+      description: |-
+        * `received` - Received
+        * `queued` - Queued
+        * `sent` - Sent
+        * `delivered` - Delivered
+        * `read` - Read
+        * `failed` - Failed
     MyLease:
       type: object
       properties:
@@ -3444,9 +5301,16 @@ components:
         challenge_id:
           type: string
         channel:
-          $ref: '#/components/schemas/ChannelEnum'
+          $ref: '#/components/schemas/OtpChannelEnum'
       required:
       - challenge_id
+    OptIn:
+      type: object
+      properties:
+        opted_in:
+          type: boolean
+      required:
+      - opted_in
     Organization:
       type: object
       properties:
@@ -3512,6 +5376,14 @@ components:
         * `agency` - Agency / property manager
         * `estate` - Estate association
         * `platform` - Homesika platform
+    OtpChannelEnum:
+      enum:
+      - sms
+      - email
+      type: string
+      description: |-
+        * `sms` - SMS
+        * `email` - Email
     PaginatedChargeList:
       type: object
       required:
@@ -3531,6 +5403,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Charge'
+    PaginatedConversationList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Conversation'
     PaginatedExpenseList:
       type: object
       required:
@@ -3550,6 +5441,44 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Expense'
+    PaginatedLeadList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lead'
+    PaginatedListingList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Listing'
     PaginatedPaymentLinkList:
       type: object
       required:
@@ -3629,6 +5558,77 @@ components:
           type: string
           format: date-time
           readOnly: true
+    PatchedKbArticle:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        slug:
+          type: string
+          maxLength: 80
+          pattern: ^[-a-zA-Z0-9_]+$
+        title:
+          type: string
+          maxLength: 160
+        body:
+          type: string
+        language:
+          type: string
+          maxLength: 3
+        audience:
+          description: Roles that may see it; [] = everyone. e.g. ["tenant"]
+        status:
+          $ref: '#/components/schemas/KbArticleStatusEnum'
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedLead:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        listing:
+          type: string
+          format: uuid
+          nullable: true
+        listing_title:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        phone_number:
+          type: string
+          maxLength: 16
+        source:
+          allOf:
+          - $ref: '#/components/schemas/SourceEnum'
+          readOnly: true
+        stage:
+          $ref: '#/components/schemas/StageEnum'
+        message:
+          type: string
+          readOnly: true
+        notes:
+          type: string
+        assigned_to:
+          type: string
+          format: uuid
+          nullable: true
+        viewings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Viewing'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedLease:
       type: object
       properties:
@@ -3696,6 +5696,90 @@ components:
           type: boolean
           writeOnly: true
           default: false
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedListing:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        ref:
+          type: string
+          readOnly: true
+        unit:
+          type: string
+          format: uuid
+          nullable: true
+        title:
+          type: string
+          maxLength: 140
+        description:
+          type: string
+        whatsapp_caption:
+          type: string
+          description: Short text for sharing on WhatsApp.
+        features: {}
+        area:
+          type: string
+          description: Neighbourhood, e.g. Lekki, Yaba.
+          maxLength: 80
+        city:
+          type: string
+          maxLength: 80
+        address:
+          type: string
+          description: Shown only after a viewing is booked.
+          maxLength: 255
+        bedrooms:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        bathrooms:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        rent_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+        rent_period:
+          $ref: '#/components/schemas/RentPeriodEnum'
+        currency:
+          allOf:
+          - $ref: '#/components/schemas/CurrencyEnum'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ListingStatusEnum'
+          readOnly: true
+        published_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        ai_generated:
+          type: boolean
+        contact_phone:
+          type: string
+          description: Who prospects can call.
+          maxLength: 16
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Photo'
+          readOnly: true
+        lead_count:
+          type: integer
+          readOnly: true
+          default: 0
         created_at:
           type: string
           format: date-time
@@ -3809,6 +5893,35 @@ components:
           type: string
           format: date-time
           readOnly: true
+    PatchedSlot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        listing:
+          type: string
+          format: uuid
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        capacity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        agent:
+          type: string
+          format: uuid
+          nullable: true
+        booked:
+          type: integer
+          readOnly: true
+          default: 0
     PatchedTenant:
       type: object
       properties:
@@ -3940,6 +6053,45 @@ components:
           type: string
           format: date-time
           readOnly: true
+    PatchedViewing:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        lead:
+          type: string
+          format: uuid
+          readOnly: true
+        lead_name:
+          type: string
+          readOnly: true
+        lead_phone:
+          type: string
+          readOnly: true
+        listing:
+          type: string
+          format: uuid
+          readOnly: true
+        listing_title:
+          type: string
+          readOnly: true
+        slot:
+          type: string
+          format: uuid
+          readOnly: true
+        starts_at:
+          type: string
+          format: date-time
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ViewingStatusEnum'
+          default: booked
+        notes:
+          type: string
+          maxLength: 255
     Payment:
       type: object
       properties:
@@ -4090,6 +6242,64 @@ components:
       description: |-
         * `succeeded` - Succeeded
         * `reversed` - Reversed / refunded
+    PendingAction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        tool:
+          type: string
+          maxLength: 60
+        summary:
+          type: string
+          maxLength: 300
+        status:
+          $ref: '#/components/schemas/PendingActionStatusEnum'
+        expires_at:
+          type: string
+          format: date-time
+      required:
+      - expires_at
+      - id
+      - summary
+      - tool
+    PendingActionStatusEnum:
+      enum:
+      - proposed
+      - executed
+      - rejected
+      - expired
+      - failed
+      type: string
+      description: |-
+        * `proposed` - Waiting for confirmation
+        * `executed` - Done
+        * `rejected` - Cancelled
+        * `expired` - Expired
+        * `failed` - Failed
+    Photo:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        url:
+          type: string
+          readOnly: true
+        caption:
+          type: string
+          maxLength: 140
+        position:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+      required:
+      - id
+      - url
     PinLogin:
       type: object
       properties:
@@ -4201,6 +6411,84 @@ components:
         * `commercial` - Commercial / shops
         * `mixed` - Mixed use
         * `other` - Other
+    PublicBooking:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        phone_number:
+          type: string
+          maxLength: 20
+        message:
+          type: string
+          maxLength: 1000
+        slot:
+          type: string
+          format: uuid
+      required:
+      - name
+      - phone_number
+      - slot
+    PublicListing:
+      type: object
+      description: 'What anyone can see: no exact address, no staff details.'
+      properties:
+        ref:
+          type: string
+          maxLength: 20
+        title:
+          type: string
+          maxLength: 140
+        description:
+          type: string
+        features: {}
+        area:
+          type: string
+          description: Neighbourhood, e.g. Lekki, Yaba.
+          maxLength: 80
+        city:
+          type: string
+          maxLength: 80
+        bedrooms:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        bathrooms:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        rent_amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          readOnly: true
+        rent_period:
+          $ref: '#/components/schemas/RentPeriodEnum'
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        landlord:
+          type: string
+          readOnly: true
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Photo'
+          readOnly: true
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - area
+      - landlord
+      - photos
+      - rent_amount
+      - title
     PurposeEnum:
       enum:
       - terms
@@ -4215,6 +6503,26 @@ components:
         * `whatsapp` - WhatsApp messages
         * `marketing` - Marketing
         * `location` - Location for safety alerts
+    ReasonEnum:
+      enum:
+      - dispute
+      - payment_problem
+      - emergency
+      - user_request
+      - complaint
+      - low_confidence
+      - limit
+      - refusal
+      type: string
+      description: |-
+        * `dispute` - Dispute
+        * `payment_problem` - Payment problem
+        * `emergency` - Emergency
+        * `user_request` - Asked for a person
+        * `complaint` - Complaint
+        * `low_confidence` - Assistant couldn't help
+        * `limit` - Usage limit reached
+        * `refusal` - Assistant declined
     Register:
       type: object
       description: Step 1 of sign-up. Nothing is created until the code is verified.
@@ -4239,7 +6547,7 @@ components:
           default: en
         channel:
           allOf:
-          - $ref: '#/components/schemas/ChannelEnum'
+          - $ref: '#/components/schemas/OtpChannelEnum'
           default: sms
         accept_terms:
           type: boolean
@@ -4260,6 +6568,33 @@ components:
         * `quarterly` - Every 3 months
         * `biannual` - Every 6 months
         * `annual` - Yearly
+    RentPeriodEnum:
+      enum:
+      - year
+      - month
+      type: string
+      description: |-
+        * `year` - per year
+        * `month` - per month
+    Reply:
+      type: object
+      properties:
+        conversation:
+          type: string
+          format: uuid
+        text:
+          type: string
+        pending_action:
+          allOf:
+          - $ref: '#/components/schemas/PendingAction'
+          nullable: true
+        escalated:
+          type: boolean
+      required:
+      - conversation
+      - escalated
+      - pending_action
+      - text
     RoleEnum:
       enum:
       - owner
@@ -4278,6 +6613,18 @@ components:
         * `estate_admin` - Estate admin
         * `security` - Security desk
         * `viewer` - Viewer (read only)
+    SenderEnum:
+      enum:
+      - person
+      - assistant
+      - staff
+      - system
+      type: string
+      description: |-
+        * `person` - The person
+        * `assistant` - Assistant
+        * `staff` - Staff member
+        * `system` - Automatic message
     SettlementAccount:
       type: object
       properties:
@@ -4335,6 +6682,79 @@ components:
         * `active` - Active
         * `failed` - Rejected by gateway
         * `disabled` - Disabled
+    Slot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        listing:
+          type: string
+          format: uuid
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        capacity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        agent:
+          type: string
+          format: uuid
+          nullable: true
+        booked:
+          type: integer
+          readOnly: true
+          default: 0
+      required:
+      - booked
+      - ends_at
+      - id
+      - listing
+      - starts_at
+    SourceEnum:
+      enum:
+      - whatsapp
+      - web
+      - app
+      - manual
+      type: string
+      description: |-
+        * `whatsapp` - WhatsApp
+        * `web` - Listing page
+        * `app` - App
+        * `manual` - Added by staff
+    StaffReply:
+      type: object
+      properties:
+        body:
+          type: string
+          maxLength: 4000
+      required:
+      - body
+    StageEnum:
+      enum:
+      - new
+      - contacted
+      - viewing_booked
+      - viewed
+      - applied
+      - won
+      - lost
+      type: string
+      description: |-
+        * `new` - New
+        * `contacted` - Contacted
+        * `viewing_booked` - Viewing booked
+        * `viewed` - Viewed
+        * `applied` - Applied
+        * `won` - Became a tenant
+        * `lost` - Lost
     Tenant:
       type: object
       properties:
@@ -4577,6 +6997,66 @@ components:
       required:
       - challenge_id
       - code
+    Viewing:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        lead:
+          type: string
+          format: uuid
+          readOnly: true
+        lead_name:
+          type: string
+          readOnly: true
+        lead_phone:
+          type: string
+          readOnly: true
+        listing:
+          type: string
+          format: uuid
+          readOnly: true
+        listing_title:
+          type: string
+          readOnly: true
+        slot:
+          type: string
+          format: uuid
+          readOnly: true
+        starts_at:
+          type: string
+          format: date-time
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ViewingStatusEnum'
+          default: booked
+        notes:
+          type: string
+          maxLength: 255
+      required:
+      - id
+      - lead
+      - lead_name
+      - lead_phone
+      - listing
+      - listing_title
+      - slot
+      - starts_at
+    ViewingStatusEnum:
+      enum:
+      - booked
+      - done
+      - no_show
+      - cancelled
+      type: string
+      description: |-
+        * `booked` - Booked
+        * `done` - Done
+        * `no_show` - Didn't come
+        * `cancelled` - Cancelled
   securitySchemes:
     jwtAuth:
       type: http

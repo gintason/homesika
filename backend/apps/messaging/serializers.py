@@ -4,7 +4,7 @@ from .models import Conversation, Escalation, Message
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    sent_by_name = serializers.CharField(source="sent_by.get_full_name", read_only=True, default=None)
+    sent_by_name = serializers.CharField(source="sent_by.full_name", read_only=True, default=None)
 
     class Meta:
         model = Message
@@ -77,7 +77,7 @@ class ConversationDetailSerializer(ConversationSerializer):
         return MessageSerializer(recent, many=True).data
 
 
-class ReplySerializer(serializers.Serializer):
+class StaffReplySerializer(serializers.Serializer):
     body = serializers.CharField(max_length=4000)
 
 

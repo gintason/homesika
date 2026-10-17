@@ -214,6 +214,7 @@ MESSAGING_INBOUND_HANDLER = env(
 )
 # Escalations with no organization (e.g. a prospect) alert this number.
 SUPPORT_PHONE = env("SUPPORT_PHONE", default="")
+SUPPORT_HOURS = env("SUPPORT_HOURS", default="Monday to Saturday, 8am to 6pm (Lagos time)")
 
 # AI assistant. "anthropic" uses Claude (needs ANTHROPIC_API_KEY in the environment); "mock" is a labelled
 # rule-based stand-in for development and tests.
@@ -255,6 +256,22 @@ SPECTACULAR_SETTINGS = {
         "PaymentLinkStatusEnum": "apps.payments.models.PaymentLink.Status",
         "PaymentStatusEnum": "apps.payments.models.Payment.Status",
         "DataRequestStatusEnum": "apps.accounts.models.DataRequest.Status",
+        "ListingStatusEnum": "apps.listings.models.Listing.Status",
+        "ViewingStatusEnum": "apps.listings.models.Viewing.Status",
+        "MessageStatusEnum": "apps.messaging.models.Message.Status",
+        "ConversationStatusEnum": "apps.messaging.models.Conversation.Status",
+        "EscalationStatusEnum": "apps.messaging.models.Escalation.Status",
+        "KbArticleStatusEnum": "apps.assistant.models.KbArticle.Status",
+        "PendingActionStatusEnum": "apps.assistant.models.PendingAction.Status",
+        "ConversationChannelEnum": "apps.messaging.models.Conversation.Channel",
+        "ChatChannelEnum": [("app", "app"), ("web", "web")],
+        "OtpChannelEnum": [("sms", "SMS"), ("email", "Email")],
+        "ManualPaymentChannelEnum": [
+            ("cash", "Cash"),
+            ("bank_transfer", "Bank transfer"),
+            ("pos", "POS"),
+            ("cheque", "Cheque"),
+        ],
     },
 }
 

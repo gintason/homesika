@@ -59,6 +59,8 @@ jobs:
           DJANGO_ALLOWED_HOSTS: api.homesika.example
           DJANGO_ADMIN_URL: ops-ci/
           PAYMENT_GATEWAYS: paystack,flutterwave
+          ASSISTANT_PROVIDER: anthropic
+          WHATSAPP_PROVIDER: cloud
       - name: Tests (Postgres + Redis)
         run: pytest
 

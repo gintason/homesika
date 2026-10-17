@@ -10,6 +10,7 @@ ignore = ["S101"]  # assert is fine in tests
 [tool.ruff.lint.per-file-ignores]
 "*/tests/*" = ["S105", "S106"]
 "config/settings/test.py" = ["S105"]
+"apps/assistant/kb_seed.py" = ["E501"]  # prose content
 
 [tool.ruff.lint.isort]
 known-first-party = ["apps", "config"]

@@ -61,7 +61,7 @@ strings in naira, for example `"250000.00"`, with `currency`.
 | Tool | Input | Does |
 |---|---|---|
 | `get_portfolio_summary` | `organization_id` | Units, occupancy, overdue amount, money due in the next 30 days (`org.view`) |
-| `list_arrears` | `organization_id` | Tenants who owe, oldest debt first (`tenant.view`) |
+| `list_arrears` | `organization_id` | Tenants who owe, oldest debt first (`payment.view`) |
 | `find_tenant` | `organization_id`, `query` | Tenants matching a name, phone or unit (`tenant.view`) |
 | `get_tenant_account` | `organization_id`, `tenant_id` | One tenant's charges and payments (`tenant.view` + `payment.view`) |
 | `list_recent_payments` | `organization_id`, `days` (integer 1–90) | Payments received (`payment.view`) |
