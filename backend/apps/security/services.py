@@ -112,17 +112,25 @@ def raise_alert(
     location=None,
     client_id="",
     channel="app",
+    member: EstateMember | None = None,
 ) -> tuple[PanicAlert, bool]:
-    """Returns (alert, created). Never blocks a first alert."""
+    """Returns (alert, created). Never blocks a first alert. `member` is for a resident with no app
+    account (WhatsApp); otherwise the user's own approved membership is used."""
     if not estate.is_active or not estate.panic_enabled:
         raise serializers.ValidationError({"estate": [_("Panic alerts are turned off for this estate.")]})
-    member = (
-        EstateMember.objects.select_related("unit")
-        .filter(estate=estate, user=user, status=EstateMember.Status.APPROVED)
-        .first()
-    )
-    if member is None and not _is_staff(user, estate):
+    if member is not None and (
+        member.estate_id != estate.pk or member.status != EstateMember.Status.APPROVED
+    ):
+        member = None
+    if member is None and user is not None:
+        member = (
+            EstateMember.objects.select_related("unit")
+            .filter(estate=estate, user=user, status=EstateMember.Status.APPROVED)
+            .first()
+        )
+    if member is None and (user is None or not _is_staff(user, estate)):
         raise NotAllowed()
+    mine = {"raised_by": user} if user is not None else {"member": member, "raised_by__isnull": True}
     if kind not in PanicAlert.Kind.values or kind == PanicAlert.Kind.DRILL:
         kind = PanicAlert.Kind.HELP
     client_id = (client_id or "").strip()[:64] or None
@@ -132,14 +140,14 @@ def raise_alert(
             return existing, False
     now = timezone.now()
     recent = PanicAlert.objects.filter(
-        estate=estate, raised_by=user, status__in=PanicAlert.OPEN, created_at__gte=now - timedelta(minutes=2)
+        estate=estate, status__in=PanicAlert.OPEN, created_at__gte=now - timedelta(minutes=2), **mine
     ).first()
     if recent:
         if kind != PanicAlert.Kind.HELP and recent.kind == PanicAlert.Kind.HELP:
             set_kind(recent, kind=kind, by=user)
         return recent, False
     if (
-        PanicAlert.objects.filter(raised_by=user, created_at__gte=now - timedelta(hours=1))
+        PanicAlert.objects.filter(created_at__gte=now - timedelta(hours=1), **mine)
         .exclude(kind=PanicAlert.Kind.DRILL)
         .count()
         >= settings.PANIC_MAX_PER_HOUR
@@ -244,7 +252,8 @@ def recipients(alert: PanicAlert) -> list[tuple]:
     if not alert.silent and alert.estate.alert_residents and alert.kind != PanicAlert.Kind.DRILL:
         for m in alert.estate.members.filter(status=EstateMember.Status.APPROVED).select_related("user"):
             uid = m.user_id
-            if (uid and uid in seen) or uid == alert.raised_by_id or m.phone_number in seen:
+            mine = m.pk == alert.member_id or (uid is not None and uid == alert.raised_by_id)
+            if mine or (uid and uid in seen) or m.phone_number in seen:
                 continue
             seen.add(uid or m.phone_number)
             out.append((m.user, m.phone_number, AlertDelivery.Audience.RESIDENT))
@@ -328,14 +337,23 @@ def fan_out(alert_id) -> dict:
             )
             _sms(alert, d, text)
             sms_count += 1
-    if not alert.silent and alert.kind != PanicAlert.Kind.DRILL and alert.raised_by_id:
+    if not alert.silent and alert.kind != PanicAlert.Kind.DRILL:
         _tell_raiser(alert, _t("Homesika: your alert was sent to estate security. If you can, call 112 too."))
     return {"push": len(pushes), "sms": sms_count, "recipients": len(people)}
 
 
 def _tell_raiser(alert: PanicAlert, text: str) -> None:
     """Never for silent alerts: a sound or message on the raiser's phone could put them at risk."""
-    if alert.silent or not alert.raised_by_id:
+    if alert.silent:
+        return
+    if not alert.raised_by_id:  # a resident with no app account (raised on WhatsApp): SMS only
+        if alert.member_id:
+            notify_sms(
+                to=alert.member.phone_number,
+                body=text,
+                kind="panic_status",
+                organization=alert.estate.organization,
+            )
         return
     user = alert.raised_by
     toks = push.active_tokens({user.pk}).get(user.pk, [])

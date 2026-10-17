@@ -19,7 +19,7 @@ from ..models import AssistantTurn, PendingAction
 from . import scenarios
 
 EVAL_DIR = Path(__file__).resolve().parent
-ROLES = ("tenant", "landlord", "staff", "prospect")
+ROLES = ("tenant", "landlord", "staff", "prospect", "resident")
 
 
 @dataclass

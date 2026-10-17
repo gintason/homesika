@@ -460,7 +460,44 @@ def build_all() -> Built:
             stage="viewing_booked",
         )
         Viewing.objects.create(lead=ifeanyi, listing=palm4d, slot=taken)
+        _estate(b)
     return b
+
+
+def _estate(b: Built) -> None:
+    """Phase 5: Palm Grove Estate, run by its residents' association (see docs/ASSISTANT.md §6)."""
+    from apps.estates import services as estates
+    from apps.estates.models import Announcement, DuesPlan
+    from apps.orgs.models import Membership
+
+    osaro = _user(b, "estate_admin", "+2348031110050", "Osaro", "Idahosa")
+    assoc = _org(b, "palm_grove", "Palm Grove Residents Association", osaro, "+2348031110050", payout=True)
+    assoc.kind = "estate"
+    assoc.save(update_fields=["kind"])
+    estate = estates.create_estate(
+        org=assoc, by=osaro, name="Palm Grove Estate", address="Palm Grove Estate, Lekki Phase 1, Lagos"
+    )
+    estate.gate_instructions = "Show the code at Gate 1."
+    estate.save(update_fields=["gate_instructions"])
+    estates.add_houses(estate, ["A1", "A2", "B4"])
+    guard = _user(b, "guard", "+2348031110051", "Musa", "Bello")
+    Membership.objects.create(organization=assoc, user=guard, role="security")
+    DuesPlan.objects.create(
+        estate=estate, name="Security levy", amount=15_000 * N, start_date=date(2026, 1, 1)
+    )
+    for key, phone, first, last, house in (
+        ("resident", "+2348031110040", "Adaeze", "Nwankwo", "A1"),
+        ("femi", "+2348031110041", "Femi", "Lawal", "A2"),
+    ):
+        u = _user(b, key, phone, first, last)
+        estates.approve(estates.join(user=u, code=estate.join_code, house=house), by=osaro)
+    Announcement.objects.create(
+        estate=estate,
+        title="Water off on Saturday",
+        body="No water supply on Saturday 18 October, 9am to 1pm, for pump repairs.",
+        created_by=osaro,
+    )
+    b.orgs["estate"] = estate
 
 
 PRINCIPAL_FOR_SCENARIO = {
@@ -474,4 +511,5 @@ PRINCIPAL_FOR_SCENARIO = {
     "staff_viewer": ("phone", "+2348031110023"),
     "staff": ("phone", "+2348031110020"),
     "prospect": ("phone", "+2348031119999"),
+    "resident": ("phone", "+2348031110040"),
 }

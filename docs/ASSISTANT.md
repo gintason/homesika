@@ -73,6 +73,22 @@ strings in naira, for example `"250000.00"`, with `currency`.
   as an emergency.
 * Homesika doesn't take payment for repair work; never quote prices or dates the artisan hasn't given.
 
+### Estates (Phase 5)
+
+| Tool | Who | Input | Does |
+|---|---|---|---|
+| `my_estate` | resident | `estate_id` (null with one estate) | House, estate dues owed (with due dates), the 3 latest announcements, active gate passes |
+| `create_gate_pass` | resident | `estate_id`, `visitor_name`, `visitor_phone` (or null), `hours` (1–168), `max_uses` (1–50) | **Action:** after a YES, makes a 6-digit gate code (texted to the visitor if a phone is given) |
+| `raise_panic_alert` | resident | `estate_id`, `kind` (help, robbery, kidnapping, fire, medical, suspicious_person) | **Action:** after a YES, alerts estate security and neighbours (works on WhatsApp without an app account) |
+| `list_estate_alerts` | staff [`security.view`] | `organization_id` | Open panic alerts, with a link to the security desk |
+
+* "resident" means an approved (verified) estate member. Dues are ordinary charges, so the tenant tools
+  and `create_my_payment_link` also cover them.
+* Danger now: tell them to call 112 first, then propose `raise_panic_alert`. The app's hold-to-trigger
+  button is faster and is the main path; chat is the fallback.
+* Never another resident's details or gate codes. Approving residents, announcements and estate
+  settings are done in the app or dashboard.
+
 ### Tenant
 
 | Tool | Input | Does |
@@ -261,6 +277,16 @@ rely on exactly this data.** Today's date in every scenario is **2026-10-15** (L
   * The viewer can't send payment links.
   * The accountant can't manage listings.
   * Every staff role can see repair requests (`maintenance.view`).
+
+### `resident`: Adaeze Nwankwo (+2348031110040), verified resident of "Palm Grove Estate"
+
+* Estate run by "Palm Grove Residents Association" (owner Osaro Idahosa, +2348031110050; payout
+  account active). Security desk: Musa Bello (+2348031110051, role `security`).
+* Houses A1, A2, B4. Adaeze lives in A1; Femi Lawal (+2348031110041) lives in A2 (private to Adaeze).
+* Dues plan "Security levy", ₦15,000 monthly from 2026-01-01. Adaeze was approved on 2026-10-15, so
+  she owes the October charge: ₦15,000, due 2026-10-01 (overdue).
+* Announcement: "Water off on Saturday": no water supply on Saturday 18 October, 9am to 1pm.
+* Panic alerts are on; there are no open alerts.
 
 ### `prospect`: unknown WhatsApp number +2348031119999
 

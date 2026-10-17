@@ -203,3 +203,24 @@ def test_repairs_scenario_matches_spec(world):
     ]
     assert {r["reference"] for r in staff["repairs"]} == {"R0000A01", "R0000A02"}
     assert staff["awaiting_approval"] == 1
+
+
+def test_estate_scenario_matches_spec(world):
+    adaeze = for_user(world.users["resident"])
+    assert {"resident", "tenant"} <= adaeze.roles
+    with scenarios.frozen_now():
+        estate = tools.my_estate(adaeze, ctx(), estate_id=None)
+        summary = tools.get_my_rent_summary(adaeze, ctx())["landlords"][0]
+    assert (estate["estate"], estate["house"], estate["dues_owed"]) == ("Palm Grove Estate", "A1", "15000.00")
+    assert estate["dues"][0]["due_date"] == "2026-10-01" and estate["dues"][0]["overdue"]
+    assert estate["announcements"][0]["title"] == "Water off on Saturday"
+    assert summary["landlord"] == "Palm Grove Residents Association" and summary["owed_now"] == "15000.00"
+    guard = for_user(world.users["guard"])
+    with scenarios.frozen_now():
+        alerts = tools.list_estate_alerts(guard, ctx(), organization_id=str(world.orgs["palm_grove"].pk))
+    assert alerts["open_alerts"] == []
+
+
+def test_resident_runner_items_run():
+    report = runner.run(("resident",), ids={"resident-001", "resident-047"})
+    assert report["summary"]["total"] == 2

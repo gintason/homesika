@@ -879,6 +879,163 @@ def list_repairs(p: Principal, ctx, organization_id: str, status) -> dict:
     }
 
 
+# ---- Estates (Phase 5) ---------------------------------------------------------------------------
+
+
+def _estate_member(p: Principal, estate_id):
+    members = p.estate_members
+    if estate_id:
+        m = next((x for x in members if str(x.estate_id) == str(estate_id)), None)
+        if m is None:
+            raise ToolError("The person isn't a verified resident of that estate.")
+        return m
+    if not members:
+        raise ToolError(
+            "The person isn't a verified resident of an estate on Homesika. They can join with the code "
+            "from their estate office in the app (Estate > Join)."
+        )
+    if len(members) > 1:
+        raise ToolError("The person lives in more than one estate. Ask which one.")
+    return members[0]
+
+
+def my_estate(p: Principal, ctx, estate_id) -> dict:
+    from apps.estates.models import Announcement, GatePass
+
+    m = _estate_member(p, estate_id)
+    dues = Charge.objects.filter(dues_link__member=m, status__in=Charge.OUTSTANDING).order_by("due_date")
+    news = Announcement.objects.filter(estate=m.estate, audience="all").order_by("-created_at")[:3]
+    return {
+        "estate_id": str(m.estate_id),
+        "estate": m.estate.name,
+        "house": m.unit.label if m.unit_id else m.house_label,
+        "dues_owed": money(sum(c.balance for c in dues)),
+        "dues": [
+            {
+                "description": c.description,
+                "amount": money(c.balance),
+                "due_date": str(c.due_date),
+                "overdue": c.is_overdue,
+            }
+            for c in dues[:6]
+        ],
+        "pay_dues": "Dues are paid like rent: with create_my_payment_link, or in the app under Charges.",
+        "announcements": [
+            {"title": a.title, "body": a.body[:300], "date": str(timezone.localtime(a.created_at).date())}
+            for a in news
+        ],
+        "active_gate_passes": GatePass.objects.filter(
+            host=m, status="active", valid_to__gt=timezone.now()
+        ).count(),
+        "panic_button": m.estate.panic_enabled,
+    }
+
+
+def _pass_args(visitor_name: str, visitor_phone, hours: int, max_uses: int):
+    from apps.accounts.validators import normalise_phone
+
+    name = " ".join((visitor_name or "").split())[:120]
+    if len(name) < 2:
+        raise ToolError("Ask for the visitor's name.")
+    if not 1 <= int(hours) <= 168 or not 1 <= int(max_uses) <= 50:
+        raise ToolError("A pass lasts 1 to 168 hours and allows 1 to 50 entries.")
+    return name, normalise_phone(visitor_phone) if visitor_phone else "", int(hours), int(max_uses)
+
+
+def create_gate_pass(
+    p: Principal, ctx, estate_id, visitor_name: str, visitor_phone, hours: int, max_uses: int
+) -> dict:
+    m = _estate_member(p, estate_id)
+    name, phone, hours, max_uses = _pass_args(visitor_name, visitor_phone, hours, max_uses)
+    sms = f", and text the code to {phone}" if phone else ""
+    return ctx.propose(
+        "create_gate_pass",
+        {
+            "estate_id": str(m.estate_id),
+            "visitor_name": name,
+            "visitor_phone": phone or None,
+            "hours": hours,
+            "max_uses": max_uses,
+        },
+        f"Create a gate pass at {m.estate.name} for {name}, valid {hours} hours from now "
+        f"for {max_uses} entr{'y' if max_uses == 1 else 'ies'}{sms}",
+    )
+
+
+def run_create_gate_pass(
+    p: Principal, ctx, estate_id, visitor_name: str, visitor_phone, hours: int, max_uses: int
+) -> dict:
+    from apps.estates import services as estates
+
+    m = _estate_member(p, estate_id)
+    name, phone, hours, max_uses = _pass_args(visitor_name, visitor_phone, hours, max_uses)
+    gp = estates.create_pass(member=m, visitor_name=name, visitor_phone=phone, hours=hours, max_uses=max_uses)
+    return {
+        "code": gp.code,
+        "visitor": gp.visitor_name,
+        "valid_until": timezone.localtime(gp.valid_to).strftime("%a %d %b %I:%M %p"),
+        "sent_note": " We've texted it to them." if phone else " Share it with your visitor.",
+    }
+
+
+PANIC_KINDS = ["help", "robbery", "kidnapping", "fire", "medical", "suspicious_person"]
+
+
+def raise_panic_alert(p: Principal, ctx, estate_id, kind: str) -> dict:
+    m = _estate_member(p, estate_id)
+    if not m.estate.panic_enabled:
+        raise ToolError("Panic alerts are turned off for this estate. Tell them to call 112 now.")
+    if kind not in PANIC_KINDS:
+        kind = "help"
+    return ctx.propose(
+        "raise_panic_alert",
+        {"estate_id": str(m.estate_id), "kind": kind},
+        f"Send an EMERGENCY alert ({kind.replace('_', ' ')}) to {m.estate.name} security and neighbours for "
+        f"house {m.unit.label if m.unit_id else m.house_label}",
+    )
+
+
+def run_raise_panic_alert(p: Principal, ctx, estate_id, kind: str) -> dict:
+    from apps.security import services as security
+
+    m = _estate_member(p, estate_id)
+    alert, _created = security.raise_alert(
+        user=p.user,
+        member=m,
+        estate=m.estate,
+        kind=kind if kind in PANIC_KINDS else "help",
+        channel="whatsapp" if ctx.channel_source == "whatsapp" else "app",
+    )
+    return {
+        "alert_sent": True,
+        "status": alert.status,
+        "estate": m.estate.name,
+        "reminder": "Security has been alerted. They should still call 112 if they can.",
+    }
+
+
+def list_estate_alerts(p: Principal, ctx, organization_id: str) -> dict:
+    from apps.security.models import PanicAlert
+
+    org = _org(p, organization_id, "security.view")
+    rows = []
+    for a in PanicAlert.objects.filter(estate__organization=org, status__in=PanicAlert.OPEN).select_related(
+        "estate", "member__unit"
+    )[:10]:
+        rows.append(
+            {
+                "estate": a.estate.name,
+                "kind": a.kind,
+                "status": a.status,
+                "house": (a.member.unit.label if a.member.unit_id else a.member.house_label)
+                if a.member_id
+                else None,
+                "raised": timezone.localtime(a.created_at).strftime("%a %d %b %I:%M %p"),
+            }
+        )
+    return {"open_alerts": rows, "desk": f"{settings.WEB_APP_URL.rstrip('/')}/security"}
+
+
 # ---- Registry ------------------------------------------------------------------------------------
 
 ORG = {"type": "string", "description": "organization_id from the context"}
@@ -886,6 +1043,7 @@ NULL_STR = {"type": ["string", "null"]}
 TENANT_ROLES = {"tenant"}
 STAFF_ROLES = {"landlord", "staff"}
 ALL = {"*"}
+RESIDENT_ROLES = {"resident"}
 
 TOOLS: list[Tool] = [
     Tool(
@@ -1109,9 +1267,50 @@ TOOLS: list[Tool] = [
         STAFF_ROLES,
         list_repairs,
     ),
+    Tool(
+        "my_estate",
+        "The person's estate: house, estate dues owed, recent announcements, active gate passes. estate_id "
+        "from the context, or null if they live in only one estate.",
+        {"estate_id": NULL_STR},
+        RESIDENT_ROLES,
+        my_estate,
+    ),
+    Tool(
+        "create_gate_pass",
+        "Propose a gate pass for a visitor to the person's estate. The code is shown after they confirm "
+        "and, if visitor_phone is given, texted to the visitor. hours: 1-168 (default 12); max_uses: 1-50.",
+        {
+            "estate_id": NULL_STR,
+            "visitor_name": {"type": "string"},
+            "visitor_phone": NULL_STR,
+            "hours": {"type": "integer"},
+            "max_uses": {"type": "integer"},
+        },
+        RESIDENT_ROLES,
+        create_gate_pass,
+        action=True,
+    ),
+    Tool(
+        "raise_panic_alert",
+        "Propose sending an emergency alert to the estate's security and neighbours. Only when the person "
+        "says they or someone at their house is in danger now. Always tell them to call 112 too.",
+        {"estate_id": NULL_STR, "kind": {"type": "string", "enum": PANIC_KINDS}},
+        RESIDENT_ROLES,
+        raise_panic_alert,
+        action=True,
+    ),
+    Tool(
+        "list_estate_alerts",
+        "Open panic alerts in the organization's estates (security desk and managers).",
+        {"organization_id": ORG},
+        STAFF_ROLES,
+        list_estate_alerts,
+    ),
 ]
 BY_NAME = {t.name: t for t in TOOLS}
 RUNNERS = {
+    "create_gate_pass": run_create_gate_pass,
+    "raise_panic_alert": run_raise_panic_alert,
     "report_repair": run_report_repair,
     "buy_bill": run_buy_bill,
     "create_my_payment_link": run_create_my_payment_link,

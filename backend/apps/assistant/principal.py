@@ -16,12 +16,15 @@ class Principal:
     contact: object = None
     tenant_profiles: list = field(default_factory=list)
     memberships: dict = field(default_factory=dict)  # organization_id (str) -> Membership
+    estate_members: list = field(default_factory=list)  # approved EstateMember rows (verified resident)
 
     @property
     def roles(self) -> set[str]:
         roles = set()
         if self.tenant_profiles:
             roles.add("tenant")
+        if self.estate_members:
+            roles.add("resident")
         for m in self.memberships.values():
             roles.add("landlord" if m.role == "owner" else "staff")
         return roles or {"prospect"}
@@ -54,10 +57,22 @@ class Principal:
                 or "no active lease"
             )
             lines.append(f"Tenant of organization_id={p.organization_id} ({p.organization.name}): {units}")
+        for m in self.estate_members:
+            house = m.unit.label if m.unit_id else m.house_label
+            lines.append(f"Verified resident of estate_id={m.estate_id} ({m.estate.name}), house {house}")
         return "\n".join(lines)
 
 
 def _load(principal: Principal) -> Principal:
+    from apps.estates.models import EstateMember
+
+    members = EstateMember.objects.filter(status="approved", estate__is_active=True).select_related(
+        "estate", "unit"
+    )
+    if principal.user is not None:
+        principal.estate_members = list(members.filter(user=principal.user))
+    else:
+        principal.estate_members = list(members.filter(phone_number=principal.phone))
     if principal.user is not None:
         principal.tenant_profiles = list(
             TenantProfile.objects.filter(user=principal.user).select_related("organization")

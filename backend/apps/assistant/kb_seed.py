@@ -284,6 +284,37 @@ ARTICLES += [
     ),
 ]
 
+ARTICLES += [
+    (
+        "estates",
+        [],
+        {
+            "en": (
+                "Estates: joining, dues, gate passes and the panic button",
+                "If your estate uses Homesika, join in the app (Estate, then Join) with the code from your estate office "
+                "and your house number. The estate office approves you, and you become a verified resident. Estate dues "
+                "then show in your Charges and are paid like rent, with a receipt. For visitors, make a gate pass in the "
+                "app or ask the assistant: the visitor gets a 6-digit code by SMS, which the gate checks; you're told "
+                "when they arrive. In danger, hold the red panic button in the app for 2 seconds: estate security and "
+                "managers are alerted at once by push and SMS, and neighbours too unless you choose Silent. Silent sends "
+                "nothing back to your phone. Sharing your location is optional. Always call 112 as well; Homesika is not "
+                "an emergency service.",
+            ),
+            "pcm": (
+                "Estate: how to join, dues, gate pass and panic button",
+                "If your estate dey use Homesika, join for the app (Estate, then Join) with the code from your estate "
+                "office and your house number. Estate office go approve you, then you don be verified resident. Estate "
+                "dues go show for your Charges and you go pay am like rent, with receipt. For visitor, make gate pass "
+                "for the app or ask the assistant: visitor go get 6-digit code for SMS, wey gate go check; dem go tell "
+                "you when e reach. If danger dey, hold the red panic button for the app for 2 seconds: estate security "
+                "and managers go hear am sharp sharp by push and SMS, and neighbours too unless you choose Silent. "
+                "Silent no go send anything back to your phone. To share your location na your choice. Always call 112 "
+                "too; Homesika no be emergency service.",
+            ),
+        },
+    ),
+]
+
 
 def seed(KbArticle) -> int:
     n = 0

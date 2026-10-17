@@ -119,6 +119,20 @@ DONE = {
         "en": "Your viewing is booked for {when}. Address: {address}. Contact: {contact}.",
         "pcm": "Your viewing don book for {when}. Address: {address}. Contact: {contact}.",
     },
+    "create_gate_pass": {
+        "en": "Gate code for {visitor}: {code}. Valid until {valid_until}.{sent_note}",
+        "pcm": "Gate code for {visitor}: {code}. E go work reach {valid_until}.{sent_note}",
+    },
+    "raise_panic_alert": {
+        "en": (
+            "ALERT SENT to {estate} security. Call 112 now if you can. Stay safe and keep your phone "
+            "with you; security will contact you."
+        ),
+        "pcm": (
+            "ALERT DON GO to {estate} security. Call 112 now if you fit. Stay safe, hold your phone; "
+            "security go reach you."
+        ),
+    },
 }
 
 
