@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     "apps.payments",
     "apps.accounting",
     "apps.messaging",
+    "apps.listings",
+    "apps.assistant",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -119,6 +121,28 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
+# Uploaded files (listing photos) go to S3-compatible storage when a bucket is set; Render's disk is wiped
+# on every deploy, so staging and production need this.
+S3_BUCKET = env("S3_BUCKET", default="")
+if S3_BUCKET:
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "bucket_name": S3_BUCKET,
+            "endpoint_url": env("S3_ENDPOINT_URL", default=None),  # e.g. Cloudflare R2's account endpoint
+            "access_key": env("S3_ACCESS_KEY_ID", default=None),
+            "secret_key": env("S3_SECRET_ACCESS_KEY", default=None),
+            "region_name": env("S3_REGION", default="auto"),
+            "custom_domain": env("S3_PUBLIC_DOMAIN", default=None),  # public CDN domain for photos
+            "querystring_auth": False,
+            "file_overwrite": False,
+            "default_acl": None,
+        },
+    }
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework_simplejwt.authentication.JWTAuthentication"],
@@ -134,6 +158,7 @@ REST_FRAMEWORK = {
         "pin_login": env("THROTTLE_PIN_LOGIN", default="20/min"),
         "pin": env("THROTTLE_PIN", default="10/hour"),
         "pay": env("THROTTLE_PAY", default="30/min"),
+        "listing": env("THROTTLE_LISTING", default="30/min"),
     },
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardCursorPagination",
 }
@@ -189,6 +214,21 @@ MESSAGING_INBOUND_HANDLER = env(
 )
 # Escalations with no organization (e.g. a prospect) alert this number.
 SUPPORT_PHONE = env("SUPPORT_PHONE", default="")
+
+# AI assistant. "anthropic" uses Claude (needs ANTHROPIC_API_KEY in the environment); "mock" is a labelled
+# rule-based stand-in for development and tests.
+ASSISTANT_PROVIDER = env("ASSISTANT_PROVIDER", default="mock")
+ANTHROPIC_MODEL = env("ANTHROPIC_MODEL", default="claude-opus-5-5")
+ASSISTANT_EFFORT_CHAT = env("ASSISTANT_EFFORT_CHAT", default="medium")
+ASSISTANT_EFFORT_LISTING = env("ASSISTANT_EFFORT_LISTING", default="medium")
+ASSISTANT_MAX_TOKENS = env.int("ASSISTANT_MAX_TOKENS", default=4096)
+ASSISTANT_MAX_TOOL_ROUNDS = env.int("ASSISTANT_MAX_TOOL_ROUNDS", default=6)
+# Spending caps in USD (cost is estimated from token usage).
+ASSISTANT_USER_DAILY_CAP_USD = env("ASSISTANT_USER_DAILY_CAP_USD", default="0.50")
+ASSISTANT_ORG_MONTHLY_CAP_USD = env("ASSISTANT_ORG_MONTHLY_CAP_USD", default="30")
+ASSISTANT_PLATFORM_DAILY_CAP_USD = env("ASSISTANT_PLATFORM_DAILY_CAP_USD", default="25")
+ASSISTANT_RATE_LIMIT = env("ASSISTANT_RATE_LIMIT", default="20/600")  # messages per seconds, per sender
+ASSISTANT_PRICES = env.json("ASSISTANT_PRICES", default={})
 
 PAYMENT_GATEWAYS = env("PAYMENT_GATEWAYS", default="mock")
 PAYMENT_LINK_TTL_HOURS = env.int("PAYMENT_LINK_TTL_HOURS", default=72)

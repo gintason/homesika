@@ -26,10 +26,7 @@ if _render_host:
     ALLOWED_HOSTS = [*ALLOWED_HOSTS, _render_host]  # noqa: F405
     CSRF_TRUSTED_ORIGINS = [*CSRF_TRUSTED_ORIGINS, f"https://{_render_host}"]
 
-STORAGES = {
-    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},  # S3-compatible in Phase 1
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
-}
+STORAGES["staticfiles"] = {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"}  # noqa: F405
 
 ENVIRONMENT = env("ENVIRONMENT", default="production")
 
