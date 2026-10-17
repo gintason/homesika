@@ -3,6 +3,437 @@ info:
   title: Homesika API
   version: 1.0.0
 paths:
+  /api/v1/artisans/apply/:
+    post:
+      operationId: artisans_apply_create
+      description: Sign up as an artisan. Needs consent to the ID, guarantor and reference
+        checks.
+      tags:
+      - artisans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Apply'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Apply'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Apply'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyArtisan'
+          description: ''
+  /api/v1/artisans/me/:
+    get:
+      operationId: artisans_me_retrieve
+      tags:
+      - artisans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyArtisan'
+          description: ''
+    patch:
+      operationId: artisans_me_partial_update
+      tags:
+      - artisans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMyArtisan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMyArtisan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMyArtisan'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyArtisan'
+          description: ''
+  /api/v1/artisans/me/jobs/:
+    get:
+      operationId: artisans_me_jobs_list
+      description: My jobs (as an artisan). ?status=active (default) or history
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - active
+          - history
+      tags:
+      - artisans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedArtisanJobList'
+          description: ''
+  /api/v1/artisans/me/jobs/{id}/:
+    get:
+      operationId: artisans_me_jobs_retrieve
+      description: My jobs (as an artisan). ?status=active (default) or history
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this job.
+        required: true
+      tags:
+      - artisans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtisanJob'
+          description: ''
+  /api/v1/artisans/me/jobs/{id}/accept/:
+    post:
+      operationId: artisans_me_jobs_accept_create
+      description: My jobs (as an artisan). ?status=active (default) or history
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this job.
+        required: true
+      tags:
+      - artisans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Schedule'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Schedule'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Schedule'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtisanJob'
+          description: ''
+  /api/v1/artisans/me/jobs/{id}/comments/:
+    post:
+      operationId: artisans_me_jobs_comments_create
+      description: My jobs (as an artisan). ?status=active (default) or history
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this job.
+        required: true
+      tags:
+      - artisans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Note'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Note'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /api/v1/artisans/me/jobs/{id}/complete/:
+    post:
+      operationId: artisans_me_jobs_complete_create
+      description: My jobs (as an artisan). ?status=active (default) or history
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this job.
+        required: true
+      tags:
+      - artisans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Note'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Note'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtisanJob'
+          description: ''
+  /api/v1/artisans/me/jobs/{id}/decline/:
+    post:
+      operationId: artisans_me_jobs_decline_create
+      description: My jobs (as an artisan). ?status=active (default) or history
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this job.
+        required: true
+      tags:
+      - artisans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Decline'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Decline'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Decline'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtisanJob'
+          description: ''
+  /api/v1/artisans/me/jobs/{id}/photos/:
+    post:
+      operationId: artisans_me_jobs_photos_create
+      description: My jobs (as an artisan). ?status=active (default) or history
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this job.
+        required: true
+      tags:
+      - artisans
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PhotoUpload'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketPhoto'
+          description: ''
+  /api/v1/artisans/me/jobs/{id}/schedule/:
+    post:
+      operationId: artisans_me_jobs_schedule_create
+      description: My jobs (as an artisan). ?status=active (default) or history
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this job.
+        required: true
+      tags:
+      - artisans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Schedule'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Schedule'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Schedule'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtisanJob'
+          description: ''
+  /api/v1/artisans/me/jobs/{id}/start/:
+    post:
+      operationId: artisans_me_jobs_start_create
+      description: My jobs (as an artisan). ?status=active (default) or history
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this job.
+        required: true
+      tags:
+      - artisans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtisanJob'
+          description: ''
+  /api/v1/artisans/me/verification/id/:
+    post:
+      operationId: artisans_me_verification_id_create
+      tags:
+      - artisans
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IdSubmit'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyArtisan'
+          description: ''
+  /api/v1/artisans/me/verification/vouchers/:
+    post:
+      operationId: artisans_me_verification_vouchers_create
+      tags:
+      - artisans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoucherCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VoucherCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VoucherCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyVoucher'
+          description: ''
+  /api/v1/artisans/me/verification/vouchers/{id}/:
+    delete:
+      operationId: artisans_me_verification_vouchers_destroy
+      description: Remove someone who hasn't answered yet (e.g. a wrong number).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - artisans
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/artisans/me/verification/vouchers/{id}/resend/:
+    post:
+      operationId: artisans_me_verification_vouchers_resend_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - artisans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyVoucher'
+          description: ''
   /api/v1/assistant/actions/{id}/{decision}/:
     post:
       operationId: assistant_actions_create
@@ -912,6 +1343,277 @@ paths:
                 type: string
                 format: binary
           description: ''
+  /api/v1/me/tickets/:
+    get:
+      operationId: me_tickets_list
+      description: My repair requests (as a tenant).
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: open (default), closed, all, or one status, e.g. awaiting_approval
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTicketList'
+          description: ''
+    post:
+      operationId: me_tickets_create
+      description: My repair requests (as a tenant).
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Report'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Report'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Report'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/me/tickets/{id}/:
+    get:
+      operationId: me_tickets_retrieve
+      description: My repair requests (as a tenant).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/me/tickets/{id}/cancel/:
+    post:
+      operationId: me_tickets_cancel_create
+      description: My repair requests (as a tenant).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reason'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Reason'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Reason'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/me/tickets/{id}/comments/:
+    post:
+      operationId: me_tickets_comments_create
+      description: My repair requests (as a tenant).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Note'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Note'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /api/v1/me/tickets/{id}/confirm/:
+    post:
+      operationId: me_tickets_confirm_create
+      description: My repair requests (as a tenant).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/me/tickets/{id}/photos/:
+    post:
+      operationId: me_tickets_photos_create
+      description: My repair requests (as a tenant).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      tags:
+      - me
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PhotoUpload'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketPhoto'
+          description: ''
+  /api/v1/me/tickets/{id}/rate/:
+    post:
+      operationId: me_tickets_rate_create
+      description: My repair requests (as a tenant).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Rate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Rate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/me/tickets/{id}/reopen/:
+    post:
+      operationId: me_tickets_reopen_create
+      description: My repair requests (as a tenant).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Note'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Note'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
   /api/v1/me/transaction-pin/:
     post:
       operationId: me_transaction_pin_create
@@ -1110,6 +1812,63 @@ paths:
               schema:
                 type: object
                 additionalProperties: {}
+          description: ''
+  /api/v1/orgs/{org_id}/artisans/:
+    get:
+      operationId: orgs_artisans_list
+      description: Verified artisans to choose from. ?trade=plumbing&area=lekki
+      parameters:
+      - in: query
+        name: area
+        schema:
+          type: string
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: trade
+        schema:
+          type: string
+          enum:
+          - ac
+          - appliance
+          - carpentry
+          - cleaning
+          - electrical
+          - generator
+          - locksmith
+          - other
+          - painting
+          - pest
+          - plumbing
+          - roofing
+          - tiling
+          - welding
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDirectoryArtisanList'
           description: ''
   /api/v1/orgs/{org_id}/charges/:
     get:
@@ -3851,6 +4610,421 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/v1/orgs/{org_id}/tickets/:
+    get:
+      operationId: orgs_tickets_list
+      description: Repair requests for the organization's units. ?status=open|closed|all|<status>&property=&q=
+      parameters:
+      - name: cursor
+        required: false
+        in: query
+        description: The pagination cursor value.
+        schema:
+          type: string
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: property
+        schema:
+          type: string
+      - in: query
+        name: q
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: open (default), closed, all, or one status, e.g. awaiting_approval
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTicketList'
+          description: ''
+    post:
+      operationId: orgs_tickets_create
+      description: Repair requests for the organization's units. ?status=open|closed|all|<status>&property=&q=
+      parameters:
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/orgs/{org_id}/tickets/{id}/:
+    get:
+      operationId: orgs_tickets_retrieve
+      description: Repair requests for the organization's units. ?status=open|closed|all|<status>&property=&q=
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/orgs/{org_id}/tickets/{id}/approve/:
+    post:
+      operationId: orgs_tickets_approve_create
+      description: Repair requests for the organization's units. ?status=open|closed|all|<status>&property=&q=
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Note'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Note'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/orgs/{org_id}/tickets/{id}/assign/:
+    post:
+      operationId: orgs_tickets_assign_create
+      description: Repair requests for the organization's units. ?status=open|closed|all|<status>&property=&q=
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Assign'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Assign'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Assign'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/orgs/{org_id}/tickets/{id}/cancel/:
+    post:
+      operationId: orgs_tickets_cancel_create
+      description: Repair requests for the organization's units. ?status=open|closed|all|<status>&property=&q=
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reason'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Reason'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Reason'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/orgs/{org_id}/tickets/{id}/comments/:
+    post:
+      operationId: orgs_tickets_comments_create
+      description: Repair requests for the organization's units. ?status=open|closed|all|<status>&property=&q=
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Comment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Comment'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /api/v1/orgs/{org_id}/tickets/{id}/confirm/:
+    post:
+      operationId: orgs_tickets_confirm_create
+      description: Only for tickets with no tenant in the app to confirm it.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/orgs/{org_id}/tickets/{id}/photos/:
+    post:
+      operationId: orgs_tickets_photos_create
+      description: Repair requests for the organization's units. ?status=open|closed|all|<status>&property=&q=
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PhotoUpload'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketPhoto'
+          description: ''
+  /api/v1/orgs/{org_id}/tickets/{id}/reject/:
+    post:
+      operationId: orgs_tickets_reject_create
+      description: Repair requests for the organization's units. ?status=open|closed|all|<status>&property=&q=
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reason'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Reason'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Reason'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/orgs/{org_id}/tickets/{id}/resolve/:
+    post:
+      operationId: orgs_tickets_resolve_create
+      description: Repair requests for the organization's units. ?status=open|closed|all|<status>&property=&q=
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this ticket.
+        required: true
+      - in: path
+        name: org_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orgs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Note'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Note'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
   /api/v1/orgs/{org_id}/units/:
     get:
       operationId: orgs_units_list
@@ -4445,8 +5619,237 @@ paths:
                 type: string
                 format: binary
           description: ''
+  /api/v1/vouch/{token}/:
+    get:
+      operationId: vouch_retrieve
+      description: The page a guarantor or reference opens from their SMS. The link
+        is the only credential.
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+        required: true
+      tags:
+      - vouch
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicVoucher'
+          description: ''
+    post:
+      operationId: vouch_create
+      description: The page a guarantor or reference opens from their SMS. The link
+        is the only credential.
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+        required: true
+      tags:
+      - vouch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoucherResponse'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VoucherResponse'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VoucherResponse'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicVoucher'
+          description: ''
 components:
   schemas:
+    Apply:
+      type: object
+      properties:
+        display_name:
+          type: string
+          maxLength: 120
+        trades:
+          type: array
+          items:
+            $ref: '#/components/schemas/TradeEnum'
+          maxItems: 10
+        service_areas:
+          type: array
+          items:
+            type: string
+            maxLength: 40
+          maxItems: 12
+        address:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          default: ''
+          maxLength: 80
+        state:
+          type: string
+          default: ''
+          maxLength: 80
+        bio:
+          type: string
+          default: ''
+          maxLength: 300
+        years_experience:
+          type: integer
+          maximum: 70
+          minimum: 0
+          nullable: true
+        consent:
+          type: boolean
+          description: They agree to the ID, guarantor and reference checks (NDPA
+            consent).
+      required:
+      - address
+      - consent
+      - display_name
+      - service_areas
+      - trades
+    ArtisanBrief:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        display_name:
+          type: string
+        is_verified:
+          type: boolean
+        rating_avg:
+          type: number
+          format: double
+          nullable: true
+        rating_count:
+          type: integer
+        jobs_completed:
+          type: integer
+        phone_number:
+          type: string
+          nullable: true
+          description: Only once they've accepted.
+      required:
+      - display_name
+      - id
+      - is_verified
+      - jobs_completed
+      - phone_number
+      - rating_avg
+      - rating_count
+    ArtisanJob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/JobStatusEnum'
+        organization:
+          type: string
+        offer_note:
+          type: string
+          maxLength: 300
+        offer_expires_at:
+          type: string
+          format: date-time
+        scheduled_for:
+          type: string
+          format: date-time
+          nullable: true
+        started_at:
+          type: string
+          format: date-time
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        completion_note:
+          type: string
+          maxLength: 1000
+        confirmed_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        ticket:
+          type: object
+          additionalProperties: {}
+          readOnly: true
+        location:
+          type: object
+          additionalProperties: {}
+          readOnly: true
+        contact:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        rating:
+          allOf:
+          - $ref: '#/components/schemas/RatingBrief'
+          nullable: true
+          readOnly: true
+        can:
+          type: array
+          items:
+            type: string
+          readOnly: true
+      required:
+      - can
+      - contact
+      - created_at
+      - id
+      - location
+      - offer_expires_at
+      - organization
+      - rating
+      - ticket
+    ArtisanStatusEnum:
+      enum:
+      - pending
+      - verified
+      - suspended
+      - removed
+      type: string
+      description: |-
+        * `pending` - Checks in progress
+        * `verified` - Verified
+        * `suspended` - Suspended
+        * `removed` - Removed
+    Assign:
+      type: object
+      properties:
+        artisan:
+          type: string
+          format: uuid
+        note:
+          type: string
+          default: ''
+          maxLength: 300
+      required:
+      - artisan
     AssistantHistory:
       type: object
       properties:
@@ -4753,6 +6156,50 @@ components:
       description: |-
         * `app` - app
         * `web` - web
+    Check:
+      type: object
+      properties:
+        kind:
+          $ref: '#/components/schemas/VerificationCheckKindEnum'
+        status:
+          $ref: '#/components/schemas/VerificationCheckStatusEnum'
+        note:
+          type: string
+          description: Shown to the artisan when it fails.
+          maxLength: 200
+        provider:
+          type: string
+          description: mock, manual, or the ID provider.
+          maxLength: 20
+        id_type:
+          type: string
+          maxLength: 20
+        id_number_last4:
+          type: string
+          maxLength: 4
+        attempts:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        checked_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - kind
+    Comment:
+      type: object
+      properties:
+        note:
+          type: string
+          maxLength: 1000
+        internal:
+          type: boolean
+          default: false
+          description: 'Staff only: hidden from tenant and artisan.'
+      required:
+      - note
     Consent:
       type: object
       properties:
@@ -5016,6 +6463,13 @@ components:
         * `in_progress` - In progress
         * `completed` - Completed
         * `rejected` - Rejected (legal retention)
+    Decline:
+      type: object
+      properties:
+        reason:
+          type: string
+          default: ''
+          maxLength: 300
     DirectionEnum:
       enum:
       - in
@@ -5024,6 +6478,69 @@ components:
       description: |-
         * `in` - From the person
         * `out` - To the person
+    DirectoryArtisan:
+      type: object
+      description: |-
+        An artisan as landlords see them when choosing who to assign. No phone or address here: contact
+        goes through the job.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        display_name:
+          type: string
+          description: Name or business name shown to landlords.
+          maxLength: 120
+        trades: {}
+        service_areas:
+          description: Areas they work in, e.g. Lekki, Ajah.
+        city:
+          type: string
+          maxLength: 80
+        state:
+          type: string
+          maxLength: 80
+        bio:
+          type: string
+          maxLength: 300
+        years_experience:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        is_verified:
+          type: boolean
+          readOnly: true
+        verified_at:
+          type: string
+          format: date-time
+          nullable: true
+        rating_avg:
+          type: number
+          format: double
+          readOnly: true
+          nullable: true
+        rating_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        jobs_completed:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        jobs_with_us:
+          type: integer
+          readOnly: true
+      required:
+      - display_name
+      - id
+      - is_verified
+      - jobs_with_us
+      - rating_avg
     Enquiry:
       type: object
       properties:
@@ -5086,6 +6603,36 @@ components:
         * `open` - Open
         * `assigned` - Being handled
         * `resolved` - Resolved
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        kind:
+          $ref: '#/components/schemas/TicketEventKindEnum'
+        actor_role:
+          type: string
+          description: tenant, staff, artisan or system.
+          maxLength: 10
+        actor_name:
+          type: string
+          readOnly: true
+        note:
+          type: string
+          maxLength: 1000
+        internal:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actor_name
+      - created_at
+      - id
+      - kind
     Expense:
       type: object
       properties:
@@ -5226,6 +6773,87 @@ components:
       - area
       - kind
       - rent_amount
+    IdSubmit:
+      type: object
+      properties:
+        id_type:
+          $ref: '#/components/schemas/IdTypeEnum'
+        id_number:
+          type: string
+          maxLength: 30
+        document:
+          type: string
+          format: uri
+          nullable: true
+          description: A clear photo of the ID (required for review).
+      required:
+      - id_number
+      - id_type
+    IdTypeEnum:
+      enum:
+      - nin
+      - drivers_licence
+      - voters_card
+      - passport
+      type: string
+      description: |-
+        * `nin` - National Identification Number (NIN)
+        * `drivers_licence` - Driver's licence
+        * `voters_card` - Permanent voter's card
+        * `passport` - International passport
+    JobBrief:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/JobStatusEnum'
+        artisan:
+          allOf:
+          - $ref: '#/components/schemas/ArtisanBrief'
+          readOnly: true
+        offer_expires_at:
+          type: string
+          format: date-time
+        scheduled_for:
+          type: string
+          format: date-time
+          nullable: true
+        started_at:
+          type: string
+          format: date-time
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        completion_note:
+          type: string
+          maxLength: 1000
+      required:
+      - artisan
+      - id
+      - offer_expires_at
+    JobStatusEnum:
+      enum:
+      - offered
+      - accepted
+      - declined
+      - on_site
+      - completed
+      - confirmed
+      - cancelled
+      type: string
+      description: |-
+        * `offered` - Offered
+        * `accepted` - Accepted
+        * `declined` - Declined
+        * `on_site` - On site
+        * `completed` - Completed, waiting for tenant
+        * `confirmed` - Confirmed by tenant
+        * `cancelled` - Cancelled
     KbArticle:
       type: object
       properties:
@@ -5300,7 +6928,7 @@ components:
           - $ref: '#/components/schemas/SourceEnum'
           readOnly: true
         stage:
-          $ref: '#/components/schemas/StageEnum'
+          $ref: '#/components/schemas/LeadStageEnum'
         message:
           type: string
           readOnly: true
@@ -5327,6 +6955,24 @@ components:
       - phone_number
       - source
       - viewings
+    LeadStageEnum:
+      enum:
+      - new
+      - contacted
+      - viewing_booked
+      - viewed
+      - applied
+      - won
+      - lost
+      type: string
+      description: |-
+        * `new` - New
+        * `contacted` - Contacted
+        * `viewing_booked` - Viewing booked
+        * `viewed` - Viewed
+        * `applied` - Applied
+        * `won` - Became a tenant
+        * `lost` - Lost
     Lease:
       type: object
       properties:
@@ -5647,6 +7293,106 @@ components:
         * `delivered` - Delivered
         * `read` - Read
         * `failed` - Failed
+    MyArtisan:
+      type: object
+      description: The artisan's own profile and their progress towards the Verified
+        badge.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        display_name:
+          type: string
+          description: Name or business name shown to landlords.
+          maxLength: 120
+        trades:
+          type: array
+          items:
+            $ref: '#/components/schemas/TradeEnum'
+          maxItems: 10
+        service_areas:
+          type: array
+          items:
+            type: string
+            maxLength: 40
+          maxItems: 12
+        address:
+          type: string
+          description: Home or workshop address (encrypted).
+        city:
+          type: string
+          maxLength: 80
+        state:
+          type: string
+          maxLength: 80
+        bio:
+          type: string
+          maxLength: 300
+        years_experience:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        is_available:
+          type: boolean
+          description: Taking new jobs.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ArtisanStatusEnum'
+          readOnly: true
+        status_reason:
+          type: string
+          readOnly: true
+        is_verified:
+          type: boolean
+          readOnly: true
+        verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        rating_avg:
+          type: number
+          format: double
+          readOnly: true
+          nullable: true
+        rating_count:
+          type: integer
+          readOnly: true
+        jobs_completed:
+          type: integer
+          readOnly: true
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Check'
+          readOnly: true
+        vouchers:
+          type: array
+          items:
+            $ref: '#/components/schemas/MyVoucher'
+          readOnly: true
+        requirements:
+          allOf:
+          - $ref: '#/components/schemas/Requirements'
+          readOnly: true
+      required:
+      - checks
+      - display_name
+      - id
+      - is_verified
+      - jobs_completed
+      - rating_avg
+      - rating_count
+      - requirements
+      - service_areas
+      - status
+      - status_reason
+      - trades
+      - verified_at
+      - vouchers
     MyLease:
       type: object
       properties:
@@ -5710,6 +7456,57 @@ components:
       - start_date
       - unit
       - unit_label
+    MyVoucher:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        kind:
+          $ref: '#/components/schemas/VoucherKindEnum'
+        full_name:
+          type: string
+          maxLength: 120
+        phone_number:
+          type: string
+          pattern: ^\+[1-9]\d{7,14}$
+          maxLength: 16
+        relationship:
+          type: string
+          description: e.g. uncle, former boss, past client.
+          maxLength: 80
+        occupation:
+          type: string
+          maxLength: 80
+        status:
+          $ref: '#/components/schemas/VoucherStatusEnum'
+        link_sent_at:
+          type: string
+          format: date-time
+          nullable: true
+        sends:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        responded_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - full_name
+      - id
+      - kind
+      - phone_number
+      - relationship
+    Note:
+      type: object
+      properties:
+        note:
+          type: string
+          default: ''
+          maxLength: 1000
     OTP:
       type: object
       properties:
@@ -5901,6 +7698,25 @@ components:
       description: |-
         * `sms` - SMS
         * `email` - Email
+    PaginatedArtisanJobList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArtisanJob'
     PaginatedChargeList:
       type: object
       required:
@@ -5939,6 +7755,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Conversation'
+    PaginatedDirectoryArtisanList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DirectoryArtisan'
     PaginatedExpenseList:
       type: object
       required:
@@ -6053,6 +7888,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Payment'
+    PaginatedTicketList:
+      type: object
+      required:
+      - results
+      properties:
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cD00ODY%3D"
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?cursor=cj0xJnA9NDg3
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ticket'
     PatchedExpense:
       type: object
       properties:
@@ -6146,7 +8000,7 @@ components:
           - $ref: '#/components/schemas/SourceEnum'
           readOnly: true
         stage:
-          $ref: '#/components/schemas/StageEnum'
+          $ref: '#/components/schemas/LeadStageEnum'
         message:
           type: string
           readOnly: true
@@ -6342,6 +8196,91 @@ components:
         created_at:
           type: string
           format: date-time
+          readOnly: true
+    PatchedMyArtisan:
+      type: object
+      description: The artisan's own profile and their progress towards the Verified
+        badge.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        display_name:
+          type: string
+          description: Name or business name shown to landlords.
+          maxLength: 120
+        trades:
+          type: array
+          items:
+            $ref: '#/components/schemas/TradeEnum'
+          maxItems: 10
+        service_areas:
+          type: array
+          items:
+            type: string
+            maxLength: 40
+          maxItems: 12
+        address:
+          type: string
+          description: Home or workshop address (encrypted).
+        city:
+          type: string
+          maxLength: 80
+        state:
+          type: string
+          maxLength: 80
+        bio:
+          type: string
+          maxLength: 300
+        years_experience:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        is_available:
+          type: boolean
+          description: Taking new jobs.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ArtisanStatusEnum'
+          readOnly: true
+        status_reason:
+          type: string
+          readOnly: true
+        is_verified:
+          type: boolean
+          readOnly: true
+        verified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        rating_avg:
+          type: number
+          format: double
+          readOnly: true
+          nullable: true
+        rating_count:
+          type: integer
+          readOnly: true
+        jobs_completed:
+          type: integer
+          readOnly: true
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Check'
+          readOnly: true
+        vouchers:
+          type: array
+          items:
+            $ref: '#/components/schemas/MyVoucher'
+          readOnly: true
+        requirements:
+          allOf:
+          - $ref: '#/components/schemas/Requirements'
           readOnly: true
     PatchedOrganization:
       type: object
@@ -6836,6 +8775,14 @@ components:
       required:
       - id
       - url
+    PhotoUpload:
+      type: object
+      properties:
+        image:
+          type: string
+          format: uri
+      required:
+      - image
     PinLogin:
       type: object
       properties:
@@ -7091,6 +9038,30 @@ components:
       - rent_amount
       - slots
       - title
+    PublicVoucher:
+      type: object
+      description: 'What the guarantor or reference sees on the link: who is asking,
+        nothing more.'
+      properties:
+        kind:
+          type: string
+        full_name:
+          type: string
+          description: The guarantor's own name, as the artisan entered it.
+        artisan_name:
+          type: string
+        trades:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+      required:
+      - artisan_name
+      - full_name
+      - kind
+      - status
+      - trades
     PurposeEnum:
       enum:
       - terms
@@ -7105,6 +9076,36 @@ components:
         * `whatsapp` - WhatsApp messages
         * `marketing` - Marketing
         * `location` - Location for safety alerts
+    Rate:
+      type: object
+      properties:
+        score:
+          type: integer
+          maximum: 5
+          minimum: 1
+        comment:
+          type: string
+          default: ''
+          maxLength: 500
+      required:
+      - score
+    RatingBrief:
+      type: object
+      properties:
+        score:
+          type: integer
+        comment:
+          type: string
+      required:
+      - comment
+      - score
+    Reason:
+      type: object
+      properties:
+        reason:
+          type: string
+          default: ''
+          maxLength: 300
     ReasonEnum:
       enum:
       - dispute
@@ -7197,6 +9198,62 @@ components:
       - escalated
       - pending_action
       - text
+    Report:
+      type: object
+      properties:
+        lease:
+          type: string
+          format: uuid
+          description: One of the tenant's active leases (GET /me/leases/).
+        category:
+          $ref: '#/components/schemas/TradeEnum'
+        priority:
+          allOf:
+          - $ref: '#/components/schemas/TicketPriorityEnum'
+          default: normal
+        title:
+          type: string
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 2000
+        access_notes:
+          type: string
+          default: ''
+          maxLength: 200
+      required:
+      - category
+      - description
+      - lease
+      - title
+    Requirements:
+      type: object
+      properties:
+        id:
+          type: boolean
+        phone:
+          type: boolean
+        address:
+          type: boolean
+        guarantors:
+          type: integer
+        guarantors_needed:
+          type: integer
+        references:
+          type: integer
+        references_needed:
+          type: integer
+        complete:
+          type: boolean
+      required:
+      - address
+      - complete
+      - guarantors
+      - guarantors_needed
+      - id
+      - phone
+      - references
+      - references_needed
     RoleEnum:
       enum:
       - owner
@@ -7215,6 +9272,13 @@ components:
         * `estate_admin` - Estate admin
         * `security` - Security desk
         * `viewer` - Viewer (read only)
+    Schedule:
+      type: object
+      properties:
+        scheduled_for:
+          type: string
+          format: date-time
+          nullable: true
     SenderEnum:
       enum:
       - person
@@ -7331,6 +9395,33 @@ components:
         * `web` - Listing page
         * `app` - App
         * `manual` - Added by staff
+    StaffCreate:
+      type: object
+      properties:
+        unit:
+          type: string
+          format: uuid
+        category:
+          $ref: '#/components/schemas/TradeEnum'
+        priority:
+          allOf:
+          - $ref: '#/components/schemas/TicketPriorityEnum'
+          default: normal
+        title:
+          type: string
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 2000
+        access_notes:
+          type: string
+          default: ''
+          maxLength: 200
+      required:
+      - category
+      - description
+      - title
+      - unit
     StaffReply:
       type: object
       properties:
@@ -7339,24 +9430,6 @@ components:
           maxLength: 4000
       required:
       - body
-    StageEnum:
-      enum:
-      - new
-      - contacted
-      - viewing_booked
-      - viewed
-      - applied
-      - won
-      - lost
-      type: string
-      description: |-
-        * `new` - New
-        * `contacted` - Contacted
-        * `viewing_booked` - Viewing booked
-        * `viewed` - Viewed
-        * `applied` - Applied
-        * `won` - Became a tenant
-        * `lost` - Lost
     Tenant:
       type: object
       properties:
@@ -7421,6 +9494,220 @@ components:
           example: '1500000.00'
       required:
       - charges
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reference:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/TicketStatusEnum'
+        category:
+          $ref: '#/components/schemas/TradeEnum'
+        priority:
+          $ref: '#/components/schemas/TicketPriorityEnum'
+        title:
+          type: string
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 2000
+        access_notes:
+          type: string
+          description: When the artisan can come in, e.g. 'after 4pm, call first'.
+          maxLength: 200
+        channel:
+          $ref: '#/components/schemas/TicketChannelEnum'
+        raised_by_staff:
+          type: boolean
+        unit:
+          type: object
+          additionalProperties: {}
+          readOnly: true
+        tenant:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        closed_reason:
+          type: string
+          description: Why it was rejected/cancelled.
+          maxLength: 300
+        approved_at:
+          type: string
+          format: date-time
+          nullable: true
+        done_at:
+          type: string
+          format: date-time
+          nullable: true
+        confirmed_at:
+          type: string
+          format: date-time
+          nullable: true
+        auto_confirmed:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketPhoto'
+          readOnly: true
+        job:
+          allOf:
+          - $ref: '#/components/schemas/JobBrief'
+          nullable: true
+          readOnly: true
+        rating:
+          allOf:
+          - $ref: '#/components/schemas/RatingBrief'
+          nullable: true
+          readOnly: true
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+          readOnly: true
+        can:
+          type: array
+          items:
+            type: string
+          readOnly: true
+          description: What the viewer can do next.
+      required:
+      - can
+      - category
+      - created_at
+      - description
+      - events
+      - id
+      - job
+      - photos
+      - rating
+      - reference
+      - tenant
+      - title
+      - unit
+      - updated_at
+    TicketChannelEnum:
+      enum:
+      - app
+      - web
+      - whatsapp
+      type: string
+      description: |-
+        * `app` - App
+        * `web` - Web
+        * `whatsapp` - WhatsApp
+    TicketEventKindEnum:
+      enum:
+      - created
+      - approved
+      - rejected
+      - assigned
+      - accepted
+      - declined
+      - offer_expired
+      - scheduled
+      - started
+      - completed
+      - resolved
+      - confirmed
+      - reopened
+      - cancelled
+      - comment
+      - rated
+      type: string
+      description: |-
+        * `created` - Reported
+        * `approved` - Approved
+        * `rejected` - Not approved
+        * `assigned` - Artisan asked to take the job
+        * `accepted` - Artisan accepted
+        * `declined` - Artisan declined
+        * `offer_expired` - Artisan didn't answer in time
+        * `scheduled` - Visit time set
+        * `started` - Artisan arrived
+        * `completed` - Artisan marked it done
+        * `resolved` - Marked fixed by the landlord
+        * `confirmed` - Tenant confirmed it's fixed
+        * `reopened` - Tenant says it's not fixed
+        * `cancelled` - Cancelled
+        * `comment` - Comment
+        * `rated` - Rated
+    TicketPhoto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        stage:
+          $ref: '#/components/schemas/TicketPhotoStageEnum'
+        url:
+          type: string
+          nullable: true
+          readOnly: true
+          description: A link that works for about 15 minutes.
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - url
+    TicketPhotoStageEnum:
+      enum:
+      - report
+      - completion
+      type: string
+      description: |-
+        * `report` - The problem
+        * `completion` - The finished work
+    TicketPriorityEnum:
+      enum:
+      - low
+      - normal
+      - urgent
+      - emergency
+      type: string
+      description: |-
+        * `low` - Can wait
+        * `normal` - Normal
+        * `urgent` - Urgent
+        * `emergency` - Emergency (danger or flooding)
+    TicketStatusEnum:
+      enum:
+      - awaiting_approval
+      - approved
+      - assigned
+      - in_progress
+      - done
+      - confirmed
+      - rejected
+      - cancelled
+      type: string
+      description: |-
+        * `awaiting_approval` - Waiting for landlord approval
+        * `approved` - Approved, finding an artisan
+        * `assigned` - Artisan assigned
+        * `in_progress` - Work in progress
+        * `done` - Done, waiting for tenant to confirm
+        * `confirmed` - Fixed and confirmed
+        * `rejected` - Not approved
+        * `cancelled` - Cancelled
     TokenRefresh:
       type: object
       properties:
@@ -7432,6 +9719,38 @@ components:
       required:
       - access
       - refresh
+    TradeEnum:
+      enum:
+      - plumbing
+      - electrical
+      - carpentry
+      - painting
+      - ac
+      - generator
+      - roofing
+      - tiling
+      - welding
+      - appliance
+      - pest
+      - cleaning
+      - locksmith
+      - other
+      type: string
+      description: |-
+        * `plumbing` - Plumbing
+        * `electrical` - Electrical
+        * `carpentry` - Carpentry and doors
+        * `painting` - Painting
+        * `ac` - Air conditioning
+        * `generator` - Generator repair
+        * `roofing` - Roofing
+        * `tiling` - Tiling and masonry
+        * `welding` - Welding and gates
+        * `appliance` - Appliance repair
+        * `pest` - Pest control
+        * `cleaning` - Cleaning
+        * `locksmith` - Locks and keys
+        * `other` - Other
     TransactionPIN:
       type: object
       description: Setting or changing the transaction PIN needs the login PIN (step-up).
@@ -7581,6 +9900,28 @@ components:
       - is_email_verified
       - is_phone_verified
       - phone_number
+    VerificationCheckKindEnum:
+      enum:
+      - id
+      - phone
+      - address
+      type: string
+      description: |-
+        * `id` - ID check
+        * `phone` - Phone number
+        * `address` - Address
+    VerificationCheckStatusEnum:
+      enum:
+      - not_started
+      - pending
+      - passed
+      - failed
+      type: string
+      description: |-
+        * `not_started` - Not started
+        * `pending` - Waiting for review
+        * `passed` - Passed
+        * `failed` - Failed
     Verify:
       type: object
       properties:
@@ -7670,6 +10011,64 @@ components:
         * `done` - Done
         * `no_show` - Didn't come
         * `cancelled` - Cancelled
+    VoucherCreate:
+      type: object
+      properties:
+        kind:
+          $ref: '#/components/schemas/VoucherKindEnum'
+        full_name:
+          type: string
+          maxLength: 120
+        phone_number:
+          type: string
+          maxLength: 20
+        relationship:
+          type: string
+          maxLength: 80
+        occupation:
+          type: string
+          default: ''
+          maxLength: 80
+        address:
+          type: string
+          default: ''
+          maxLength: 255
+      required:
+      - full_name
+      - kind
+      - phone_number
+      - relationship
+    VoucherKindEnum:
+      enum:
+      - guarantor
+      - reference
+      type: string
+      description: |-
+        * `guarantor` - Guarantor
+        * `reference` - Reference
+    VoucherResponse:
+      type: object
+      properties:
+        confirm:
+          type: boolean
+        comment:
+          type: string
+          default: ''
+          maxLength: 300
+      required:
+      - confirm
+    VoucherStatusEnum:
+      enum:
+      - pending
+      - confirmed
+      - declined
+      - expired
+      type: string
+      description: |-
+        * `pending` - Waiting for them to confirm
+        * `confirmed` - Confirmed
+        * `declined` - Declined
+        * `expired` - Link expired
   securitySchemes:
     jwtAuth:
       type: http

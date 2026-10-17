@@ -4,6 +4,9 @@ from django.urls import include, path
 
 from apps.accounting.urls import org_urls as accounting_org_urls
 from apps.accounts.urls import auth_urls, me_urls
+from apps.artisans.urls import org_urls as artisan_org_urls
+from apps.artisans.urls import public_urls as vouch_urls
+from apps.artisans.urls import urls as artisan_urls
 from apps.assistant.urls import org_urls as assistant_org_urls
 from apps.assistant.urls import urls as assistant_urls
 from apps.bills import views as bill_views
@@ -13,6 +16,9 @@ from apps.leasing.urls import me_urls as my_leasing_urls
 from apps.leasing.urls import org_urls as leasing_org_urls
 from apps.listings.urls import org_urls as listing_org_urls
 from apps.listings.urls import public_urls as public_listing_urls
+from apps.maintenance.urls import artisan_job_urls
+from apps.maintenance.urls import me_urls as my_ticket_urls
+from apps.maintenance.urls import org_urls as ticket_org_urls
 from apps.messaging import views as messaging_views
 from apps.messaging.urls import me_urls as my_messaging_urls
 from apps.messaging.urls import org_urls as messaging_org_urls
@@ -40,11 +46,18 @@ api_v1 = [
     path("me/", include(my_messaging_urls)),
     path("pay/", include(pay_urls)),
     path("receipts/", include(receipt_urls)),
+    path("me/", include(my_ticket_urls)),
+    path("orgs/<uuid:org_id>/", include(ticket_org_urls)),
+    path("orgs/<uuid:org_id>/", include(artisan_org_urls)),
+    path("artisans/", include(artisan_urls)),
+    path("artisans/me/", include(artisan_job_urls)),
+    path("vouch/", include(vouch_urls)),
 ]
 
 urlpatterns = [
     path("health/live", core_views.live, name="health-live"),
     path("health/ready", core_views.ready, name="health-ready"),
+    path("files/<str:token>/", core_views.private_media, name="private-media"),
     path("webhooks/payments/<str:gateway_name>/", payment_views.gateway_webhook, name="payment-webhook"),
     path("webhooks/whatsapp/", messaging_views.whatsapp_webhook, name="whatsapp-webhook"),
     path("webhooks/bills/vtung/", bill_views.vtung_webhook, name="vtung-webhook"),

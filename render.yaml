@@ -73,6 +73,8 @@ envVarGroups:
         sync: false
       - key: S3_PUBLIC_DOMAIN
         sync: false
+      - key: S3_PRIVATE_BUCKET
+        sync: false                    # repair photos and ID documents (no public access)
 
 databases:
   - name: homesika-staging-db

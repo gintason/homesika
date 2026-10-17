@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     "apps.listings",
     "apps.assistant",
     "apps.bills",
+    "apps.artisans",
+    "apps.maintenance",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -124,8 +126,15 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    # Private files (repair photos, ID documents): never served directly, only through short-lived signed
+    # links checked by the API (apps.core.media).
+    "private": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {"location": BASE_DIR / "private_media", "base_url": None},
+    },
     "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
+PRIVATE_MEDIA_LINK_SECONDS = env.int("PRIVATE_MEDIA_LINK_SECONDS", default=15 * 60)
 # Uploaded files (listing photos) go to S3-compatible storage when a bucket is set; Render's disk is wiped
 # on every deploy, so staging and production need this.
 S3_BUCKET = env("S3_BUCKET", default="")
@@ -142,6 +151,19 @@ if S3_BUCKET:
             "querystring_auth": False,
             "file_overwrite": False,
             "default_acl": None,
+        },
+    }
+    # A separate bucket with NO public access. Falls back to the photo bucket under a "private/" prefix
+    # (names are random, but the deploy check warns: that bucket is usually public).
+    S3_PRIVATE_BUCKET = env("S3_PRIVATE_BUCKET", default="")
+    STORAGES["private"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            **{k: v for k, v in STORAGES["default"]["OPTIONS"].items() if k != "custom_domain"},
+            "bucket_name": S3_PRIVATE_BUCKET or S3_BUCKET,
+            "location": "" if S3_PRIVATE_BUCKET else "private",
+            "querystring_auth": True,
+            "querystring_expire": PRIVATE_MEDIA_LINK_SECONDS,
         },
     }
 
@@ -161,6 +183,8 @@ REST_FRAMEWORK = {
         "pay": env("THROTTLE_PAY", default="30/min"),
         "listing": env("THROTTLE_LISTING", default="30/min"),
         "bills": env("THROTTLE_BILLS", default="30/min"),
+        "tickets": env("THROTTLE_TICKETS", default="30/hour"),
+        "vouch": env("THROTTLE_VOUCH", default="20/hour"),
     },
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardCursorPagination",
 }
@@ -248,6 +272,15 @@ BILLS_PAYMENT_TTL_MINUTES = env.int("BILLS_PAYMENT_TTL_MINUTES", default=60)
 BILLS_STATUS_POLL_SECONDS = env.int("BILLS_STATUS_POLL_SECONDS", default=30)
 BILLS_MAX_STATUS_CHECKS = env.int("BILLS_MAX_STATUS_CHECKS", default=12)
 
+# Maintenance and artisans (Phase 4).
+# "manual": staff compare a photo of the ID in the admin. "mock": labelled, never in production.
+ID_VERIFICATION_PROVIDER = env("ID_VERIFICATION_PROVIDER", default="manual")
+ARTISAN_VOUCHER_LINK_DAYS = env.int("ARTISAN_VOUCHER_LINK_DAYS", default=14)
+MAINTENANCE_MAX_PHOTOS = env.int("MAINTENANCE_MAX_PHOTOS", default=6)
+MAINTENANCE_OFFER_HOURS = env.int("MAINTENANCE_OFFER_HOURS", default=24)  # artisan must accept within
+MAINTENANCE_CONFIRM_REMINDER_DAYS = env.int("MAINTENANCE_CONFIRM_REMINDER_DAYS", default=2)
+MAINTENANCE_AUTO_CONFIRM_DAYS = env.int("MAINTENANCE_AUTO_CONFIRM_DAYS", default=7)  # tenant silent -> fixed
+
 PAYMENT_GATEWAYS = env("PAYMENT_GATEWAYS", default="mock")
 PAYMENT_LINK_TTL_HOURS = env.int("PAYMENT_LINK_TTL_HOURS", default=72)
 # Homesika's fee per rent/dues payment (percent, capped; kobo). 0 = everything settles to the landlord.
@@ -285,6 +318,18 @@ SPECTACULAR_SETTINGS = {
         "BillCategoryEnum": "apps.bills.models.Category",
         "BillOrderStatusEnum": "apps.bills.models.Order.Status",
         "OtpChannelEnum": [("sms", "SMS"), ("email", "Email")],
+        "TradeEnum": "apps.artisans.models.Trade",
+        "ArtisanStatusEnum": "apps.artisans.models.ArtisanProfile.Status",
+        "VerificationCheckKindEnum": "apps.artisans.models.VerificationCheck.Kind",
+        "VerificationCheckStatusEnum": "apps.artisans.models.VerificationCheck.Status",
+        "VoucherKindEnum": "apps.artisans.models.Voucher.Kind",
+        "VoucherStatusEnum": "apps.artisans.models.Voucher.Status",
+        "TicketStatusEnum": "apps.maintenance.models.Ticket.Status",
+        "TicketPriorityEnum": "apps.maintenance.models.Ticket.Priority",
+        "TicketChannelEnum": "apps.maintenance.models.Ticket.Channel",
+        "TicketEventKindEnum": "apps.maintenance.models.TicketEvent.Kind",
+        "TicketPhotoStageEnum": "apps.maintenance.models.TicketPhoto.Stage",
+        "JobStatusEnum": "apps.maintenance.models.Job.Status",
         "ManualPaymentChannelEnum": [
             ("cash", "Cash"),
             ("bank_transfer", "Bank transfer"),
@@ -317,6 +362,10 @@ CELERY_BEAT_SCHEDULE = {
     "bills-reconcile": {
         "task": "apps.bills.tasks.reconcile_bills",
         "schedule": 5 * 60.0,
+    },
+    "maintenance-housekeeping": {
+        "task": "apps.maintenance.tasks.housekeeping",
+        "schedule": 30 * 60.0,
     },
     "payments-rent-reminders": {
         "task": "apps.payments.tasks.send_rent_reminders",

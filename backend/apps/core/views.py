@@ -41,3 +41,12 @@ def ready(request):
     return JsonResponse(
         {"status": "ok" if healthy else "degraded", "checks": checks}, status=200 if healthy else 503
     )
+
+
+@require_GET
+def private_media(request, token: str):
+    """A private file (repair photo, ID document) behind a short-lived signed link. The link is the
+    permission: the API only signs it for people allowed to see the file."""
+    from .media import open_signed
+
+    return open_signed(token)

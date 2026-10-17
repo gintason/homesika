@@ -19,3 +19,7 @@ CELERY_TASK_EAGER_PROPAGATES = True
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 LOGGING["handlers"]["console"]["formatter"] = "plain"  # noqa: F405
 MIDDLEWARE = [m for m in MIDDLEWARE if "whitenoise" not in m]  # noqa: F405 - no collected static in tests
+# Private uploads (repair photos, ID documents) go to a throwaway folder, never the working tree.
+import tempfile  # noqa: E402
+
+STORAGES["private"]["OPTIONS"]["location"] = tempfile.mkdtemp(prefix="homesika-private-")  # noqa: F405

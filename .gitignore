@@ -12,6 +12,7 @@ __pycache__/
 htmlcov/
 staticfiles/
 media/
+private_media/
 # Node
 node_modules/
 dist/

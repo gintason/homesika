@@ -36,6 +36,9 @@ CAPABILITIES: dict[str, set[str]] = {
         "inbox.view",
         "inbox.reply",
         "kb.manage",
+        "maintenance.view",
+        "maintenance.manage",
+        "maintenance.approve",
     },
     Role.ACCOUNTANT: {
         "org.view",
@@ -50,6 +53,7 @@ CAPABILITIES: dict[str, set[str]] = {
         "members.view",
         "listing.view",
         "inbox.view",
+        "maintenance.view",
     },
     Role.AGENT: {
         "org.view",
@@ -59,6 +63,8 @@ CAPABILITIES: dict[str, set[str]] = {
         "listing.manage",
         "inbox.view",
         "inbox.reply",
+        "maintenance.view",
+        "maintenance.manage",
     },
     Role.VIEWER: {
         "org.view",
@@ -69,8 +75,9 @@ CAPABILITIES: dict[str, set[str]] = {
         "report.view",
         "listing.view",
         "inbox.view",
+        "maintenance.view",
     },
-    Role.ESTATE_ADMIN: {"org.view", "property.view", "members.view"},
+    Role.ESTATE_ADMIN: {"org.view", "property.view", "members.view", "maintenance.view"},
     Role.SECURITY: {"org.view"},
 }
 

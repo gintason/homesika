@@ -38,6 +38,9 @@ if ENVIRONMENT == "production" and ASSISTANT_PROVIDER == "mock":  # noqa: F405
     raise ImproperlyConfigured("ASSISTANT_PROVIDER must not be 'mock' in production.")
 if ENVIRONMENT == "production" and "mock" in BILLS_PROVIDERS:  # noqa: F405
     raise ImproperlyConfigured("BILLS_PROVIDERS must not include 'mock' in production.")
+# The mock ID check passes anyone: it would hand out Verified badges without a real check.
+if ENVIRONMENT == "production" and ID_VERIFICATION_PROVIDER == "mock":  # noqa: F405
+    raise ImproperlyConfigured("ID_VERIFICATION_PROVIDER must not be 'mock' in production.")
 if ENVIRONMENT == "production" and WHATSAPP_PROVIDER == "mock":  # noqa: F405
     raise ImproperlyConfigured("WHATSAPP_PROVIDER must be 'cloud' or 'off' in production.")
 if SENTRY_DSN:
