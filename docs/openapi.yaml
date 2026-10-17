@@ -4572,6 +4572,10 @@ components:
           example: '1500000.00'
           readOnly: true
           nullable: true
+        fee:
+          type: string
+          readOnly: true
+          description: Homesika's fee per order, naira (added to the total).
         plans:
           type: array
           items:
@@ -4581,6 +4585,7 @@ components:
       required:
       - category
       - code
+      - fee
       - id
       - max_amount
       - min_amount

@@ -18,6 +18,7 @@ class BillerSerializer(serializers.ModelSerializer):
     plans = serializers.SerializerMethodField()
     min_amount = MoneyField(read_only=True, allow_null=True)
     max_amount = MoneyField(read_only=True, allow_null=True)
+    fee = serializers.SerializerMethodField(help_text="Homesika's fee per order, naira (added to the total).")
 
     class Meta:
         model = Biller
@@ -30,8 +31,16 @@ class BillerSerializer(serializers.ModelSerializer):
             "requires_verification",
             "min_amount",
             "max_amount",
+            "fee",
             "plans",
         )
+
+    def get_fee(self, obj) -> str:
+        from apps.core.money import to_major
+
+        from .services import fee_for
+
+        return str(to_major(fee_for(obj.category, 0), "NGN"))
 
     def get_plans(self, obj) -> list[dict]:
         return PlanSerializer(
