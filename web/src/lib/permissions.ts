@@ -28,7 +28,12 @@ export type Capability =
   | "kb.manage"
   | "maintenance.view"
   | "maintenance.manage"
-  | "maintenance.approve";
+  | "maintenance.approve"
+  | "estate.view"
+  | "estate.manage"
+  | "security.view"
+  | "security.respond"
+  | "gate.verify";
 
 const ALL = "*";
 
@@ -57,6 +62,11 @@ const CAPABILITIES: Record<Role, ReadonlySet<string>> = {
     "maintenance.view",
     "maintenance.manage",
     "maintenance.approve",
+    "estate.view",
+    "estate.manage",
+    "security.view",
+    "security.respond",
+    "gate.verify",
   ]),
   accountant: new Set([
     "org.view",
@@ -72,6 +82,7 @@ const CAPABILITIES: Record<Role, ReadonlySet<string>> = {
     "listing.view",
     "inbox.view",
     "maintenance.view",
+    "estate.view",
   ]),
   agent: new Set([
     "org.view",
@@ -94,9 +105,24 @@ const CAPABILITIES: Record<Role, ReadonlySet<string>> = {
     "listing.view",
     "inbox.view",
     "maintenance.view",
+    "estate.view",
   ]),
-  estate_admin: new Set(["org.view", "property.view", "members.view", "maintenance.view"]),
-  security: new Set(["org.view"]),
+  estate_admin: new Set([
+    "org.view",
+    "property.view",
+    "property.manage",
+    "members.view",
+    "tenant.view",
+    "payment.view",
+    "payment.link",
+    "maintenance.view",
+    "estate.view",
+    "estate.manage",
+    "security.view",
+    "security.respond",
+    "gate.verify",
+  ]),
+  security: new Set(["org.view", "security.view", "security.respond", "gate.verify"]),
 };
 
 /** The capabilities granted to a role ("*" for owner), for tests that compare with the backend. */

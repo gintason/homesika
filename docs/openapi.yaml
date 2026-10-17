@@ -8746,11 +8746,10 @@ components:
           description: e.g. Security levy, Service charge
           maxLength: 100
         amount:
-          type: integer
-          maximum: 9223372036854775807
-          minimum: -9223372036854775808
-          format: int64
-          description: In kobo, e.g. 1500000 for ₦15,000.
+          type: string
+          format: decimal
+          example: '1500000.00'
+          description: e.g. "15000.00" for ₦15,000.
         currency:
           allOf:
           - $ref: '#/components/schemas/CurrencyEnum'
@@ -10359,9 +10358,9 @@ components:
           - $ref: '#/components/schemas/EstateMemberStatusEnum'
           readOnly: true
         dues_outstanding:
-          type: integer
+          type: string
           readOnly: true
-          description: Kobo owed on estate dues.
+          description: Owed on estate dues, e.g. "15000.00".
       required:
       - address
       - dues_outstanding
@@ -11142,11 +11141,10 @@ components:
           description: e.g. Security levy, Service charge
           maxLength: 100
         amount:
-          type: integer
-          maximum: 9223372036854775807
-          minimum: -9223372036854775808
-          format: int64
-          description: In kobo, e.g. 1500000 for ₦15,000.
+          type: string
+          format: decimal
+          example: '1500000.00'
+          description: e.g. "15000.00" for ₦15,000.
         currency:
           allOf:
           - $ref: '#/components/schemas/CurrencyEnum'

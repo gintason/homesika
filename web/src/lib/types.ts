@@ -654,3 +654,172 @@ export interface PublicVoucher {
   trades: string[];
   status: "pending" | "confirmed" | "declined" | "expired";
 }
+
+// ---- Estates and security (Phase 5) -------------------------------------------------------------
+
+/** GET /orgs/{org}/estates/ */
+export interface Estate {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  join_code: string;
+  is_active: boolean;
+  panic_enabled: boolean;
+  alert_residents: boolean;
+  gate_instructions: string;
+  property: string;
+  houses: number;
+  verified_residents: number;
+  pending_residents: number;
+  created_at: ISODateTime;
+}
+export interface House {
+  id: string;
+  label: string;
+}
+export type EstateMemberStatus = "pending" | "approved" | "suspended" | "removed";
+export type EstateMemberRole = "resident" | "exco";
+/** GET /orgs/{org}/estate-members/ */
+export interface EstateMember {
+  id: string;
+  estate: string;
+  full_name: string;
+  phone_number: string;
+  unit: string | null;
+  house: string;
+  house_label: string;
+  role: EstateMemberRole;
+  status: EstateMemberStatus;
+  status_reason: string;
+  approved_at: ISODateTime | null;
+  has_app: boolean;
+  created_at: ISODateTime;
+}
+/** GET /orgs/{org}/dues-plans/ (amount is a major-unit decimal string) */
+export interface DuesPlan {
+  id: string;
+  estate: string;
+  name: string;
+  amount: string;
+  currency: string;
+  frequency: RentFrequency;
+  start_date: ISODate;
+  is_active: boolean;
+  created_at: ISODateTime;
+}
+export interface Announcement {
+  id: string;
+  estate: string;
+  title: string;
+  body: string;
+  audience: "all" | "exco";
+  urgent: boolean;
+  push_sent: number;
+  sms_sent: number;
+  created_at: ISODateTime;
+}
+export type GatePassStatus = "active" | "used" | "expired" | "cancelled";
+export interface GateEvent {
+  id: string;
+  kind: "check_in" | "check_out" | "denied";
+  note: string;
+  by_name: string;
+  created_at: ISODateTime;
+}
+/** What the gate sees for a pass (POST /orgs/{org}/gate/verify/, GET /orgs/{org}/gate/). No visitor phone. */
+export interface GateCheck {
+  id: string;
+  estate: string;
+  visitor_name: string;
+  kind: "visitor" | "artisan" | "delivery";
+  host_name: string;
+  house: string;
+  artisan: { display_name: string; is_verified: boolean; trade: string } | null;
+  valid_from: ISODateTime;
+  valid_to: ISODateTime;
+  max_uses: number;
+  uses: number;
+  status: GatePassStatus;
+  note: string;
+  events: GateEvent[];
+}
+export type PanicKind = "help" | "robbery" | "kidnapping" | "fire" | "medical" | "suspicious_person" | "drill";
+export type AlertStatus = "triggered" | "acknowledged" | "responding" | "resolved" | "false_alarm" | "cancelled";
+/** GET /orgs/{org}/alerts/ (the security desk). */
+export interface PanicAlert {
+  id: string;
+  estate: string;
+  estate_name: string;
+  kind: PanicKind;
+  status: AlertStatus;
+  silent: boolean;
+  channel: string;
+  raised_by_name: string;
+  raised_by_phone: string;
+  house: string;
+  location: { lat: number; lng: number; accuracy?: number } | null;
+  false_alarms_90d: number;
+  created_at: ISODateTime;
+  acknowledged_at: ISODateTime | null;
+  responding_at: ISODateTime | null;
+  closed_at: ISODateTime | null;
+  close_note: string;
+}
+export interface AlertDelivery {
+  id: string;
+  audience: "staff" | "resident" | "raiser";
+  channel: "push" | "sms" | "ws";
+  status: "queued" | "sent" | "delivered" | "acknowledged" | "failed";
+  name: string;
+  phone_number: string;
+  error: string;
+  sent_at: ISODateTime | null;
+  delivered_at: ISODateTime | null;
+  fallback_for: string | null;
+}
+export interface IncidentNote {
+  id: string;
+  kind: string;
+  note: string;
+  author_name: string;
+  created_at: ISODateTime;
+}
+export interface ChannelMetrics {
+  sent: number;
+  delivered: number;
+  failed: number;
+  first_delivery_seconds: number | null;
+}
+export interface PanicAlertDetail extends PanicAlert {
+  notes: IncidentNote[];
+  deliveries: AlertDelivery[];
+  metrics: {
+    recipients: number;
+    by_channel: { push: ChannelMetrics; sms: ChannelMetrics };
+    staff_reached: number;
+    staff_total: number;
+    acknowledge_seconds: number | null;
+  };
+}
+/** The live desk's WebSocket payload (alert summary). */
+export interface DeskAlert {
+  id: string;
+  estate: string;
+  kind: PanicKind;
+  kind_label: string;
+  status: AlertStatus;
+  silent: boolean;
+  raised_by_name: string;
+  raised_by_phone: string;
+  house: string;
+  location: { lat: number; lng: number; accuracy?: number } | null;
+  created_at: ISODateTime;
+}
+export interface DeliveryReport {
+  alerts: number;
+  drills: number;
+  false_alarms: number;
+  median_first_delivery_seconds: number | null;
+}

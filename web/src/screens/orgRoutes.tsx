@@ -8,6 +8,11 @@ import { ListingDetail } from "./listings/ListingDetail";
 import { ListingForm } from "./listings/ListingForm";
 import { ListingsList } from "./listings/ListingsList";
 import { ChargesList } from "./charges/ChargesList";
+import { EstateDetail } from "./estates/EstateDetail";
+import { EstatesList } from "./estates/EstatesList";
+import { GateDesk } from "./gate/GateDesk";
+import { AlertDetail } from "./security/AlertDetail";
+import { SecurityDesk } from "./security/SecurityDesk";
 import { Dashboard } from "./orgs/Dashboard";
 import { ExpenseForm } from "./expenses/ExpenseForm";
 import { ExpensesList } from "./expenses/ExpensesList";
@@ -73,5 +78,10 @@ export const orgRoutes = (
     <Route path="repairs" element={<RepairsList />} />
     <Route path="repairs/new" element={<NewRepair />} />
     <Route path="repairs/:ticketId" element={<RepairDetail />} />
+    <Route path="estates" element={<EstatesList />} />
+    <Route path="estates/:estateId" element={<EstateDetail />} />
+    <Route path="security" element={<SecurityDesk />} />
+    <Route path="security/:alertId" element={<AlertDetail />} />
+    <Route path="gate" element={<GateDesk />} />
   </>
 );

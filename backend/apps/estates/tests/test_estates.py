@@ -93,7 +93,7 @@ def test_join_approve_and_dues(api_client, org, user, estate, resident_user, _sm
     # rerun is harmless
     assert services.generate_dues(estate=estate) == 0
     r = as_(api_client, resident_user).get(reverse("v1:my-estate-list"))
-    assert r.data["results"][0]["dues_outstanding"] == 15_000_00
+    assert r.data["results"][0]["dues_outstanding"] == "15000.00"
 
 
 def test_join_unknown_code(api_client, resident_user):
@@ -215,3 +215,22 @@ def test_other_org_cannot_see_estate(api_client, estate):
     other = create_organization(user=outsider, name="Other", kind="landlord")
     r = as_(api_client, outsider).get(org_url("estate-detail", other, estate.pk))
     assert r.status_code == 404
+
+
+def test_dues_plan_api_raises_charges(api_client, org, user, estate, resident):
+    r = as_(api_client, user).post(
+        org_url("dues-plan-list", org),
+        {
+            "estate": str(estate.pk),
+            "name": "Security levy",
+            "amount": "15000.00",
+            "frequency": "monthly",
+            "start_date": str(date.today().replace(day=1)),
+        },
+        format="json",
+    )
+    assert r.status_code == 201, r.data
+    assert r.data["amount"] == "15000.00"
+    assert Charge.objects.get(tenant=resident.payer).amount == 15_000_00
+    bad = api_client.post(org_url("dues-plan-list", org), {**r.data, "amount": "0"}, format="json")
+    assert bad.status_code == 400

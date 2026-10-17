@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from apps.core.money import to_major
+from apps.core.serializers import MoneyField
 from apps.leasing.models import Charge
 from apps.properties.models import Unit
 
@@ -128,6 +130,8 @@ class MemberReasonSerializer(serializers.Serializer):
 
 
 class DuesPlanSerializer(serializers.ModelSerializer):
+    amount = MoneyField(allow_zero=False, help_text='e.g. "15000.00" for ₦15,000.')
+
     class Meta:
         model = DuesPlan
         fields = (
@@ -142,12 +146,6 @@ class DuesPlanSerializer(serializers.ModelSerializer):
             "created_at",
         )
         read_only_fields = ("id", "currency", "created_at")
-        extra_kwargs = {"amount": {"help_text": "In kobo, e.g. 1500000 for ₦15,000."}}
-
-    def validate_amount(self, value):
-        if value <= 0:
-            raise serializers.ValidationError("Enter an amount above zero.")
-        return value
 
 
 class AnnouncementSerializer(serializers.ModelSerializer):
@@ -301,7 +299,7 @@ class MyEstateSerializer(serializers.ModelSerializer):
     panic_enabled = serializers.BooleanField(source="estate.panic_enabled", read_only=True)
     organization = serializers.UUIDField(source="estate.organization_id", read_only=True)
     house = serializers.SerializerMethodField()
-    dues_outstanding = serializers.SerializerMethodField(help_text="Kobo owed on estate dues.")
+    dues_outstanding = serializers.SerializerMethodField(help_text='Owed on estate dues, e.g. "15000.00".')
 
     class Meta:
         model = EstateMember
@@ -322,8 +320,6 @@ class MyEstateSerializer(serializers.ModelSerializer):
     def get_house(self, obj) -> str:
         return obj.unit.label if obj.unit_id else obj.house_label
 
-    def get_dues_outstanding(self, obj) -> int:
-        if obj.payer_id is None:
-            return 0
+    def get_dues_outstanding(self, obj) -> str:
         charges = Charge.objects.filter(dues_link__member=obj, status__in=Charge.OUTSTANDING)
-        return sum(c.balance for c in charges)
+        return str(to_major(sum(c.balance for c in charges), "NGN"))
