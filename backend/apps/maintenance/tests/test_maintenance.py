@@ -477,3 +477,75 @@ def test_rating_validation(api_client, org, user, tenant_user, lease, artisan):
 
 def test_guarantor_links_reused_by_tests():
     assert links([("+234", "see https://x/v/abc_DEF-1 now")]) == ["abc_DEF-1"]
+
+
+# ---- The assistant -----------------------------------------------------------------------------
+
+
+def test_assistant_reports_repair_on_whatsapp_after_yes(monkeypatch, org, user, _sms_outbox):
+    """A tenant the landlord added by phone (no app account) reports on WhatsApp."""
+    from apps.assistant import llm
+    from apps.assistant import services as assistant
+    from apps.assistant.principal import for_contact
+    from apps.assistant.tests.test_assistant import FakeLlm, text_resp, tool_resp
+    from apps.messaging import services as messaging
+
+    make_lease(org, user, phone="+2348031119999")
+    fake = FakeLlm(
+        tool_resp(
+            "report_repair",
+            {
+                "lease_id": None,
+                "category": "electrical",
+                "priority": "urgent",
+                "title": "No light in bedroom",
+                "description": "The bedroom socket sparked and the light went off since last night.",
+            },
+        ),
+        text_resp("I'll send an urgent repair request to Obi Properties. Reply YES to confirm."),
+    )
+    monkeypatch.setattr(llm, "client", lambda: fake)
+    convo = messaging.open_conversation(messaging.get_contact("2348031119999", "Kemi"))
+    p = for_contact(convo.contact)
+    reply = assistant.handle_message(convo, p, "my bedroom socket sparked and light don go")
+    assert reply.pending_action.tool == "report_repair" and Ticket.objects.count() == 0
+    done = assistant.handle_message(convo, p, "yes")
+    ticket = Ticket.objects.get()
+    assert ticket.channel == "whatsapp" and ticket.raised_by is None and ticket.status == "awaiting_approval"
+    assert ticket.tenant.phone_number == "+2348031119999"
+    assert ticket.reference in done.text and "Obi Properties" in done.text
+    assert any("URGENT repair request" in b for _to, b in _sms_outbox)
+
+
+def test_assistant_repair_tools(org, user, tenant_user, lease, artisan):
+    from apps.assistant import tools
+    from apps.assistant.principal import for_user
+
+    t = services.report(
+        user=tenant_user,
+        lease_id=lease.pk,
+        category="plumbing",
+        title="Tap leaking",
+        description="Kitchen tap drips all night long.",
+    )
+    services.approve(t, by=user)
+    job = services.assign(t, artisan=artisan, by=user)
+    services.accept(job, scheduled_for=timezone.now() + timedelta(days=1))
+
+    me = for_user(tenant_user)
+    rows = tools.my_repairs(me, None)["repairs"]
+    assert rows[0]["status"] == "assigned" and rows[0]["artisan"] == "Musa Plumbing Works"
+    assert rows[0]["artisan_verified"] is True and rows[0]["visit"]
+    assert "report_repair" in {x.name for x in tools.for_principal(me)}
+    assert "list_repairs" not in {x.name for x in tools.for_principal(me)}
+    with pytest.raises(tools.ToolError):
+        tools._repair_lease(me, "00000000-0000-0000-0000-000000000000")
+    with pytest.raises(tools.ToolError):
+        tools._repair_text("x", "short")
+
+    staff = for_user(user)
+    out = tools.list_repairs(staff, None, str(org.pk), None)
+    assert out["repairs"][0]["tenant"] == "Chidi Okafor" and out["awaiting_approval"] == 0
+    stranger = for_user(make_user(phone="+2348077778888"))
+    with pytest.raises(tools.ToolError):
+        tools.list_repairs(stranger, None, str(org.pk), None)

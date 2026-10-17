@@ -317,6 +317,68 @@ def build_all() -> Built:
         )
         BillCounter.objects.update_or_create(key="bills", defaults={"last": 1})
 
+        # Repairs: a Verified plumber; Chidi's tap (assigned, visit booked) and Grace's light (waiting).
+        from apps.artisans.models import ArtisanProfile
+        from apps.maintenance.models import Job, Ticket, TicketEvent
+
+        kunle_u = _user(b, "artisan", "+2348031110030", "Kunle", "Adebayo")
+        kunle = ArtisanProfile.objects.create(
+            user=kunle_u,
+            display_name="Kunle Plumbing Works",
+            trades=["plumbing"],
+            service_areas=["Lekki", "Ajah"],
+            status="verified",
+            verified_at=at(2026, 9, 1),
+            rating_sum=24,
+            rating_count=5,
+            jobs_completed=12,
+            data_consent_at=at(2026, 8, 20),
+        )
+        tap = Ticket.objects.create(
+            reference="R0000A01",
+            organization=obi,
+            unit=units["Flat 2B"],
+            lease=chidi.leases.get(),
+            tenant=chidi,
+            raised_by=chidi_u,
+            category="plumbing",
+            priority="urgent",
+            title="Kitchen tap leaking",
+            description="The kitchen tap drips all night and the sink cabinet is wet.",
+            status="assigned",
+            approved_by=emeka,
+            approved_at=at(2026, 10, 13, 9),
+        )
+        Job.objects.create(
+            ticket=tap,
+            organization=obi,
+            artisan=kunle,
+            status="accepted",
+            offered_by=emeka,
+            offer_expires_at=at(2026, 10, 14, 9),
+            responded_at=at(2026, 10, 13, 12),
+            scheduled_for=at(2026, 10, 16, 14),
+        )
+        for kind, role, actor in [
+            ("created", "tenant", chidi_u),
+            ("approved", "staff", emeka),
+            ("assigned", "staff", emeka),
+            ("accepted", "artisan", kunle_u),
+        ]:
+            TicketEvent.objects.create(ticket=tap, kind=kind, actor_role=role, actor=actor)
+        light = Ticket.objects.create(
+            reference="R0000A02",
+            organization=obi,
+            unit=units["Flat 3C"],
+            lease=grace.leases.get(),
+            tenant=grace,
+            category="electrical",
+            priority="normal",
+            title="Bathroom light not working",
+            description="The bathroom light stopped working two days ago; the bulb was changed.",
+        )
+        TicketEvent.objects.create(ticket=light, kind="created", actor_role="tenant")
+
         for key, phone, first, last, role in [
             ("staff_manager", "+2348031110020", "Bola", "Adeyemi", "manager"),
             ("staff_agent", "+2348031110021", "Yusuf", "Sani", "agent"),

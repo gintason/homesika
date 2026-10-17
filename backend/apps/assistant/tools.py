@@ -161,6 +161,7 @@ def get_my_lease(p: Principal, ctx) -> dict:
     return {
         "leases": [
             {
+                "lease_id": str(x.pk),
                 "unit": x.unit.label,
                 "property": x.unit.property.name,
                 "address": x.unit.property.address,
@@ -739,6 +740,145 @@ def my_bill_orders(p: Principal, ctx) -> dict:
     }
 
 
+# ---- Repairs (Phase 4) -------------------------------------------------------------------------------
+
+REPAIR_CATEGORIES = [
+    "plumbing",
+    "electrical",
+    "carpentry",
+    "painting",
+    "ac",
+    "generator",
+    "roofing",
+    "tiling",
+    "welding",
+    "appliance",
+    "pest",
+    "cleaning",
+    "locksmith",
+    "other",
+]
+
+
+def _repair_lease(p: Principal, lease_id):
+    leases = list(
+        Lease.objects.filter(tenant__in=p.tenant_profiles, status="active").select_related(
+            "unit__property", "organization", "tenant"
+        )
+    )
+    if lease_id:
+        lease = next((x for x in leases if str(x.pk) == str(lease_id)), None)
+        if lease is None:
+            raise ToolError("That isn't one of the person's current homes.")
+        return lease
+    if not leases:
+        raise ToolError("The person has no active lease, so a repair can't be reported here.")
+    if len(leases) > 1:
+        raise ToolError("The person rents more than one place. Ask which one (lease_id from get_my_lease).")
+    return leases[0]
+
+
+def _repair_text(title: str, description: str) -> tuple[str, str]:
+    title, description = " ".join(title.split())[:120], description.strip()[:2000]
+    if len(title) < 3 or len(description) < 10:
+        raise ToolError("Ask the person to describe the problem a little more (what, where, since when).")
+    return title, description
+
+
+def report_repair(
+    p: Principal, ctx, lease_id, category: str, priority: str, title: str, description: str
+) -> dict:
+    lease = _repair_lease(p, lease_id)
+    title, description = _repair_text(title, description)
+    if category not in REPAIR_CATEGORIES or priority not in ("low", "normal", "urgent", "emergency"):
+        raise ToolError("Unknown category or priority.")
+    return ctx.propose(
+        "report_repair",
+        {
+            "lease_id": str(lease.pk),
+            "category": category,
+            "priority": priority,
+            "title": title,
+            "description": description,
+        },
+        f"Send a {priority} repair request to {lease.organization.name} for {lease.unit.label}: {title}",
+    )
+
+
+def run_report_repair(
+    p: Principal, ctx, lease_id, category: str, priority: str, title: str, description: str
+) -> dict:
+    from apps.maintenance import services as maintenance
+
+    lease = _repair_lease(p, lease_id)
+    title, description = _repair_text(title, description)
+    ticket = maintenance.report_for_lease(
+        lease,
+        user=p.user,
+        category=category,
+        priority=priority,
+        title=title,
+        description=description,
+        channel="whatsapp" if ctx.channel_source == "whatsapp" else "app",
+    )
+    return {"reference": ticket.reference, "landlord": lease.organization.name}
+
+
+def _repair_row(t) -> dict:
+    job = t.current_job or next((j for j in t.jobs.all() if j.status == "confirmed"), None)
+    return {
+        "reference": t.reference,
+        "title": t.title,
+        "unit": t.unit.label,
+        "status": t.status,
+        "priority": t.priority,
+        "reported": str(timezone.localtime(t.created_at).date()),
+        "artisan": job.artisan.display_name if job else None,
+        "artisan_verified": job.artisan.is_verified if job else None,
+        "visit": timezone.localtime(job.scheduled_for).strftime("%a %d %b %I:%M %p")
+        if job and job.scheduled_for
+        else None,
+        "reason": t.closed_reason or None,
+    }
+
+
+def my_repairs(p: Principal, ctx) -> dict:
+    from apps.maintenance.models import Ticket
+
+    qs = (
+        Ticket.objects.filter(tenant__in=p.tenant_profiles)
+        .select_related("unit")
+        .prefetch_related("jobs__artisan")
+        .order_by("-created_at")[:8]
+    )
+    return {"repairs": [_repair_row(t) for t in qs]}
+
+
+def list_repairs(p: Principal, ctx, organization_id: str, status) -> dict:
+    from apps.maintenance.models import Ticket
+
+    org = _org(p, organization_id, "maintenance.view")
+    qs = (
+        Ticket.objects.filter(organization=org)
+        .select_related("unit", "tenant")
+        .prefetch_related("jobs__artisan")
+    )
+    if status in (None, "", "open"):
+        qs = qs.filter(status__in=Ticket.OPEN)
+    elif status != "all":
+        qs = qs.filter(status=status)
+    rows = []
+    for t in qs.order_by("-created_at")[:20]:
+        row = _repair_row(t)
+        row["tenant"] = t.tenant.full_name if t.tenant_id else None
+        rows.append(row)
+    return {
+        "repairs": rows,
+        "awaiting_approval": Ticket.objects.filter(organization=org, status="awaiting_approval").count(),
+        "dashboard": f"{settings.WEB_APP_URL.rstrip('/')}/repairs",
+    }
+
+
 # ---- Registry ------------------------------------------------------------------------------------
 
 ORG = {"type": "string", "description": "organization_id from the context"}
@@ -939,9 +1079,40 @@ TOOLS: list[Tool] = [
         STAFF_ROLES,
         list_viewings,
     ),
+    Tool(
+        "report_repair",
+        "Propose sending the landlord a repair request for one of the person's homes. lease_id from "
+        "get_my_lease, or null if they rent only one place. Photos can only be added in the app.",
+        {
+            "lease_id": NULL_STR,
+            "category": {"type": "string", "enum": REPAIR_CATEGORIES},
+            "priority": {"type": "string", "enum": ["low", "normal", "urgent", "emergency"]},
+            "title": {"type": "string", "description": "A few words, e.g. 'Kitchen tap leaking'"},
+            "description": {"type": "string", "description": "What, where, since when"},
+        },
+        TENANT_ROLES,
+        report_repair,
+        action=True,
+    ),
+    Tool(
+        "my_repairs",
+        "The person's recent repair requests: status, artisan and visit time.",
+        {},
+        TENANT_ROLES,
+        my_repairs,
+    ),
+    Tool(
+        "list_repairs",
+        "Repair requests for an organization. status: open (default), all, or one of awaiting_approval, "
+        "approved, assigned, in_progress, done, confirmed, rejected, cancelled.",
+        {"organization_id": ORG, "status": NULL_STR},
+        STAFF_ROLES,
+        list_repairs,
+    ),
 ]
 BY_NAME = {t.name: t for t in TOOLS}
 RUNNERS = {
+    "report_repair": run_report_repair,
     "buy_bill": run_buy_bill,
     "create_my_payment_link": run_create_my_payment_link,
     "send_payment_link": run_send_payment_link,

@@ -178,3 +178,28 @@ def test_bills_scenario_matches_spec(world):
         "1GB, 30 days (sample)": "1000.00",
         "5GB, 30 days (sample)": "4000.00",
     }
+
+
+def test_repairs_scenario_matches_spec(world):
+    chidi = for_user(world.users["chidi"])
+    emeka = for_user(world.users["landlord"])
+    org_id = str(world.orgs["obi"].pk)
+    with scenarios.frozen_now():
+        mine = tools.my_repairs(chidi, ctx())["repairs"]
+        staff = tools.list_repairs(emeka, ctx(), organization_id=org_id, status=None)
+    assert mine == [
+        {
+            "reference": "R0000A01",
+            "title": "Kitchen tap leaking",
+            "unit": "Flat 2B",
+            "status": "assigned",
+            "priority": "urgent",
+            "reported": mine[0]["reported"],
+            "artisan": "Kunle Plumbing Works",
+            "artisan_verified": True,
+            "visit": "Fri 16 Oct 02:00 PM",
+            "reason": None,
+        }
+    ]
+    assert {r["reference"] for r in staff["repairs"]} == {"R0000A01", "R0000A02"}
+    assert staff["awaiting_approval"] == 1

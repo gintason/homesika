@@ -105,6 +105,16 @@ DONE = {
             "payment confirm. If e no fit deliver, your money go return by itself."
         ),
     },
+    "report_repair": {
+        "en": (
+            "Done. Your repair request {reference} has gone to {landlord}. You'll get updates here and "
+            "by SMS. To add photos, open Repairs in the Homesika app."
+        ),
+        "pcm": (
+            "E don go. Your repair request {reference} don reach {landlord}. Update go dey come here and "
+            "for SMS. If you wan add picture, open Repairs for Homesika app."
+        ),
+    },
     "request_viewing": {
         "en": "Your viewing is booked for {when}. Address: {address}. Contact: {contact}.",
         "pcm": "Your viewing don book for {when}. Address: {address}. Contact: {contact}.",

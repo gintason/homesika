@@ -225,6 +225,55 @@ ARTICLES = [
     ),
 ]
 
+ARTICLES += [
+    (
+        "repairs",
+        ["tenant", "landlord", "staff"],
+        {
+            "en": (
+                "Reporting a repair",
+                "Tenants report a repair in the Homesika app (Repairs, then Report a problem) or by telling the assistant on "
+                "WhatsApp. Add photos in the app so the artisan comes prepared. Your landlord or their manager approves the "
+                "request, then assigns a Verified artisan. You get an update by WhatsApp or SMS at each step: approved, artisan "
+                "assigned (with the visit time), and marked fixed. When the work is done, confirm it in the app or tell us it "
+                "isn't fixed; if you don't answer within 7 days it is confirmed automatically. You can then rate the artisan. "
+                "Homesika doesn't take payment for repair work. If there is danger (fire, gas, sparking wires, flooding), get "
+                "safe and call 112 first.",
+            ),
+            "pcm": (
+                "How to report repair",
+                "Tenant fit report repair for Homesika app (Repairs, then Report a problem) or tell the assistant for WhatsApp. "
+                "Add picture for the app make the artisan come prepare. Your landlord or im manager go approve am, then dem go "
+                "assign Verified artisan. You go dey get update for WhatsApp or SMS for every step: approved, artisan don "
+                "assign (with the time wey e go come), and e don fix. When work finish, confirm am for the app or tell us say e "
+                "never fix; if you no answer inside 7 days, e go confirm by itself. After that you fit rate the artisan. "
+                "Homesika no dey collect money for repair work. If danger dey (fire, gas, wire dey spark, flood), comot for "
+                "danger and call 112 first.",
+            ),
+        },
+    ),
+    (
+        "verified-artisans",
+        [],
+        {
+            "en": (
+                "What 'Verified artisan' means",
+                "An artisan gets the Verified badge only after all of these checks pass: an ID check, their phone number "
+                "(confirmed by a code), their address (confirmed by Homesika), two guarantors who confirm by SMS link, and one "
+                "reference such as a past client or landlord. Homesika can suspend an artisan after complaints, which removes "
+                "the badge. Artisans sign up in the Homesika app (Work as an artisan).",
+            ),
+            "pcm": (
+                "Wetin 'Verified artisan' mean",
+                "Artisan go get Verified badge only after all these checks pass: ID check, im phone number (dem confirm am with "
+                "code), im address (Homesika confirm am), two guarantors wey confirm with SMS link, and one reference like "
+                "person wey e don work for before or landlord. Homesika fit suspend artisan if complaint plenty, and the badge "
+                "go comot. Artisan dey register for Homesika app (Work as an artisan).",
+            ),
+        },
+    ),
+]
+
 
 def seed(KbArticle) -> int:
     n = 0

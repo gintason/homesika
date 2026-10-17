@@ -180,6 +180,34 @@ def report(
     )
     if lease is None:
         raise serializers.ValidationError({"lease": [_("Choose the home this is about.")]})
+    return report_for_lease(
+        lease,
+        user=user,
+        category=category,
+        title=title,
+        description=description,
+        priority=priority,
+        access_notes=access_notes,
+        channel=channel,
+        request=request,
+    )
+
+
+@transaction.atomic
+def report_for_lease(
+    lease: Lease,
+    *,
+    user,
+    category,
+    title,
+    description,
+    priority=Ticket.Priority.NORMAL,
+    access_notes="",
+    channel=Ticket.Channel.APP,
+    request=None,
+) -> Ticket:
+    """The lease is already checked as the reporter's (the API by login, the assistant by its principal).
+    `user` can be None: a tenant on WhatsApp the landlord added by phone, with no app account yet."""
     _check_text(title, description)
     open_same = Ticket.objects.filter(
         unit=lease.unit, category=category, status__in=Ticket.OPEN, title__iexact=title.strip()

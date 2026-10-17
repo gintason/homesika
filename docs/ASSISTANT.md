@@ -1,4 +1,4 @@
-# Homesika assistant: specification (Phase 2)
+# Homesika assistant: specification (Phases 2–4)
 
 This is the contract for the assistant's behaviour, tools and evaluation. Code lives in
 `backend/apps/assistant/`, the evaluation set in `backend/apps/assistant/evals/`. Design
@@ -58,6 +58,20 @@ strings in naira, for example `"250000.00"`, with `currency`.
 * The person pays per purchase through the link, and nothing is held.
 * If the order can't be delivered, they're refunded automatically.
 * There is no betting, no credit, and no wallet top-up.
+
+### Repairs (Phase 4)
+
+| Tool | Who | Input | Does |
+|---|---|---|---|
+| `report_repair` | tenant | `lease_id` (from `get_my_lease`, or null with one home), `category`, `priority` (low, normal, urgent, emergency), `title`, `description` | **Action:** after a YES, sends the landlord a repair request (works on WhatsApp without an app account) |
+| `my_repairs` | tenant | — | Recent requests: status, artisan, Verified badge, visit time |
+| `list_repairs` | staff [`maintenance.view`] | `organization_id`, `status` (open by default, all, or one status) | Requests with tenant, artisan and visit time, plus how many wait for approval |
+
+* Approving, assigning, cancelling and confirming happen in the dashboard or app, not in chat.
+* Photos can only be added in the app.
+* Danger (fire, gas, sparking wires, flooding): tell them to get safe and call 112 first, then report it
+  as an emergency.
+* Homesika doesn't take payment for repair work; never quote prices or dates the artisan hasn't given.
 
 ### Tenant
 
@@ -186,6 +200,9 @@ rely on exactly this data.** Today's date in every scenario is **2026-10-15** (L
   * MTN data: "1GB, 30 days (sample)" ₦1,000 and "5GB, 30 days (sample)" ₦4,000.
   * DStv: "Basic bouquet (sample)" ₦4,000 and "Premium bouquet (sample)" ₦29,000.
 * The bill provider is the mock in evaluation runs.
+* **Repair R0000A01** (Flat 2B): "Kitchen tap leaking", urgent, plumbing. Approved by Emeka on 2026-10-13,
+  status `assigned`; **Kunle Plumbing Works** (Verified, 4.8 from 5 ratings, 12 jobs) accepted and visits
+  **Fri 16 Oct, 2:00 PM**.
 
 ### `tenant_paid_up`: Amina Bello (+2348031110002)
 * **Landlord:** organization "Obi Properties".
@@ -226,6 +243,8 @@ rely on exactly this data.** Today's date in every scenario is **2026-10-15** (L
 * **Leads:**
   * Kemi Johnson: stage `new`.
   * Ifeanyi Nwosu: stage `viewing_booked`, viewing on 2026-10-18 at 11:00.
+* **Repairs:** R0000A01 (Chidi's tap, assigned to Kunle Plumbing Works) and **R0000A02** (Grace Eze,
+  Flat 3C, "Bathroom light not working", electrical, **waiting for approval**).
 * **Team:**
   * Bola Adeyemi: manager.
   * Yusuf Sani: agent.
@@ -241,6 +260,7 @@ rely on exactly this data.** Today's date in every scenario is **2026-10-15** (L
   * The agent can't see payments or arrears; it can see properties, tenants, listings and leads.
   * The viewer can't send payment links.
   * The accountant can't manage listings.
+  * Every staff role can see repair requests (`maintenance.view`).
 
 ### `prospect`: unknown WhatsApp number +2348031119999
 
