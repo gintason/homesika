@@ -289,5 +289,148 @@
     "askMessage": "Wetin you wan ask",
     "ask": "Ask about am",
     "asked": "E don send. The landlord fit reach you now for {{phone}}."
+  },
+  "bills": {
+    "title": "Pay bills",
+    "homeBody": "Airtime, data, TV and light. You go pay for each one as you dey buy, no wallet.",
+    "howItWorks": "You go pay for each thing you buy for checkout. No wallet, no balance to load. If we no fit deliver am, we go return your money by ourself.",
+    "choose": "Wetin you wan pay for?",
+    "notFound": "We no see dat page.",
+    "category": {
+      "airtime": "Airtime",
+      "data": "Data",
+      "cable_tv": "TV",
+      "electricity": "Light"
+    },
+    "categoryHint": {
+      "airtime": "Buy airtime for any network",
+      "data": "Buy data",
+      "cable_tv": "Pay for DStv, GOtv, Startimes and others",
+      "electricity": "Buy prepaid token or pay postpaid light bill"
+    },
+    "billerLabel": {
+      "airtime": "Network",
+      "data": "Network",
+      "cable_tv": "TV company",
+      "electricity": "Light company (DisCo)"
+    },
+    "billerRequired": {
+      "airtime": "Pick network.",
+      "data": "Pick network.",
+      "cable_tv": "Pick your TV company.",
+      "electricity": "Pick your light company."
+    },
+    "customerLabel": {
+      "phone": "Phone number",
+      "airtime": "Phone number",
+      "data": "Phone number",
+      "cable_tv": "Smartcard / IUC number",
+      "electricity": "Meter number"
+    },
+    "phoneHint": "We don put your number. Change am if na for another person.",
+    "phoneInvalid": "Put correct Nigerian phone number.",
+    "customerInvalid": "Check the number well, then try again.",
+    "meterType": "Meter type",
+    "meterTypes": {
+      "prepaid": "Prepaid",
+      "postpaid": "Postpaid"
+    },
+    "meterFromHome": "Na your meter for {{unit}} be dis. Change am if na another meter.",
+    "discoUnknown": "We no sure which light company your house dey use. Abeg pick am.",
+    "verify": {
+      "cable_tv": "Check smartcard number",
+      "electricity": "Check meter number"
+    },
+    "verifying": "We dey check…",
+    "verifiedAs": "Name: {{name}}",
+    "verifiedAddress": "Address: {{address}}",
+    "currentBouquet": "Bouquet wey dey now: {{bouquet}}",
+    "plan": "Pick data plan",
+    "bouquet": "Pick bouquet",
+    "planRequired": "Pick one plan.",
+    "noPlans": "No plan dey now. Abeg try again later.",
+    "youChoose": "You go choose",
+    "validityOne": "E go last 1 day",
+    "validityMany": "E go last {{count}} days",
+    "amount": "How much",
+    "amountHint": "From {{min}} reach {{max}}. Only full naira.",
+    "amountHintAny": "Only full naira.",
+    "quickAmounts": "Quick amounts",
+    "amountErrors": {
+      "required": "Put how much.",
+      "invalid": "Put the amount for naira, like 1500.",
+      "whole": "Put full naira only (no kobo).",
+      "min": "The smallest na {{min}}.",
+      "max": "The biggest na {{max}}."
+    },
+    "noBillers": "E no dey available now",
+    "noBillersBody": "Dis service no dey work now. Abeg try again later.",
+    "review": {
+      "title": "Check am, then pay",
+      "what": "Wetin",
+      "name": "Name",
+      "address": "Address",
+      "amount": "Amount",
+      "fee": "Service charge",
+      "total": "Total",
+      "feeAdded": "Service charge of {{fee}} dey, so you go pay {{total}} total.",
+      "edit": "Change the details"
+    },
+    "pay": "Pay {{amount}}",
+    "starting": "We dey open safe checkout…",
+    "history": "My bill payments",
+    "historyEmpty": "You never pay any bill yet",
+    "historyEmptyBody": "Airtime, data, TV and light wey you buy go show here.",
+    "loadMore": "Show more",
+    "end": "Na everything be dat",
+    "status": {
+      "awaiting_payment": "E dey wait for payment",
+      "processing": "E dey go",
+      "delivered": "E don land",
+      "refund_pending": "We dey return money",
+      "refunded": "Money don return",
+      "expired": "You no pay"
+    },
+    "order": {
+      "checkingTitle": "We dey check your payment",
+      "checkingBody": "E no dey pass few seconds.",
+      "checkFailed": "We no fit check am now. Check your network, then try again.",
+      "awaitingTitle": "We dey wait for your payment",
+      "awaitingBody": "Finish the payment for checkout. If you don pay already, dis page go change by itself.",
+      "reopen": "Go back to checkout ({{amount}})",
+      "processingTitle": "You don pay. E dey go now",
+      "processingBody": "Your money don reach us and we dey send am now. E no dey pass one minute. If e no fit land, we go return your money by ourself. No pay again.",
+      "deliveredTitle": "E don land",
+      "deliveredBody": "{{what}} for {{customer}} don land.",
+      "tokenLabel": "Your light token",
+      "tokenA11y": "Token: {{token}}",
+      "tokenHint": "Type dis token for your meter. We don also send am to you by SMS.",
+      "copyToken": "Copy token",
+      "copied": "E don copy",
+      "copyFailed": "We no fit copy am. Press the token hold am make you copy am.",
+      "units": "Units: {{units}}",
+      "downloadReceipt": "Download receipt",
+      "downloading": "We dey get receipt…",
+      "receiptFailed": "We no fit get the receipt. Try again.",
+      "refundPendingTitle": "We no fit deliver am",
+      "refundPendingBody": "We dey return {{amount}} to the card or account wey you take pay. E dey usually reach in 1–5 working days.",
+      "refundedTitle": "Money don return",
+      "refundedBody": "We no fit deliver am, so we don return {{amount}} to the card or account wey you take pay. E dey usually reach in 1–5 working days, depend on your bank.",
+      "expiredTitle": "Payment no complete",
+      "expiredBody": "You no finish dis payment, so dem no collect your money. You fit start new one.",
+      "checkAgain": "Check am again",
+      "buyAgain": "Buy again",
+      "backHome": "Go back home",
+      "summary": "Details",
+      "receipt": "Receipt",
+      "reference": "Reference",
+      "date": "Date"
+    },
+    "errors": {
+      "customer_not_found": "We no see dat meter or smartcard number. Check am well, then try again.",
+      "bills_daily_limit": "You don reach today limit for bill payment. Try again tomorrow.",
+      "bills_unavailable": "Bill payment no dey work now. Abeg try again small time.",
+      "order_not_payable": "You no fit pay for dis order again. Abeg start new one."
+    }
   }
 }

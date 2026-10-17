@@ -1,7 +1,7 @@
 import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 
-import { tenantApi } from "@/api";
+import { billsApi, tenantApi } from "@/api";
 import i18n from "@/i18n";
 
 import { absoluteUrl, ApiError, freshAccessToken, refreshAccessToken } from "./api";
@@ -11,10 +11,19 @@ import { absoluteUrl, ApiError, freshAccessToken, refreshAccessToken } from "./a
  * link. Download it with the token into the cache, then hand it to the share sheet (which also
  * offers "Open in…" / "Save to Files").
  */
-export async function downloadReceipt(paymentId: string, receiptNumber: string): Promise<string> {
+export function downloadReceipt(paymentId: string, receiptNumber: string): Promise<string> {
+  return downloadPdf(tenantApi.receiptPath(paymentId), receiptNumber);
+}
+
+/** GET /bills/orders/{id}/receipt/ (only once the order is delivered). */
+export function downloadBillReceipt(orderId: string, receiptNumber: string): Promise<string> {
+  return downloadPdf(billsApi.receiptPath(orderId), receiptNumber);
+}
+
+async function downloadPdf(path: string, receiptNumber: string): Promise<string> {
   const safeName = receiptNumber.replace(/[^A-Za-z0-9_-]/g, "_");
   const destination = new File(Paths.cache, `homesika-receipt-${safeName}.pdf`);
-  const url = absoluteUrl(tenantApi.receiptPath(paymentId));
+  const url = absoluteUrl(path);
 
   const download = (access: string) =>
     File.downloadFileAsync(url, destination, {

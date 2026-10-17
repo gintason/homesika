@@ -4,6 +4,7 @@ import { View } from "react-native";
 
 import type { MyLease } from "@/api";
 import { Badge, Banner, Button, Card, EmptyState, MoneyText, Screen, SkeletonCard, Text } from "@/components";
+import { BillCategoryTiles } from "@/components/bills";
 import { useLeases, useOutstandingCharges } from "@/hooks/queries";
 import { usePay } from "@/hooks/usePay";
 import { errorText } from "@/lib/api";
@@ -138,6 +139,7 @@ export default function Home() {
       refreshing={refreshing}
     >
       {content}
+      <BillsCard />
     </Screen>
   );
 }
@@ -152,6 +154,21 @@ function LeaseCard({ lease }: { lease: MyLease }) {
       </Text>
       {lease.property_address ? <Text className="text-ink-600">{lease.property_address}</Text> : null}
       <Text className="text-ink-600">{t("home.landlordLine", { name: lease.landlord })}</Text>
+    </Card>
+  );
+}
+
+/** Bills entry (the tab bar is full): airtime, data, TV and electricity, one tap each. */
+function BillsCard() {
+  const { t } = useTranslation();
+  return (
+    <Card accessibilityLabel={t("bills.title")}>
+      <Text variant="heading" accessibilityRole="header">
+        {t("bills.title")}
+      </Text>
+      <Text className="text-ink-600">{t("bills.homeBody")}</Text>
+      <BillCategoryTiles compact onPick={(category) => router.push({ pathname: "/bills/[category]", params: { category } })} />
+      <Button title={t("bills.history")} variant="ghost" onPress={() => router.push("/bills/history")} />
     </Card>
   );
 }

@@ -75,6 +75,10 @@ def test_catalogue_is_seeded_and_samples_load(api_client):
     assert catalogue.load_samples() > 0
     dstv = api_client.get(reverse("v1:bills-catalogue"), {"category": "cable_tv"}).json()[0]
     assert dstv["plans"][0]["price"] == "4000.00" and "sample" in dstv["plans"][0]["name"]
+    assert dstv["fee"] == "0.00"
+    with override_settings(BILLS_FEES={"electricity": 100_00}):
+        disco = api_client.get(reverse("v1:bills-catalogue"), {"category": "electricity"}).json()[0]
+    assert disco["fee"] == "100.00"
 
 
 def test_quote_rules():

@@ -59,6 +59,12 @@ export type LeaseStatus = "active" | "ended" | "terminated";
 
 export type MyLease = {
   id: string;
+  /** The unit's id (send as `unit` on an electricity order for my own meter). Older servers may omit it. */
+  unit?: string;
+  /** Prepaid meter on my unit ("" when the landlord hasn't added one). */
+  meter_number?: string;
+  /** Electricity company: a name ("Ikeja Electric") or a code; match it with matchDisco(). */
+  disco?: string;
   unit_label: string;
   property_name: string;
   property_address: string;
@@ -300,3 +306,90 @@ export function listingFeatures(features: unknown): string[] {
   if (!Array.isArray(features)) return [];
   return features.filter((f): f is string | number => typeof f === "string" || typeof f === "number").map(String).filter(Boolean);
 }
+
+/* ---- Phase 3: bills ---------------------------------------------------------------------------
+ *   backend/apps/bills/{views,serializers,services}.py (BillerSerializer, PlanSerializer, OrderSerializer)
+ *   Pay per purchase at the gateway checkout; no wallet. Undeliverable orders are refunded automatically.
+ */
+
+export type BillCategory = "airtime" | "data" | "cable_tv" | "electricity";
+
+export type BillPlan = {
+  id: string;
+  code: string;
+  name: string;
+  /** null = the person chooses the amount (electricity prepaid/postpaid). */
+  price: string | null;
+  validity_days: number | null;
+  data_mb: number | null;
+};
+
+export type Biller = {
+  id: string;
+  category: BillCategory;
+  code: string;
+  name: string;
+  customer_label: string;
+  requires_verification: boolean;
+  min_amount: string | null;
+  max_amount: string | null;
+  plans: BillPlan[];
+};
+
+/** POST /bills/verify/: the meter / smartcard owner. `details` varies by provider (e.g. customer_address). */
+export type BillCustomer = { customer_id: string; name: string; details: Record<string, unknown> };
+
+export type BillOrderStatus = "awaiting_payment" | "processing" | "delivered" | "refund_pending" | "refunded" | "expired";
+
+export type BillOrder = {
+  id: string;
+  reference: string;
+  category: BillCategory;
+  biller: string;
+  biller_name: string;
+  plan: string | null;
+  plan_name: string | null;
+  customer_id: string;
+  customer_name: string;
+  amount: string;
+  fee: string;
+  total: string;
+  currency: string;
+  status: BillOrderStatus;
+  checkout_url: string;
+  /** Electricity token; "" until delivered. */
+  token: string;
+  units: string;
+  receipt_number: string;
+  failure_reason: string;
+  created_at: string;
+  paid_at: string | null;
+  delivered_at: string | null;
+  refunded_at: string | null;
+  expires_at: string;
+};
+
+export type BillOrderInput = {
+  biller: string;
+  plan?: string;
+  customer_id: string;
+  /** Whole naira as a decimal string ("1500.00"); omitted when the plan has a price. */
+  amount?: string;
+  /** My unit (electricity for my own meter). */
+  unit?: string;
+};
+
+export const billsApi = {
+  /** Public. Not paginated. */
+  catalogue: (category: BillCategory) =>
+    publicGet<Biller[]>(`/api/v1/bills/catalogue/?category=${encodeURIComponent(category)}`),
+  verify: (input: { biller: string; plan?: string; customer_id: string }) =>
+    api<BillCustomer>("/api/v1/bills/verify/", { method: "POST", body: input }),
+  /** idempotencyKey: one per submission, reused when retrying the same submission. */
+  createOrder: (input: BillOrderInput, idempotencyKey: string) =>
+    api<BillOrder>("/api/v1/bills/orders/", { method: "POST", body: input, idempotencyKey }),
+  orders: (cursor?: string | null) => page<BillOrder>(cursor ?? "/api/v1/bills/orders/"),
+  /** Polling this also asks the gateway whether an unpaid order has been paid. */
+  order: (id: string) => api<BillOrder>(`/api/v1/bills/orders/${encodeURIComponent(id)}/`),
+  receiptPath: (id: string) => `/api/v1/bills/orders/${encodeURIComponent(id)}/receipt/`,
+};

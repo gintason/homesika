@@ -288,5 +288,148 @@
     "askMessage": "Your question",
     "ask": "Ask about it",
     "asked": "Sent. The landlord can now reach you on {{phone}}."
+  },
+  "bills": {
+    "title": "Pay bills",
+    "homeBody": "Airtime, data, TV and electricity. Pay for each purchase, no wallet needed.",
+    "howItWorks": "You pay for each purchase at checkout. There's no wallet or balance to top up. If we can't deliver it, we refund you automatically.",
+    "choose": "What do you want to pay for?",
+    "notFound": "We couldn't find that page.",
+    "category": {
+      "airtime": "Airtime",
+      "data": "Data",
+      "cable_tv": "TV",
+      "electricity": "Electricity"
+    },
+    "categoryHint": {
+      "airtime": "Buy airtime for any network",
+      "data": "Buy a data bundle",
+      "cable_tv": "Pay for DStv, GOtv, Startimes and more",
+      "electricity": "Buy a prepaid token or pay a postpaid bill"
+    },
+    "billerLabel": {
+      "airtime": "Network",
+      "data": "Network",
+      "cable_tv": "TV provider",
+      "electricity": "Electricity company"
+    },
+    "billerRequired": {
+      "airtime": "Choose a network.",
+      "data": "Choose a network.",
+      "cable_tv": "Choose your TV provider.",
+      "electricity": "Choose your electricity company."
+    },
+    "customerLabel": {
+      "phone": "Phone number",
+      "airtime": "Phone number",
+      "data": "Phone number",
+      "cable_tv": "Smartcard / IUC number",
+      "electricity": "Meter number"
+    },
+    "phoneHint": "We've filled in your number. Change it to buy for someone else.",
+    "phoneInvalid": "Enter a valid Nigerian phone number.",
+    "customerInvalid": "Check the number and try again.",
+    "meterType": "Meter type",
+    "meterTypes": {
+      "prepaid": "Prepaid",
+      "postpaid": "Postpaid"
+    },
+    "meterFromHome": "Your meter at {{unit}}. Change it to pay for a different meter.",
+    "discoUnknown": "We couldn't tell which electricity company your home uses. Please choose it.",
+    "verify": {
+      "cable_tv": "Check smartcard number",
+      "electricity": "Check meter number"
+    },
+    "verifying": "Checking…",
+    "verifiedAs": "Name: {{name}}",
+    "verifiedAddress": "Address: {{address}}",
+    "currentBouquet": "Current bouquet: {{bouquet}}",
+    "plan": "Choose a data plan",
+    "bouquet": "Choose a bouquet",
+    "planRequired": "Choose a plan.",
+    "noPlans": "No plans are available right now. Please try again later.",
+    "youChoose": "You choose",
+    "validityOne": "Lasts 1 day",
+    "validityMany": "Lasts {{count}} days",
+    "amount": "Amount",
+    "amountHint": "From {{min}} to {{max}}. Whole naira only.",
+    "amountHintAny": "Whole naira only.",
+    "quickAmounts": "Quick amounts",
+    "amountErrors": {
+      "required": "Enter an amount.",
+      "invalid": "Enter an amount in naira, like 1500.",
+      "whole": "Enter a whole naira amount (no kobo).",
+      "min": "The minimum is {{min}}.",
+      "max": "The maximum is {{max}}."
+    },
+    "noBillers": "Not available right now",
+    "noBillersBody": "This service isn't available at the moment. Please try again later.",
+    "review": {
+      "title": "Check and pay",
+      "what": "What",
+      "name": "Name",
+      "address": "Address",
+      "amount": "Amount",
+      "fee": "Service fee",
+      "total": "Total",
+      "feeAdded": "A service fee of {{fee}} applies, so you'll pay {{total}} in total.",
+      "edit": "Change details"
+    },
+    "pay": "Pay {{amount}}",
+    "starting": "Opening secure checkout…",
+    "history": "My bill payments",
+    "historyEmpty": "No bill payments yet",
+    "historyEmptyBody": "Airtime, data, TV and electricity you buy will show here.",
+    "loadMore": "Load more",
+    "end": "That's everything",
+    "status": {
+      "awaiting_payment": "Waiting for payment",
+      "processing": "Delivering",
+      "delivered": "Delivered",
+      "refund_pending": "Refunding",
+      "refunded": "Refunded",
+      "expired": "Not paid"
+    },
+    "order": {
+      "checkingTitle": "Checking your payment",
+      "checkingBody": "This usually takes a few seconds.",
+      "checkFailed": "We couldn't check the status. Check your connection and try again.",
+      "awaitingTitle": "Waiting for your payment",
+      "awaitingBody": "Finish paying in the checkout. If you've already paid, this page will update by itself.",
+      "reopen": "Go back to checkout ({{amount}})",
+      "processingTitle": "Paid. Delivering now",
+      "processingBody": "We've got your payment and we're sending it now. This usually takes under a minute. If it can't be delivered, we'll refund you automatically. Don't pay again.",
+      "deliveredTitle": "Delivered",
+      "deliveredBody": "{{what}} for {{customer}} has been delivered.",
+      "tokenLabel": "Your electricity token",
+      "tokenA11y": "Token: {{token}}",
+      "tokenHint": "Type this token into your meter. We've also sent it to you by SMS.",
+      "copyToken": "Copy token",
+      "copied": "Copied",
+      "copyFailed": "We couldn't copy it. Press and hold the token to copy it.",
+      "units": "Units: {{units}}",
+      "downloadReceipt": "Download receipt",
+      "downloading": "Getting receipt…",
+      "receiptFailed": "We couldn't get the receipt. Try again.",
+      "refundPendingTitle": "We couldn't deliver this",
+      "refundPendingBody": "We're refunding {{amount}} to the card or account you paid with. It usually arrives in 1–5 working days.",
+      "refundedTitle": "Refunded",
+      "refundedBody": "We couldn't deliver this, so we refunded {{amount}} to the card or account you paid with. Refunds usually arrive in 1–5 working days, depending on your bank.",
+      "expiredTitle": "Payment not completed",
+      "expiredBody": "This payment wasn't completed, so you weren't charged. You can start a new one.",
+      "checkAgain": "Check again",
+      "buyAgain": "Buy again",
+      "backHome": "Back to home",
+      "summary": "Details",
+      "receipt": "Receipt",
+      "reference": "Reference",
+      "date": "Date"
+    },
+    "errors": {
+      "customer_not_found": "We couldn't find that meter or smartcard number. Check it and try again.",
+      "bills_daily_limit": "You've reached today's limit for bill payments. Try again tomorrow.",
+      "bills_unavailable": "Bill payments are temporarily unavailable. Please try again shortly.",
+      "order_not_payable": "This order can no longer be paid. Please start a new one."
+    }
   }
 }
