@@ -156,6 +156,29 @@ services:
           name: homesika-staging-redis
           property: connectionString
 
+  # Panic alerts (Phase 5): its own worker so an alert never waits behind reminders or provider calls.
+  - type: worker
+    name: homesika-staging-alerts
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    region: frankfurt
+    plan: starter
+    dockerCommand: celery -A config worker -l info -Q alerts --concurrency 4
+    envVars:
+      - fromGroup: homesika-staging-shared
+      - key: SKIP_MIGRATIONS
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: homesika-staging-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: homesika-staging-redis
+          property: connectionString
+
   # Scheduler: queues the periodic jobs (one instance only).
   - type: worker
     name: homesika-staging-beat
@@ -198,4 +221,3 @@ services:
       - key: VITE_API_URL
         sync: false                  # e.g. https://homesika-staging-api.onrender.com
 
-# The alerts worker (Phase 5) is added here when panic alerts ship.

@@ -125,20 +125,53 @@ drf-spectacular at `/api/v1/schema/`, with docs at `/api/v1/docs/` (non-producti
 | POST | `/artisans/me/jobs/{id}/accept/` · `/decline/` · `/schedule/` · `/start/` · `/complete/` · `/photos/` · `/comments/` | Artisan job flow |
 | GET | `/files/{signed-token}/` | A private photo or ID document behind a 15-minute signed link |
 
-## Module E: estates and security [Phase 5]
+## Module E: estates and security [Phase 5, built]
+
+Estate office (`estate.view` / `estate.manage`: owner, manager, estate admin; accountants and viewers can view):
 
 | Method | Path | Purpose |
 |---|---|---|
-| CRUD | `/orgs/{org}/estates/`, `…/members/` | Estate setup; approve residents |
-| POST | `/estates/{id}/join/` | Resident join request |
-| CRUD | `/orgs/{org}/estates/{id}/dues-plans/` | Dues (generates `Charge`s) |
-| CRUD | `/orgs/{org}/estates/{id}/announcements/` | Announcements |
-| POST | `/me/gate-passes/` | Create visitor / artisan pass (code + QR) |
-| POST | `/estates/{id}/gate/verify/` | Security verifies code, checks in/out |
-| POST | `/estates/{id}/alerts/` | **Panic**: type, silent, optional location (consented) |
-| POST | `/alerts/{id}/acknowledge/` · `/respond/` · `/resolve/` · `/false-alarm/` · `/cancel/` | Alert lifecycle |
-| GET | `/estates/{id}/alerts/`, `/incidents/` | Logs |
-| WS | `/ws/estates/{id}/desk/` | Live security desk (new alerts, status changes) |
+| GET, POST, PATCH | `/orgs/{org}/estates/` · `/{id}/` | Estates. POST takes `houses: ["A1", …]`; PATCH sets `panic_enabled`, `alert_residents`, `gate_instructions` |
+| GET, POST | `/orgs/{org}/estates/{id}/houses/` | Houses (units of the estate's property); POST `{labels: [...]}` |
+| POST | `/orgs/{org}/estates/{id}/regenerate-code/` | New join code |
+| GET, POST | `/orgs/{org}/estate-members/?estate=&status=` | Residents; POST adds one already verified |
+| POST | `/orgs/{org}/estate-members/{id}/approve/` · `/suspend/` · `/remove/` | Approve (choose the house), suspend, remove |
+| GET, POST, PATCH | `/orgs/{org}/dues-plans/?estate=` | Dues (`amount` like `"15000.00"`); creating or changing one raises charges at once |
+| GET, POST | `/orgs/{org}/announcements/?estate=` | Announcements (POST: Idempotency-Key; push, SMS for people without the app, or SMS to all if `urgent`) |
+
+Gate (`gate.verify`: security, estate admin, manager, owner):
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/orgs/{org}/gate/verify/` | `{estate, code}` → the pass (no visitor phone); 404 `gate_pass_invalid` |
+| POST | `/orgs/{org}/gate/{id}/check-in/` · `/check-out/` · `/deny/` | Gate events; check-in tells the host |
+| GET | `/orgs/{org}/gate/?estate=&status=` | Gate log |
+
+Residents:
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/me/estates/` | My memberships, with `dues_outstanding` |
+| POST | `/me/estates/join/` | `{code, house}` → pending membership |
+| GET | `/me/estates/announcements/?estate=` | News for a verified resident |
+| GET, POST | `/me/gate-passes/?status=active\|all` | Gate passes (POST: Idempotency-Key; the code is texted to `visitor_phone` if given) |
+| POST | `/me/gate-passes/{id}/cancel/` | Cancel a pass |
+
+Panic alerts:
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/me/alerts/` | **Raise** `{estate, kind, silent, location?, client_id}`. 201 new, 200 the same alert (retry with the same `client_id`, or a second press within 2 minutes). 403 `panic_not_allowed`, 429 `panic_rate_limited` ("call 112") |
+| GET | `/me/alerts/` · `/{id}/` | My alerts (status only; no delivery details) |
+| POST | `/me/alerts/{id}/kind/` · `/cancel/` | "What's happening?"; "I'm safe" |
+| POST | `/me/alerts/{id}/received/` | The app reports that an alert push reached this person (204) |
+| GET | `/orgs/{org}/alerts/?status=open\|closed\|all&estate=` · `/{id}/` | Security desk (`security.view`); detail has the incident log, every delivery and timings |
+| POST | `/orgs/{org}/alerts/{id}/acknowledge/` · `/respond/` · `/resolve/` · `/false-alarm/` · `/kind/` · `/notes/` | Lifecycle (`security.respond`); resolve and false alarm need a note |
+| POST | `/orgs/{org}/alerts/drill/?estate=` | Test alert to staff only (`estate.manage`) |
+| GET | `/orgs/{org}/alerts/report/?estate=&days=` | Alerts, drills, false alarms, median time to first delivery |
+| WS | `/ws/estates/{id}/desk/` | Live desk. Send `{"type":"auth","token":"<access token>"}` first (not in the URL); then `alert.new` / `alert.updated` messages. Closes 4401 (no auth in 10 s) or 4403 |
+
+Push: `POST` / `DELETE /me/push-devices/` `{token: "ExponentPushToken[…]", platform}`.
 
 ## Webhooks (no auth header; signature-verified, idempotent)
 

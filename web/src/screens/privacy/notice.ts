@@ -16,11 +16,11 @@ export const SECTIONS: { title: string; body: string[] }[] = [
     title: "What we collect",
     body: [
       "Your name, phone number, email (if you give it), language and the device you sign in on.",
-      "For tenants: your tenancy, rent, charges, payments and receipts, as recorded by your landlord or agent; repair requests and their photos; bills you buy.",
+      "For tenants: your tenancy, rent, charges, payments and receipts, as recorded by your landlord or agent; repair requests and their photos; bills you buy.", "For estate residents: your house, membership, dues and payments; gate passes you make (your visitors' names and, if you give them, phone numbers); emergency alerts you raise and how each alert reached people.",
       "For landlords and agents: your organization, properties, units, team and payout account (bank details are encrypted and only the last 4 digits are shown).",
       "For artisans: your trades and work areas, address (encrypted), NIN and date of birth (encrypted), a photo of your NIN slip or card and, if needed, a proof of address; your guarantors' and references' names, phone numbers and answers.",
       "Messages you send to the Homesika assistant in the app or on WhatsApp.",
-      "We collect your location only if you agree to it for a specific feature (for example a panic alert), and only at that moment.",
+      "We collect your location only if you turn on \"Share my location\" for panic alerts, and only at the moment you raise an alert. It is stored encrypted and shown only to your estate's security and managers.", "If you allow notifications, your phone's push notification token, so we can send you alerts and updates.",
     ],
   },
   {
@@ -49,7 +49,7 @@ export const SECTIONS: { title: string; body: string[] }[] = [
       "• Smile ID (NIN verification), and the identity authorities it queries.",
       "• Paystack and Flutterwave (payments and refunds).",
       "• VTU.ng and Flutterwave (airtime, data, TV and electricity).",
-      "• Termii (SMS) and Meta (WhatsApp messages).",
+      "• Termii (SMS), Meta (WhatsApp messages) and Expo (push notifications to the app, passed on to Google and Apple), United States.",
       "• Our hosting and storage providers (Render; Cloudflare R2 or AWS S3), and Sentry for error reports (no personal data is sent to it).",
       "Some of these process data outside Nigeria. We only use providers who protect it to the standard the NDPA requires, under written agreements.",
       "We share data with authorities only when the law requires it.",
@@ -60,7 +60,7 @@ export const SECTIONS: { title: string; body: string[] }[] = [
     body: [
       "Payment records and receipts: as long as the law requires for financial records.",
       "Artisan ID and proof-of-address photos: deleted 90 days after the check passes (we keep the result, the ID type and the last 4 digits).",
-      "Repair photos: kept with the repair record while your tenancy or account is active.",
+      "Repair photos: kept with the repair record while your tenancy or account is active.", "Emergency alerts and their incident log (including any location): kept as a safety record by the estate; gate pass records: kept for the estate's gate log.",
       "Assistant messages: kept so the conversation works and for quality; you can clear them in the app.",
       "When you delete your account we delete or anonymise your data, except records we must keep by law.",
     ],

@@ -136,6 +136,37 @@ Staging starts with the **mock** bill provider: nothing real is bought.
 when you build the app, so sign-up links to it. The text is a **draft for legal review**
 (`docs/PRIVACY_NOTICE.md`).
 
+## Phase 5: estates, gate passes and panic alerts
+
+1. **The alerts worker:** the blueprint now has `homesika-staging-alerts`, a Celery worker for the
+   `alerts` queue only. Panic alerts never wait behind reminders. It also runs the every-minute
+   delivery check (push receipts and SMS fallback). **Sync the blueprint** in Render (Blueprints →
+   your blueprint → *Sync*). Without this worker, alerts reach the security desk screen but no
+   push or SMS goes out.
+2. **Push (Expo):**
+   1. In `mobile/`, run `npx eas init`. It creates the EAS project and writes its id into
+      `app.json` (`extra.eas.projectId`, empty now). Without it the app skips push registration
+      and people get SMS instead.
+   2. Add the Android FCM credentials and the iOS APNs key: `npx eas credentials`.
+   3. Optional: turn on *enhanced push security* in your Expo account and put the token in Render
+      as `EXPO_ACCESS_TOKEN`. Never paste it in chat or `.env.example`.
+   4. Staging and production use `PUSH_PROVIDER=expo` (already in the blueprint). Production
+      refuses the mock.
+3. **WebSockets:** the live security desk uses `wss://<api host>/ws/estates/<id>/desk/`. The API
+   already runs on Daphne (ASGI), so nothing to add. `CORS_ALLOWED_ORIGINS` must include the web
+   app's address, because the socket checks it.
+4. **Mobile build settings:** set `EXPO_PUBLIC_WEB_URL` to the web app's address, so a guard can
+   open the desk from an alert push.
+5. **Settings you can change** (Render → API → Environment):
+   `PANIC_PUSH_FALLBACK_SECONDS` (45: SMS if a push isn't confirmed in time),
+   `PANIC_SMS_STAFF_ALWAYS` (true: staff get SMS and push), `PANIC_MAX_PER_HOUR` (5),
+   `ANNOUNCEMENT_SMS_FALLBACK` (true).
+6. **First test in a real estate:** add the estate, add a guard as *Security desk* in Team, open
+   **Security desk** on a screen at the gate, and press **Send a test alert**. The alert detail
+   shows who got it and how fast. Repeat it with phones in battery saver.
+7. **WhatsApp:** optional new template `dues_reminder` (`docs/WHATSAPP_TEMPLATES.md`). Until it's
+   approved, dues reminders go by SMS.
+
 ## Every later release
 
 Just push to `main`. Render redeploys automatically; CI on GitHub runs the tests in parallel.

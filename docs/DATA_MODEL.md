@@ -173,36 +173,48 @@ erDiagram
 * One active job per ticket (database constraint). Ratings are 1–5 and one per job.
 * **Payments for jobs are out of scope** until gateway and legal confirmation.
 
-## 6. Estates, dues and security: Module E [Phase 5]
+## 6. Estates, dues and security: Module E [Phase 5, built]
 
 ```mermaid
 erDiagram
   ORGANIZATION ||--o{ ESTATE : manages
+  PROPERTY ||--|| ESTATE : "houses are its units"
   ESTATE ||--o{ ESTATE_MEMBER : has
-  USER ||--o{ ESTATE_MEMBER : is
+  USER |o--o{ ESTATE_MEMBER : is
   UNIT |o--o{ ESTATE_MEMBER : "lives in"
+  TENANT_PROFILE |o--o{ ESTATE_MEMBER : "pays dues as"
   ESTATE ||--o{ DUES_PLAN : defines
-  DUES_PLAN ||--o{ CHARGE : generates
+  DUES_PLAN ||--o{ DUES_CHARGE : "one per member and period"
+  DUES_CHARGE ||--|| CHARGE : is
   ESTATE ||--o{ ANNOUNCEMENT : posts
   ESTATE ||--o{ GATE_PASS : issues
+  GATE_PASS ||--o{ GATE_EVENT : logs
   ESTATE ||--o{ PANIC_ALERT : receives
   PANIC_ALERT ||--o{ ALERT_DELIVERY : "fanned out as"
   PANIC_ALERT ||--o{ INCIDENT_NOTE : logs
+  USER ||--o{ PUSH_DEVICE : has
 
-  ESTATE { uuid id; uuid organization_id FK; string name; string address; string city; json sms_fallback_config }
-  ESTATE_MEMBER { uuid id; uuid estate_id FK; uuid user_id FK; uuid unit_id FK; string role "resident|exco|security|manager"; string status "pending|approved|suspended"; uuid approved_by }
-  DUES_PLAN { uuid id; uuid estate_id FK; string name; bigint amount; string frequency; bool active }
-  ANNOUNCEMENT { uuid id; uuid estate_id FK; string title; text body; string audience; json channels; datetime sent_at }
-  GATE_PASS { uuid id; uuid estate_id FK; uuid host_member_id FK; string visitor_name; string visitor_phone; string kind "visitor|artisan|delivery"; string code UK; datetime valid_from; datetime valid_to; int max_uses; int uses; string status }
-  PANIC_ALERT { uuid id; uuid estate_id FK; uuid raised_by FK; string kind "robbery|kidnapping|fire|medical|suspicious_person"; bool silent; json location "🔒 consented only"; string status "triggered|acknowledged|responding|resolved|false_alarm|cancelled"; datetime triggered_at; datetime acknowledged_at; datetime resolved_at }
-  ALERT_DELIVERY { uuid id; uuid alert_id FK; uuid recipient_id; string channel "ws|push|sms"; string status "queued|sent|delivered|acknowledged|failed"; datetime queued_at; datetime delivered_at; string provider_ref }
-  INCIDENT_NOTE { uuid id; uuid alert_id FK; uuid author_id; text note; datetime at }
+  ESTATE { uuid id; uuid organization_id FK; uuid property_id FK; string name; string join_code UK; bool panic_enabled; bool alert_residents; string gate_instructions }
+  ESTATE_MEMBER { uuid id; uuid estate_id FK; uuid user_id FK "null until they sign up"; string phone_number; uuid unit_id FK; string house_label; string role "resident|exco"; string status "pending|approved|suspended|removed"; uuid payer_id FK }
+  DUES_PLAN { uuid id; uuid estate_id FK; string name; bigint amount "kobo"; string frequency; date start_date; bool is_active }
+  DUES_CHARGE { bigint id; uuid plan_id FK; uuid member_id FK; uuid charge_id FK; date period_start "unique with plan+member" }
+  ANNOUNCEMENT { uuid id; uuid estate_id FK; string title; text body; string audience "all|exco"; bool urgent; int push_sent; int sms_sent }
+  GATE_PASS { uuid id; uuid estate_id FK; uuid host_id FK; string visitor_name; string visitor_phone; string kind "visitor|artisan|delivery"; uuid job_id FK; string code "6 digits, unique while active"; datetime valid_from; datetime valid_to; int max_uses; int uses; string status }
+  GATE_EVENT { uuid id; uuid gate_pass_id FK; string kind "check_in|check_out|denied"; uuid by FK; string note }
+  PANIC_ALERT { uuid id; uuid estate_id FK; uuid raised_by FK "null for a WhatsApp-only resident"; uuid member_id FK; string kind; bool silent; text location "🔒 encrypted, consented only"; string status; string client_id UK; datetime acknowledged_at; datetime responding_at; datetime closed_at; string close_note }
+  ALERT_DELIVERY { uuid id; uuid alert_id FK; uuid user_id FK; string phone_number; string audience "staff|resident|raiser"; string channel "push|sms|ws"; string status "queued|sent|delivered|acknowledged|failed"; string push_token; string provider_ref; uuid fallback_for FK; datetime sent_at; datetime delivered_at }
+  INCIDENT_NOTE { uuid id; uuid alert_id FK; uuid author_id FK; string kind "note or the status it moved to"; text note }
+  PUSH_DEVICE { uuid id; uuid user_id FK; string token UK; string platform; bool is_active }
 ```
 
-* **Rate limits:** a resident is limited per window. A **false-alarm** status counts toward the
-  resident's record, which estate admins can review.
-* **Delivery-time metric:** time from `triggered_at` to the first `delivered`/`acknowledged`
-  delivery, per channel.
+* **Dues are ordinary charges** (`kind=dues`) on the estate's units, charged to a payer record made on
+  approval, so they're paid, receipted and reconciled like rent.
+* **Staff are organization members** (roles `estate_admin`, `security`, plus owner and manager), not
+  estate members.
+* **Rate limit:** `PANIC_MAX_PER_HOUR` alerts per person (drills excluded). False alarms are counted
+  per raiser over 90 days and shown on the desk.
+* **Delivery-time metric:** from the alert's `created_at` to the first `delivered_at` per channel
+  (push: Expo receipt; SMS: the SMS provider accepted it; `acknowledged`: the app reported it).
 
 ## 7. Platform: notifications and analytics [Phase 1+]
 

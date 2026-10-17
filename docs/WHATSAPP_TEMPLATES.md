@@ -29,6 +29,7 @@ Go to **WhatsApp Manager → Message templates → Create template**.
 | `bill_refunded` | A bill that couldn't be delivered (`bill_refunded`) | `Homesika: we couldn't deliver {{1}}, so {{2}} is being refunded to the card or account you paid with (usually 1-5 working days).` | what, amount |
 | `ticket_update` | Repair status for the tenant: approved, artisan assigned, fixed (`ticket_update`) | `Homesika: your repair request {{1}} ({{2}}): {{3}} {{4}}` | reference, title, what happened, extra (visit time or reason; "-" when none) |
 | `job_offer` | A new job for an artisan (`job_offer`) | `Homesika: new job {{1}} from {{2}}: {{3}}. Open the app to accept within {{4}} hours.` | reference, landlord, title, hours |
+| `dues_reminder` | Estate dues: 3 days before, on the day, 7 and 30 days late (`dues_reminder`) | `{{1}}: your {{2}} of {{3}} {{4}}. Pay: {{5}}` | estate, dues description, amount, when ("is due on 01 Nov" / "is due today" / "is overdue"), pay link ("-" if the estate has no payout account) |
 | `payment_link` | A link sent by staff, or by the assistant on staff request (`payment_link`) | `Hi {{1}}, {{3}} sent you a payment link for {{2}}: {{4}}` | first name, amount, landlord, pay link |
 
 > `TODO(verify)`: Meta's current rules for placeholder position (some versions reject a placeholder
