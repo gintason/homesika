@@ -116,7 +116,9 @@ drf-spectacular at `/api/v1/schema/`, with docs at `/api/v1/docs/` (non-producti
 | GET | `/orgs/{org}/artisans/?trade=plumbing&area=lekki` | Verified, available artisans; ones this landlord used before first |
 | POST | `/artisans/apply/` | Sign up (needs `consent`) |
 | GET/PATCH | `/artisans/me/` | My profile, checks and badge progress (`requirements`) |
-| POST | `/artisans/me/verification/id/` | ID type, number and photo (multipart) |
+| POST | `/artisans/me/verification/id/` | NIN, date of birth and a photo of the NIN slip or card (multipart); checked automatically (`processing` → `passed` / `failed` / `pending` for a person) |
+| POST | `/artisans/me/verification/address/` | A proof of address (multipart), read automatically |
+| POST | `/artisans/me/verification/review/` | `{"kind": "id" or "address"}`: ask a person to review an automatic failure |
 | POST/DELETE | `/artisans/me/verification/vouchers/` · `/{id}/` · `/{id}/resend/` | Guarantors and references (SMS link) |
 | GET/POST | `/vouch/{token}/` | Public page for a guarantor or reference: see who's asking, confirm or decline |
 | GET | `/artisans/me/jobs/?status=active` (or `history`) · `/{id}/` | My jobs (address and tenant contact only after accepting) |

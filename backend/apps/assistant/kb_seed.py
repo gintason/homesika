@@ -258,16 +258,20 @@ ARTICLES += [
         {
             "en": (
                 "What 'Verified artisan' means",
-                "An artisan gets the Verified badge only after all of these checks pass: an ID check, their phone number "
-                "(confirmed by a code), their address (confirmed by Homesika), two guarantors who confirm by SMS link, and one "
-                "reference such as a past client or landlord. Homesika can suspend an artisan after complaints, which removes "
+                "An artisan gets the Verified badge only after all of these checks pass: their NIN, checked with a licensed "
+                "verification service, plus a photo of their NIN slip or card read automatically; their phone number "
+                "(confirmed by a code); their address (matched to their NIN record or a recent bill); two guarantors who "
+                "confirm by SMS link; and one reference such as a past client or landlord. Anything unclear is checked by a "
+                "person at Homesika. Homesika can suspend an artisan after complaints, which removes "
                 "the badge. Artisans sign up in the Homesika app (Work as an artisan).",
             ),
             "pcm": (
                 "Wetin 'Verified artisan' mean",
-                "Artisan go get Verified badge only after all these checks pass: ID check, im phone number (dem confirm am with "
-                "code), im address (Homesika confirm am), two guarantors wey confirm with SMS link, and one reference like "
-                "person wey e don work for before or landlord. Homesika fit suspend artisan if complaint plenty, and the badge "
+                "Artisan go get Verified badge only after all these checks pass: im NIN, wey licensed verification service "
+                "check, plus picture of im NIN slip or card wey dem read automatically; im phone number (dem confirm am with "
+                "code); im address (e match im NIN record or recent bill); two guarantors wey confirm with SMS link; and one "
+                "reference like person wey e don work for before or landlord. Anything wey no clear, person for Homesika go "
+                "check am. Homesika fit suspend artisan if complaint plenty, and the badge "
                 "go comot. Artisan dey register for Homesika app (Work as an artisan).",
             ),
         },

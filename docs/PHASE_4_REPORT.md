@@ -202,3 +202,50 @@ passes and the panic alert)
    * from Phase 3: funding the VTU.ng wallet;
    * earlier: Paystack's split confirmation, the launch city, the platform fee, the Anthropic key
      and evaluation budget, and WhatsApp Business readiness.
+
+## Decisions after review (applied)
+
+1. **ID check = NIN verification, automated.** The artisan enters their NIN and date of birth and
+   adds a photo of their NIN slip or card.
+   * The NIN is looked up through a licensed provider (`NIN_PROVIDER`).
+   * Claude reads the photo with structured output: document type, name, NIN, date of birth and signs
+     of alteration.
+   * **Fixed rules in code decide:**
+     * NIN not found → fail;
+     * name doesn't match the record (order, middle names and small spelling differences allowed)
+       → fail;
+     * date of birth differs → fail;
+     * the number on the photo differs → fail;
+     * the photo can't be read → fail (try again);
+     * looks altered, name or date on the photo disagrees, or the model isn't sure → **a person
+       reviews**;
+     * otherwise → pass.
+   * The model never decides, and **there's no face comparison**.
+   * **Still needed: the NIN provider.** Their docs couldn't be reached from the build environment,
+     so only a labelled mock exists and production refuses it (`TODO(verify)`). Choose a provider
+     and I'll add the adapter.
+2. **Address check, automated.** It passes when the NIN record's address is the same place as the
+   one the artisan gave (judged by AI). Otherwise the artisan uploads a bill, bank statement or
+   tenancy paper from the last 3 months, and Claude reads it.
+   * Wrong address, an old document or no document → fail.
+   * A different name on the bill (common with landlords' or relatives' bills), an unsure match or a
+     possibly altered document → a person reviews.
+3. **Human review on request (NDPA).** After any automatic failure the artisan can tap "Ask a person
+   to review". The check then appears in the admin queue with what the automatic check found.
+4. **Guarantors:** the SMS link is enough (no change).
+5. **ID and address photos are deleted 90 days after the check passes.** The type, the last 4
+   digits and the result are kept. This runs hourly.
+6. **Auto-confirm:** 7 days with a reminder at day 2 (no change).
+7. **Private bucket:** to be created together later.
+8. **Consent:** the sign-up consent now names the NIN lookup and the AI reading, and the right to a
+   person's review. Anthropic should be listed as a processor of artisan documents in the privacy
+   notice.
+
+**Tested:**
+* Backend: **202 passed** on SQLite and Postgres. Every rule above is tested with a scripted model.
+  Also tested: provider and model outages (the check stays "processing" and is retried), the
+  90-day deletion, and the production guard.
+* Mobile: **103 tests** pass.
+
+**Not tested:** a real NIN lookup (no provider yet), and Claude reading real NIN slips and bills (no
+API key here). Before going live, try a handful of real (consenting) documents on staging.

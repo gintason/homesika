@@ -106,17 +106,22 @@ Staging starts with the **mock** bill provider: nothing real is bought.
    example a second Cloudflare R2 bucket), and set `S3_PRIVATE_BUCKET`. Without it the deploy check
    warns, and private files go to the photo bucket under `private/`. The app only ever hands out
    15-minute links to them.
-2. **ID checks:** leave `ID_VERIFICATION_PROVIDER=manual`. Staff review ID photos in the admin:
-   * **Artisans → Verification checks**, filtered by *Waiting for review*;
-   * open the photo (a 15-minute link) and compare it with the artisan's name;
-   * select it and choose **Passed**, or type a reason in *Note* and choose **Failed**. Failing
-     tells the artisan by SMS.
-3. **Addresses:** confirm each artisan's address (by phone or a visit) and mark the *Address* check
-   **Passed** the same way. The Verified badge appears by itself once the ID, phone, address, two
-   guarantors and one reference have all passed.
+2. **ID checks (automatic):** `ID_VERIFICATION_PROVIDER=nin` checks the NIN with `NIN_PROVIDER` and
+   has the photo of the NIN slip or card read by AI (`ASSISTANT_PROVIDER=anthropic` and an
+   `ANTHROPIC_API_KEY` are needed for real reading). Staging can use `NIN_PROVIDER=mock`; production
+   refuses it until a real provider adapter is added. Until then, production can run with
+   `ID_VERIFICATION_PROVIDER=manual`, where staff review everything in the admin.
+3. **Addresses (automatic):** an address passes when it's the same place as the NIN record's address,
+   or from a proof of address (bill, statement or tenancy paper, last 3 months) read by AI. Anything
+   unclear, and anything an artisan asks a person to look at, appears in the admin under
+   **Artisans → Verification checks**, filtered by *Waiting for a person to review*. Open the photo,
+   read "What the automatic check found", and choose **Passed** or **Failed** (type a reason in
+   *Note*). ID and address photos are deleted 90 days after the check passes
+   (`ARTISAN_DOCUMENT_RETENTION_DAYS`).
 4. **Guarantor links** are sent by SMS and open `WEB_APP_URL/v/<token>`, so `WEB_APP_URL` must be
    the public web address.
-5. **Background job:** `maintenance-housekeeping` runs every 30 minutes on the worker. It expires
+5. **Background jobs:** `artisans-housekeeping` (hourly) retries checks stuck while a provider or
+   the model was down, and deletes old photos. `maintenance-housekeeping` runs every 30 minutes on the worker. It expires
    job offers nobody answered (24 hours), reminds tenants to confirm (after 2 days), and confirms
    repairs automatically after 7 days.
 

@@ -161,7 +161,7 @@ erDiagram
   TICKET_EVENT { uuid id; uuid ticket_id FK; uuid actor_id; string kind; text note; datetime at }
   TICKET_PHOTO { uuid id; uuid ticket_id FK; string image "private storage, EXIF removed"; string stage "report|completion" }
   ARTISAN_PROFILE { uuid id; uuid user_id FK; json trades; json service_areas; string verification_status "pending|verified|suspended|removed"; datetime verified_at; float rating_avg; int jobs_completed }
-  VERIFICATION_CHECK { uuid id; uuid artisan_id FK; string kind "id|phone|address"; string status "not_started|pending|passed|failed"; string provider "manual|mock|otp"; string id_number "🔒"; string document "private"; json evidence "🔒"; datetime checked_at; uuid checked_by }
+  VERIFICATION_CHECK { uuid id; uuid artisan_id FK; string kind "id|phone|address"; string status "not_started|processing|pending|passed|failed"; string provider "NIN provider|ai|nin+ai|manual|otp"; string id_number "🔒"; string date_of_birth "🔒"; string document "private, deleted 90 days after passing"; json evidence "🔒 match results only, no NIN record"; datetime review_requested_at; datetime checked_at; uuid checked_by }
   VOUCHER { uuid id; uuid artisan_id FK; string kind "guarantor|reference"; string full_name; string phone_e164; string relationship; string address "🔒"; string status "pending|confirmed|declined|expired"; string token_hash "SMS link"; datetime responded_at }
   JOB { uuid id; uuid ticket_id FK; uuid artisan_id FK; string status "offered|accepted|declined|on_site|completed|confirmed|cancelled"; datetime offer_expires_at; datetime scheduled_for; datetime completed_at }
   RATING { uuid id; uuid job_id FK; uuid rater_id; int score; text comment }
