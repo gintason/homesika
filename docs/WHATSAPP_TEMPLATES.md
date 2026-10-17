@@ -24,6 +24,9 @@ Go to **WhatsApp Manager → Message templates → Create template**.
 | `payment_received` | The landlord's alert (`payment_received`) | `Homesika: {{1}} paid {{2}}. Receipt {{3}}.` | tenant name, amount, receipt number |
 | `rent_reminder` | 7 days and 1 day before, and on the due day (`rent_reminder`) | `Hi {{1}}, your rent of {{2}} is due on {{3}}. Pay: {{4}} - {{5}}` | first name, amount, due date, pay link (or "please contact your landlord to pay"), landlord |
 | `rent_overdue` | 3, 7, 14 and 30 days late (`rent_overdue`) | `Hi {{1}}, your rent of {{2}} was due on {{3}} and is now overdue. Pay: {{4}} - {{5}}` | same as `rent_reminder` |
+| `bill_token` | Electricity token delivered (`bill_token`) | `Homesika: {{1}} token for meter {{2}}: {{3}} ({{4}}). Paid {{5}}. Receipt {{6}}` | DisCo, meter, token, units, amount, receipt number |
+| `bill_delivered` | Airtime/data/TV delivered (`bill_delivered`) | `Homesika: {{1}} delivered. Paid {{2}}. Receipt {{3}}` | what, amount, receipt number |
+| `bill_refunded` | A bill that couldn't be delivered (`bill_refunded`) | `Homesika: we couldn't deliver {{1}}, so {{2}} is being refunded to the card or account you paid with (usually 1-5 working days).` | what, amount |
 | `payment_link` | A link sent by staff, or by the assistant on staff request (`payment_link`) | `Hi {{1}}, {{3}} sent you a payment link for {{2}}: {{4}}` | first name, amount, landlord, pay link |
 
 > `TODO(verify)`: Meta's current rules for placeholder position (some versions reject a placeholder

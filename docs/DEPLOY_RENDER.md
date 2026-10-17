@@ -76,6 +76,26 @@ Do these when you're ready; until then staging uses the mock WhatsApp and mock a
    * `TODO(verify)`: menu names in Meta's dashboards change often; follow Meta's current "Cloud API
      get started" guide.
 
+## Phase 3: bills (airtime, data, TV, electricity)
+
+Staging starts with the **mock** bill provider: nothing real is bought.
+
+1. **Fund the VTU.ng wallet.** This is Homesika's own float with the provider; customers never hold
+   a balance with us.
+2. **Set the VTU.ng credentials in Render:**
+   * `VTUNG_USERNAME`, `VTUNG_PASSWORD`;
+   * `VTUNG_USER_PIN` (the PIN VTU.ng signs webhooks with);
+   * the webhook URL in VTU.ng's dashboard:
+     `https://homesika-staging-api.onrender.com/webhooks/bills/vtung/`.
+3. **Load the live catalogue.** In the API service's Shell, run
+   `python manage.py sync_bills_catalogue`. This loads data bundles and TV bouquets with prices.
+   Run it again weekly; it's safe to repeat.
+4. **Set `BILLS_PROVIDERS`** to `vtung`. Add `,flutterwave` only after you've entered Flutterwave
+   bill codes for each biller in the admin (Bills → Billers → provider codes).
+5. **Optional:** set `BILLS_FEES` (e.g. `{"electricity": 10000}` = NGN 100) and `BILLS_DAILY_LIMIT`.
+6. **Watch the admin:** orders flagged **needs review** are payments we couldn't settle
+   automatically (wrong amount, or no final status from the provider). Check them daily.
+
 ## Every later release
 
 Just push to `main`. Render redeploys automatically; CI on GitHub runs the tests in parallel.
