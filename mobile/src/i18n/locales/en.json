@@ -600,7 +600,7 @@
       "state": "State",
       "years": "Years of experience",
       "bio": "About your work",
-      "consent": "I agree that Homesika may check my ID, contact my guarantors and references, and confirm my address, to verify me.",
+      "consent": "I agree that Homesika may check my NIN with a licensed verification service, have my ID photo and proof of address read automatically (by AI), contact my guarantors and references, and confirm my address. I can ask for a person to review any result.",
       "consentNeeded": "Please agree to the checks to continue.",
       "submit": "Sign up",
       "done": "You're signed up. Now complete the checks."
@@ -625,9 +625,10 @@
     },
     "checkStatus": {
       "not_started": "To do",
-      "pending": "Waiting for review",
+      "pending": "A person is checking",
       "passed": "Done",
-      "failed": "Try again"
+      "failed": "Try again",
+      "processing": "Checking…"
     },
     "doId": "Do the ID check",
     "addPeople": "Add guarantors and a reference",
@@ -657,7 +658,17 @@
       "sent": "Sent. We'll tell you by SMS when it's checked.",
       "pending": "Your ID is waiting to be checked.",
       "passed": "Your ID check is done.",
-      "failed": "Your ID check didn't pass: {{note}}"
+      "failed": "Your ID check didn't pass: {{note}}",
+      "ninIntro": "We check your NIN with a licensed verification service, and the photo of your NIN slip or card is read automatically. It usually takes under a minute.",
+      "nin": "NIN (11 digits)",
+      "dob": "Date of birth",
+      "dobHint": "DD/MM/YYYY, as on your NIN",
+      "dobInvalid": "Enter your date of birth as DD/MM/YYYY.",
+      "ninPhoto": "Photo of your NIN slip or card",
+      "processing": "Checking your NIN… you can leave this screen; we'll send an SMS.",
+      "review": "Ask a person to review",
+      "reviewSent": "A person at Homesika will review it (usually within 1 working day).",
+      "tryAgain": "Try again"
     },
     "people": {
       "title": "Guarantors and reference",
@@ -736,6 +747,20 @@
         "cancelled": "Cancelled"
       },
       "rating": "Tenant's rating: {{score}} out of 5"
+    },
+    "address": {
+      "title": "Address check",
+      "intro": "If your NIN record has the same address, this passes by itself. Otherwise, add a photo of a utility bill, bank statement or tenancy paper from the last 3 months, showing your name and the address you gave us. It's read automatically.",
+      "yours": "Your address: {{address}}",
+      "photo": "Photo of the document",
+      "takePhoto": "Take a photo",
+      "choosePhoto": "Choose a photo",
+      "submit": "Send for checking",
+      "processing": "Checking your document…",
+      "passed": "Your address check is done.",
+      "pending": "A person at Homesika is checking your address.",
+      "failed": "Your address check didn't pass: {{note}}",
+      "staff": "Homesika will confirm your address by phone or a visit."
     }
   }
 }

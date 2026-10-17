@@ -601,7 +601,7 @@
       "state": "State",
       "years": "How many years you don dey do am",
       "bio": "About your work",
-      "consent": "I gree make Homesika check my ID, contact my guarantors and references, and confirm my address, to verify me.",
+      "consent": "I gree make Homesika check my NIN with licensed verification service, make dem read my ID picture and proof of address automatically (with AI), contact my guarantors and references, and confirm my address. I fit ask make person review any result.",
       "consentNeeded": "Abeg gree to the checks make you fit continue.",
       "submit": "Register",
       "done": "You don register. Now finish the checks."
@@ -626,9 +626,10 @@
     },
     "checkStatus": {
       "not_started": "To do",
-      "pending": "Dey wait for check",
+      "pending": "Person dey check am",
       "passed": "Done",
-      "failed": "Try again"
+      "failed": "Try again",
+      "processing": "E dey check…"
     },
     "doId": "Do ID check",
     "addPeople": "Add guarantors and reference",
@@ -658,7 +659,17 @@
       "sent": "E don go. We go tell you for SMS when dem check am.",
       "pending": "Your ID dey wait make dem check am.",
       "passed": "Your ID check don finish.",
-      "failed": "Your ID check no pass: {{note}}"
+      "failed": "Your ID check no pass: {{note}}",
+      "ninIntro": "We go check your NIN with licensed verification service, and we go read the picture of your NIN slip or card automatically. E dey take less than one minute.",
+      "nin": "NIN (11 numbers)",
+      "dob": "Date of birth",
+      "dobHint": "DD/MM/YYYY, as e dey for your NIN",
+      "dobInvalid": "Write your date of birth like DD/MM/YYYY.",
+      "ninPhoto": "Picture of your NIN slip or card",
+      "processing": "We dey check your NIN… you fit comot this screen; we go send SMS.",
+      "review": "Ask make person review am",
+      "reviewSent": "Person for Homesika go review am (normally inside 1 working day).",
+      "tryAgain": "Try again"
     },
     "people": {
       "title": "Guarantors and reference",
@@ -737,6 +748,20 @@
         "cancelled": "Cancelled"
       },
       "rating": "Tenant rating: {{score}} out of 5"
+    },
+    "address": {
+      "title": "Address check",
+      "intro": "If your NIN record get the same address, e go pass by itself. If not, add picture of light bill, bank statement or tenancy paper from the last 3 months, wey get your name and the address wey you give us. We go read am automatically.",
+      "yours": "Your address: {{address}}",
+      "photo": "Picture of the document",
+      "takePhoto": "Snap picture",
+      "choosePhoto": "Choose picture",
+      "submit": "Send make dem check",
+      "processing": "We dey check your document…",
+      "passed": "Your address check don finish.",
+      "pending": "Person for Homesika dey check your address.",
+      "failed": "Your address check no pass: {{note}}",
+      "staff": "Homesika go confirm your address by phone or visit."
     }
   }
 }

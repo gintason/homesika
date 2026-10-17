@@ -11,8 +11,9 @@ import { keys, useJobs, useMyArtisan } from "@/hooks/queries";
 import { errorText } from "@/lib/api";
 import { formatDateTime } from "@/lib/date";
 
-const CHECK_TONE: Record<CheckStatus, "neutral" | "warning" | "success" | "danger"> = {
+const CHECK_TONE: Record<CheckStatus, "neutral" | "info" | "warning" | "success" | "danger"> = {
   not_started: "neutral",
+  processing: "info",
   pending: "warning",
   passed: "success",
   failed: "danger",
@@ -116,7 +117,11 @@ function ArtisanHome({ profile, onRefresh, refreshing }: { profile: MyArtisan; o
         {req.complete ? <Banner tone="success" message={t("work.checkedAll")} /> : null}
         <CheckRow label={t("work.check.id")} status={check("id")} onPress={() => router.push("/work/id-check")} />
         <CheckRow label={t("work.check.phone")} status={check("phone")} />
-        <CheckRow label={t("work.check.address")} status={check("address")} />
+        <CheckRow
+          label={t("work.check.address")}
+          status={check("address")}
+          onPress={profile.verification_mode === "nin" ? () => router.push("/work/address") : undefined}
+        />
         <CheckRow
           label={t("work.check.guarantors", { count: req.guarantors, needed: req.guarantors_needed })}
           status={vouchStatus(req.guarantors, req.guarantors_needed)}

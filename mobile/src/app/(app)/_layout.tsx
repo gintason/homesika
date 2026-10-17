@@ -22,6 +22,7 @@ export default function AppLayout() {
       <Stack.Screen name="work/index" />
       <Stack.Screen name="work/apply" />
       <Stack.Screen name="work/id-check" />
+      <Stack.Screen name="work/address" />
       <Stack.Screen name="work/people" />
       <Stack.Screen name="work/job/[id]" />
     </Stack>

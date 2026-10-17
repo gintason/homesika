@@ -498,7 +498,7 @@ export type ReportInput = {
   access_notes?: string;
 };
 
-export type CheckStatus = "not_started" | "pending" | "passed" | "failed";
+export type CheckStatus = "not_started" | "processing" | "pending" | "passed" | "failed";
 export type VoucherKind = "guarantor" | "reference";
 export type MyVoucher = {
   id: string;
@@ -531,8 +531,20 @@ export type MyArtisan = {
   rating_avg: number | null;
   rating_count: number;
   jobs_completed: number;
-  checks: { kind: "id" | "phone" | "address"; status: CheckStatus; note: string; id_type: string; id_number_last4: string; attempts: number }[];
+  checks: {
+    kind: "id" | "phone" | "address";
+    status: CheckStatus;
+    note: string;
+    id_type: string;
+    id_number_last4: string;
+    attempts: number;
+    review_requested_at?: string | null;
+    /** Failed automatically: a person can be asked to look at it. */
+    can_request_review?: boolean;
+  }[];
   vouchers: MyVoucher[];
+  /** "nin": NIN lookup + AI document checks; "manual": Homesika staff review. Older servers: manual. */
+  verification_mode?: "nin" | "manual";
   requirements: {
     id: boolean;
     phone: boolean;
@@ -619,6 +631,10 @@ export const artisanApi = {
   update: (patch: Partial<Pick<MyArtisan, "is_available" | "trades" | "service_areas" | "address" | "city" | "state" | "bio">>) =>
     api<MyArtisan>("/api/v1/artisans/me/", { method: "PATCH", body: patch }),
   submitId: (form: FormData) => api<MyArtisan>("/api/v1/artisans/me/verification/id/", { method: "POST", body: form }),
+  submitAddressProof: (form: FormData) =>
+    api<MyArtisan>("/api/v1/artisans/me/verification/address/", { method: "POST", body: form }),
+  requestReview: (kind: "id" | "address") =>
+    api<MyArtisan>("/api/v1/artisans/me/verification/review/", { method: "POST", body: { kind } }),
   addVoucher: (input: VoucherInput) => api<MyVoucher>("/api/v1/artisans/me/verification/vouchers/", { method: "POST", body: input }),
   resendVoucher: (id: string) => api<MyVoucher>(`/api/v1/artisans/me/verification/vouchers/${enc(id)}/resend/`, { method: "POST" }),
   removeVoucher: (id: string) => api<void>(`/api/v1/artisans/me/verification/vouchers/${enc(id)}/`, { method: "DELETE" }),

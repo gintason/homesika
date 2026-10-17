@@ -11,7 +11,8 @@ import IdCheck from "@/app/(app)/work/id-check";
 import WorkHome from "@/app/(app)/work/index";
 import JobDetail from "@/app/(app)/work/job/[id]";
 import People from "@/app/(app)/work/people";
-import { visitChoices } from "@/lib/repairs";
+import AddressCheck from "@/app/(app)/work/address";
+import { parseDob, visitChoices } from "@/lib/repairs";
 import { tokens } from "@/lib/secure";
 import { json, lease, mockFetch, renderWithClient, type Call } from "@/testing/utils";
 
@@ -257,7 +258,7 @@ describe("work: artisans", () => {
     fireEvent.press(screen.getByRole("button", { name: "Sign up" }));
     expect(await screen.findByText("Please agree to the checks to continue.")).toBeTruthy();
     expect(calls).toHaveLength(0);
-    fireEvent.press(screen.getByRole("checkbox", { name: /I agree that Homesika may check my ID/ }));
+    fireEvent.press(screen.getByRole("checkbox", { name: /I agree that Homesika may check my NIN/ }));
     fireEvent.press(screen.getByRole("button", { name: "Sign up" }));
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/work"));
     expect(calls[0]!.body).toMatchObject({
@@ -321,7 +322,7 @@ describe("work: artisans", () => {
     await screen.findByRole("button", { name: "Take it again" });
     const append = jest.spyOn(FormData.prototype, "append");
     fireEvent.press(screen.getByRole("button", { name: "Send for checking" }));
-    expect(await screen.findByText("Sent. We'll tell you by SMS when it's checked.")).toBeTruthy();
+    expect(await screen.findByText("Your ID is waiting to be checked.")).toBeTruthy(); // manual mode: staff
     const form = calls.find((c) => c.url.endsWith("/verification/id/"))!.raw as FormData;
     expect([form.get("id_type"), form.get("id_number")]).toEqual(["nin", "12345678901"]);
     expect(append).toHaveBeenCalledWith("document", { uri: "file:///small.jpg", name: "photo.jpg", type: "image/jpeg" });
@@ -373,6 +374,83 @@ describe("work: artisans", () => {
     });
     expect(await screen.findByText("Done. The tenant will confirm.")).toBeTruthy();
     expect(calls.find((c) => c.url.endsWith("/complete/"))!.body).toEqual({ note: "Replaced the washer" });
+  });
+
+  it("NIN check: sends NIN, date of birth (as YYYY-MM-DD) and the photo; shows the result as it comes", async () => {
+    let profile = artisan({ verification_mode: "nin" });
+    const calls = mockFetch((c) => {
+      if (c.url.endsWith("/verification/id/")) {
+        profile = artisan({ verification_mode: "nin", checks: [{ kind: "id", status: "processing", note: "", id_type: "nin", id_number_last4: "8901", attempts: 1 }] });
+        return json(200, profile);
+      }
+      if (c.url.endsWith("/artisans/me/")) return json(200, profile);
+      return undefined;
+    });
+    renderWithClient(<IdCheck />);
+    expect(await screen.findByText(/licensed verification service/)).toBeTruthy();
+    expect(screen.queryByRole("radio", { name: "Driver's licence" })).toBeNull(); // NIN only
+    fireEvent.changeText(screen.getByLabelText("NIN (11 digits)"), "12345678901");
+    fireEvent.changeText(screen.getByLabelText("Date of birth"), "31/02/1990");
+    fireEvent.press(screen.getByRole("button", { name: "Take a photo of the ID" }));
+    await screen.findByRole("button", { name: "Take it again" });
+    fireEvent.press(screen.getByRole("button", { name: "Send for checking" }));
+    expect(await screen.findByText("Enter your date of birth as DD/MM/YYYY.")).toBeTruthy();
+    fireEvent.changeText(screen.getByLabelText("Date of birth"), "01/05/1990");
+    const append = jest.spyOn(FormData.prototype, "append");
+    fireEvent.press(screen.getByRole("button", { name: "Send for checking" }));
+    expect(await screen.findByText(/Checking your NIN/)).toBeTruthy();
+    expect(append).toHaveBeenCalledWith("date_of_birth", "1990-05-01");
+    expect(append).toHaveBeenCalledWith("id_type", "nin");
+    expect(calls.filter((c) => c.url.endsWith("/verification/id/"))).toHaveLength(1);
+  });
+
+  it("NIN check failed: try again, or ask a person to review", async () => {
+    let profile = artisan({
+      verification_mode: "nin",
+      checks: [{ kind: "id", status: "failed", note: "We couldn't find that NIN.", id_type: "nin", id_number_last4: "0000", attempts: 1, can_request_review: true }],
+    });
+    const calls = mockFetch((c) => {
+      if (c.url.endsWith("/verification/review/")) {
+        profile = artisan({ verification_mode: "nin", checks: [{ kind: "id", status: "pending", note: "", id_type: "nin", id_number_last4: "0000", attempts: 1, review_requested_at: "2026-10-17T10:00:00Z" }] });
+        return json(200, profile);
+      }
+      if (c.url.endsWith("/artisans/me/")) return json(200, profile);
+      return undefined;
+    });
+    renderWithClient(<IdCheck />);
+    expect(await screen.findByText(/didn't pass: We couldn't find that NIN/)).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "Ask a person to review" }));
+    expect(await screen.findByText(/will review it/)).toBeTruthy();
+    expect(calls.find((c) => c.url.endsWith("/verification/review/"))!.body).toEqual({ kind: "id" });
+  });
+
+  it("address: uploads a proof of address for automatic checking", async () => {
+    let profile = artisan({
+      verification_mode: "nin",
+      checks: [{ kind: "address", status: "not_started", note: "", id_type: "", id_number_last4: "", attempts: 0 }],
+    });
+    const calls = mockFetch((c) => {
+      if (c.url.endsWith("/verification/address/")) {
+        profile = artisan({ verification_mode: "nin", checks: [{ kind: "address", status: "processing", note: "", id_type: "", id_number_last4: "", attempts: 1 }] });
+        return json(200, profile);
+      }
+      if (c.url.endsWith("/artisans/me/")) return json(200, profile);
+      return undefined;
+    });
+    renderWithClient(<AddressCheck />);
+    expect(await screen.findByText("Your address: 4 Ado Road, Lagos, Lagos")).toBeTruthy();
+    fireEvent.press(screen.getByRole("button", { name: "Take a photo" }));
+    await screen.findByLabelText("Photo of the document");
+    fireEvent.press(screen.getByRole("button", { name: "Send for checking" }));
+    expect(await screen.findByText("Checking your document…")).toBeTruthy();
+    expect(calls.find((c) => c.url.endsWith("/verification/address/"))!.raw).toBeInstanceOf(FormData);
+  });
+
+  it("parses dates of birth", () => {
+    expect(parseDob("01/05/1990")).toBe("1990-05-01");
+    expect(parseDob("1-5-1990")).toBe("1990-05-01");
+    expect(parseDob("31/02/1990")).toBeNull();
+    expect(parseDob("1990-05-01")).toBeNull();
   });
 
   it("only offers visit times still ahead", () => {

@@ -92,6 +92,8 @@ export const useTicket = (id: string) =>
 export const useMyArtisan = () =>
   useQuery({
     queryKey: keys.artisan,
+    // While an automatic check runs (usually under a minute), look again every few seconds.
+    refetchInterval: (q) => (q.state.data?.checks.some((c) => c.status === "processing") ? 4000 : false),
     queryFn: async () => {
       try {
         return await artisanApi.me();

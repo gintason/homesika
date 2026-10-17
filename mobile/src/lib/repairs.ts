@@ -17,3 +17,13 @@ export function visitChoices(now = new Date()): { value: string; day: "today" | 
   }
   return out;
 }
+
+/** "01/05/1990" (or 1-5-1990, 01.05.1990) -> "1990-05-01"; null if it isn't a real date. */
+export function parseDob(raw: string): string | null {
+  const m = /^\s*(\d{1,2})[/.\- ](\d{1,2})[/.\- ](\d{4})\s*$/.exec(raw);
+  if (!m) return null;
+  const [d, mo, y] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const date = new Date(Date.UTC(y, mo - 1, d));
+  if (date.getUTCFullYear() !== y || date.getUTCMonth() !== mo - 1 || date.getUTCDate() !== d) return null;
+  return `${y}-${String(mo).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
