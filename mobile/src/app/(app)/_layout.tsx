@@ -1,10 +1,12 @@
 import { Stack } from "expo-router";
 
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import tokens from "@/theme/tokens";
 
 export const unstable_settings = { initialRouteName: "(tabs)" };
 
 export default function AppLayout() {
+  usePushNotifications();
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: tokens.color.surface.background } }}>
       <Stack.Screen name="(tabs)" />
@@ -25,6 +27,10 @@ export default function AppLayout() {
       <Stack.Screen name="work/address" />
       <Stack.Screen name="work/people" />
       <Stack.Screen name="work/job/[id]" />
+      <Stack.Screen name="estate/index" />
+      <Stack.Screen name="estate/join" />
+      <Stack.Screen name="estate/pass" />
+      <Stack.Screen name="alert/[id]" />
     </Stack>
   );
 }

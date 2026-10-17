@@ -650,3 +650,126 @@ export const artisanApi = {
   addPhoto: (id: string, form: FormData) => api<TicketPhoto>(`/api/v1/artisans/me/jobs/${enc(id)}/photos/`, { method: "POST", body: form }),
   comment: (id: string, note: string) => api<TicketEvent>(`/api/v1/artisans/me/jobs/${enc(id)}/comments/`, { method: "POST", body: { note } }),
 };
+
+// ---- Estates, gate passes and panic alerts (Phase 5): backend/apps/estates, backend/apps/security ----
+
+/** GET /me/estates/ (MyEstateSerializer): one of my estate memberships. */
+export type MyEstate = {
+  id: string;
+  estate_id: string;
+  estate_name: string;
+  address: string;
+  organization: string;
+  panic_enabled: boolean;
+  house: string;
+  role: "resident" | "exco";
+  status: "pending" | "approved" | "suspended";
+  dues_outstanding: string;
+};
+
+export type Announcement = {
+  id: string;
+  estate: string;
+  title: string;
+  body: string;
+  audience: "all" | "exco";
+  urgent: boolean;
+  created_at: string;
+};
+
+export type GatePass = {
+  id: string;
+  estate: string;
+  estate_name: string;
+  visitor_name: string;
+  visitor_phone: string;
+  kind: "visitor" | "artisan" | "delivery";
+  job: string | null;
+  code: string;
+  valid_from: string;
+  valid_to: string;
+  max_uses: number;
+  uses: number;
+  status: "active" | "used" | "expired" | "cancelled";
+  note: string;
+  created_at: string;
+};
+
+export type GatePassInput = {
+  estate: string;
+  visitor_name: string;
+  visitor_phone: string;
+  kind: GatePass["kind"];
+  hours: number;
+  max_uses: number;
+  note: string;
+};
+
+export const PANIC_KINDS = ["help", "robbery", "kidnapping", "fire", "medical", "suspicious_person"] as const;
+export type PanicKind = (typeof PANIC_KINDS)[number];
+export type AlertStatus = "triggered" | "acknowledged" | "responding" | "resolved" | "false_alarm" | "cancelled";
+
+/** POST/GET /me/alerts/ (MyAlertSerializer): an alert I raised. */
+export type MyAlert = {
+  id: string;
+  estate: string;
+  estate_name: string;
+  kind: PanicKind;
+  status: AlertStatus;
+  silent: boolean;
+  created_at: string;
+  acknowledged_at: string | null;
+  responding_at: string | null;
+  closed_at: string | null;
+};
+
+export type TriggerInput = {
+  estate: string;
+  kind: PanicKind;
+  silent: boolean;
+  client_id: string;
+  location?: { lat: number; lng: number; accuracy: number | null } | null;
+};
+
+/** GET /orgs/{org}/alerts/{id}/ (AlertSerializer), for security staff opening an alert push. */
+export type DeskAlert = {
+  id: string;
+  estate_name: string;
+  kind: PanicKind | "drill";
+  status: AlertStatus;
+  silent: boolean;
+  raised_by_name: string;
+  raised_by_phone: string;
+  house: string;
+  location: { lat: number; lng: number; accuracy?: number } | null;
+  created_at: string;
+};
+
+export const estatesApi = {
+  mine: () => page<MyEstate>("/api/v1/me/estates/"),
+  join: (code: string, house: string) => api<MyEstate>("/api/v1/me/estates/join/", { method: "POST", body: { code, house } }),
+  announcements: (estate: string) => api<Announcement[]>(`/api/v1/me/estates/announcements/?estate=${enc(estate)}`),
+  passes: (status: "active" | "all" = "active") => page<GatePass>(`/api/v1/me/gate-passes/?status=${status}`),
+  createPass: (input: GatePassInput, idempotencyKey: string) =>
+    api<GatePass>("/api/v1/me/gate-passes/", { method: "POST", body: input, idempotencyKey }),
+  cancelPass: (id: string) => api<GatePass>(`/api/v1/me/gate-passes/${enc(id)}/cancel/`, { method: "POST" }),
+};
+
+export const alertsApi = {
+  /** Safe to retry with the same client_id: the server returns the same alert (200) instead of a new one. */
+  trigger: (input: TriggerInput) => api<MyAlert>("/api/v1/me/alerts/", { method: "POST", body: input }),
+  get: (id: string) => api<MyAlert>(`/api/v1/me/alerts/${enc(id)}/`),
+  mine: () => page<MyAlert>("/api/v1/me/alerts/"),
+  setKind: (id: string, kind: PanicKind) => api<MyAlert>(`/api/v1/me/alerts/${enc(id)}/kind/`, { method: "POST", body: { kind } }),
+  cancel: (id: string) => api<MyAlert>(`/api/v1/me/alerts/${enc(id)}/cancel/`, { method: "POST" }),
+  received: (id: string) => api<void>(`/api/v1/me/alerts/${enc(id)}/received/`, { method: "POST" }),
+  desk: (org: string, id: string) => api<DeskAlert>(`/api/v1/orgs/${enc(org)}/alerts/${enc(id)}/`),
+  deskAction: (org: string, id: string, action: "acknowledge" | "respond") =>
+    api<DeskAlert>(`/api/v1/orgs/${enc(org)}/alerts/${enc(id)}/${action}/`, { method: "POST", body: action === "respond" ? { note: "" } : undefined }),
+};
+
+export const pushApi = {
+  register: (token: string, platform: "android" | "ios") =>
+    api<void>("/api/v1/me/push-devices/", { method: "POST", body: { token, platform } }),
+  unregister: (token: string) => api<void>("/api/v1/me/push-devices/", { method: "DELETE", body: { token } }),
+};

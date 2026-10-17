@@ -22,6 +22,10 @@ const KEYS = {
   deviceSecret: "homesika.deviceSecret",
   /** {firstName, phone} for the "Welcome back" PIN screen. */
   profile: "homesika.profile",
+  /** This phone's Expo push token, so sign-out can tell the server to stop pushing to it. */
+  pushToken: "homesika.pushToken",
+  /** "1" if the person chose to share their location with panic alerts. */
+  panicLocation: "homesika.panicLocation",
 } as const;
 
 export type SecureKey = keyof typeof KEYS;

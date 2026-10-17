@@ -300,7 +300,14 @@ def fan_out(alert_id) -> dict:
                     title=title,
                     body=body,
                     urgent=True,
-                    data={"type": "panic", "alert": str(alert.pk), "estate": str(alert.estate_id)},
+                    data={
+                        "type": "panic",
+                        "alert": str(alert.pk),
+                        "estate": str(alert.estate_id),
+                        "audience": audience,
+                        # staff open the alert in their organization's desk; residents don't get the org id
+                        **({"org": str(alert.estate.organization_id)} if audience == "staff" else {}),
+                    },
                 )
             )
     AlertDelivery.objects.bulk_create(rows)

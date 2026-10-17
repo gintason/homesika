@@ -9,7 +9,12 @@
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "com.homesika.app",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
+      }
     },
     "android": {
       "package": "com.homesika.app",
@@ -44,10 +49,28 @@
           "cameraPermission": "Allow Homesika to use the camera so you can take photos of repairs and ID.",
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#0B2B63",
+          "defaultChannel": "default"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Homesika to share your location with estate security when you raise an emergency alert."
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
     }
   }
 }

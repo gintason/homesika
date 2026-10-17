@@ -16,6 +16,7 @@ import {
   storeBiometricPin,
   tokens,
 } from "@/lib/secure";
+import { unregisterPush } from "@/lib/push";
 import { biometricsAvailable } from "@/lib/security";
 
 /**
@@ -145,6 +146,7 @@ export const useSession = create<SessionState>((set, get) => ({
   resumeLock: () => set({ lockSuspendedUntil: 0 }),
 
   logout: async () => {
+    await unregisterPush(); // while still signed in, so the server stops pushing to this phone
     const [{ refresh }, id] = await Promise.all([tokens.get(), device.id()]);
     if (refresh) authApi.logout(refresh, id).catch(() => {}); // best effort: the server forgets this phone
     await Promise.all([tokens.clear(), device.forget()]);

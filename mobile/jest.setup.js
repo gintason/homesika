@@ -94,3 +94,38 @@ jest.mock("expo-router", () => {
 
 // The app binds i18n in the root layout; tests render screens directly, so bind it here.
 require("./src/i18n");
+
+// Push notifications: tests read what was registered and fire listeners by hand.
+jest.mock("expo-notifications", () => {
+  const listeners = { received: [], response: [] };
+  return {
+    setNotificationHandler: jest.fn(),
+    setNotificationChannelAsync: jest.fn(async () => null),
+    getPermissionsAsync: jest.fn(async () => ({ status: "granted" })),
+    requestPermissionsAsync: jest.fn(async () => ({ status: "granted" })),
+    getExpoPushTokenAsync: jest.fn(async () => ({ type: "expo", data: "ExponentPushToken[test-device-0001]" })),
+    addNotificationReceivedListener: jest.fn((fn) => {
+      listeners.received.push(fn);
+      return { remove: () => listeners.received.splice(listeners.received.indexOf(fn), 1) };
+    }),
+    addNotificationResponseReceivedListener: jest.fn((fn) => {
+      listeners.response.push(fn);
+      return { remove: () => listeners.response.splice(listeners.response.indexOf(fn), 1) };
+    }),
+    AndroidImportance: { DEFAULT: 3, HIGH: 4, MAX: 5 },
+    AndroidNotificationVisibility: { PUBLIC: 1 },
+    __listeners: listeners,
+  };
+});
+jest.mock("expo-device", () => ({ isDevice: true }));
+jest.mock("expo-haptics", () => ({
+  impactAsync: jest.fn(async () => {}),
+  notificationAsync: jest.fn(async () => {}),
+  ImpactFeedbackStyle: { Light: "light", Medium: "medium", Heavy: "heavy" },
+  NotificationFeedbackType: { Success: "success", Warning: "warning", Error: "error" },
+}));
+jest.mock("expo-location", () => ({
+  requestForegroundPermissionsAsync: jest.fn(async () => ({ status: "granted" })),
+  getCurrentPositionAsync: jest.fn(async () => ({ coords: { latitude: 6.4281, longitude: 3.4219, accuracy: 12 } })),
+  Accuracy: { Balanced: 3 },
+}));

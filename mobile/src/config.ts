@@ -13,3 +13,6 @@ export const LOCK_AFTER_BACKGROUND_MS = 2 * 60 * 1000;
 
 /** While the payment checkout is open, don't lock for up to this long (the payer is in the browser). */
 export const CHECKOUT_LOCK_GRACE_MS = 20 * 60 * 1000;
+
+/** The Homesika web dashboard (security staff open the live desk there). Unset: the button is hidden. */
+export const WEB_URL = (process.env.EXPO_PUBLIC_WEB_URL || "").replace(/\/$/, "") || null;

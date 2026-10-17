@@ -2,8 +2,10 @@ import { keepPreviousData, useInfiniteQuery, useQuery, useQueryClient } from "@t
 
 import {
   allOutstandingCharges,
+  alertsApi,
   artisanApi,
   authApi,
+  estatesApi,
   billsApi,
   listingsApi,
   repairsApi,
@@ -32,7 +34,25 @@ export const keys = {
   artisan: ["me", "artisan"] as const,
   jobs: (status: "active" | "history") => ["me", "jobs", status] as const,
   job: (id: string) => ["me", "job", id] as const,
+  estates: ["me", "estates"] as const,
+  announcements: (estate: string) => ["me", "estates", "news", estate] as const,
+  passes: ["me", "gate-passes"] as const,
+  alerts: ["me", "alerts"] as const,
 };
+
+export const useMyEstates = () => useQuery({ queryKey: keys.estates, queryFn: async () => (await estatesApi.mine()).results });
+export const useAnnouncements = (estate: string | undefined) =>
+  useQuery({ queryKey: keys.announcements(estate ?? ""), queryFn: () => estatesApi.announcements(estate!), enabled: Boolean(estate) });
+export const usePasses = (enabled = true) =>
+  useQuery({ queryKey: keys.passes, queryFn: async () => (await estatesApi.passes("active")).results, enabled });
+/** My alerts; an open one is polled so its status ("security is on the way") updates. */
+export const useMyAlerts = (enabled = true) =>
+  useQuery({
+    queryKey: keys.alerts,
+    queryFn: async () => (await alertsApi.mine()).results,
+    enabled,
+    refetchInterval: (q) => (q.state.data?.some((a) => ["triggered", "acknowledged", "responding"].includes(a.status)) ? 10_000 : false),
+  });
 
 export const useMe = () => useQuery({ queryKey: keys.me, queryFn: authApi.me });
 export const useLeases = (opts: { enabled?: boolean } = {}) =>

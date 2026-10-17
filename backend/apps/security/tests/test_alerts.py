@@ -73,6 +73,10 @@ def test_alert_reaches_everyone(api_client, org, user, estate, people, _sms_outb
     assert all(p.urgent for p in _push_outbox if p.token != RAISER_TOKEN)
     assert "EMERGENCY at Palm Grove Estate" in _push_outbox[0].title
     assert "A1" in _push_outbox[0].body
+    guard_push = next(p for p in _push_outbox if p.token == GUARD_TOKEN)
+    neighbour_push = next(p for p in _push_outbox if p.token == NEIGHBOUR_TOKEN)
+    assert guard_push.data["org"] == str(estate.organization_id) and guard_push.data["audience"] == "staff"
+    assert "org" not in neighbour_push.data
     sms_to = {p for p, _t in _sms_outbox}
     # staff always get SMS too; the resident without the app gets SMS; the neighbour with push does not
     assert {"+2348030000009", user.phone_number, "+2348031110003"} <= sms_to

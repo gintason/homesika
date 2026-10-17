@@ -40,7 +40,10 @@ export default function BillFormScreen() {
 const PHONE_CATEGORIES: BillCategory[] = ["airtime", "data"];
 
 /** Prepaid/postpaid get our own (translated) names; other plans keep the provider's name. */
-function planLabel(t: ReturnType<typeof useTranslation>["t"], plan: BillPlan): string {
+/** Helpers get `t` with a plain signature: the typed key union is too large to check through a parameter. */
+type PlainT = (key: string, options?: Record<string, unknown>) => string;
+
+function planLabel(t: PlainT, plan: BillPlan): string {
   if (plan.code === "prepaid" || plan.code === "postpaid") return t(`bills.meterTypes.${plan.code}`);
   return plan.name;
 }
@@ -196,7 +199,7 @@ function BillForm({ category }: { category: BillCategory }) {
   if (step === "review" && biller && amount) {
     const input = orderInput();
     const created = checkout.order;
-    const what = [biller.name, plan ? planLabel(t, plan) : null].filter(Boolean).join(" · ");
+    const what = [biller.name, plan ? planLabel(t as unknown as PlainT, plan) : null].filter(Boolean).join(" · ");
     const forWhom = PHONE_CATEGORIES.includes(category) ? formatPhone(customerId) : customerId;
     const address = detailText(verifiedCustomer?.details, "customer_address");
     // The fee from the catalogue is shown up front; if the server's total still differs, the
@@ -278,7 +281,7 @@ function BillForm({ category }: { category: BillCategory }) {
         {isPower && biller && plans.length > 0 ? (
           <ChoiceChips
             label={t("bills.meterType")}
-            choices={plans.map((p) => ({ value: p.id, label: planLabel(t, p) }))}
+            choices={plans.map((p) => ({ value: p.id, label: planLabel(t as unknown as PlainT, p) }))}
             value={plan?.id ?? null}
             onChange={setPlanId}
           />
@@ -304,7 +307,7 @@ function BillForm({ category }: { category: BillCategory }) {
             />
             {needsVerify ? (
               verifiedCustomer ? (
-                <Banner tone="success" message={verifiedText(t, verifiedCustomer)} />
+                <Banner tone="success" message={verifiedText(t as unknown as PlainT, verifiedCustomer)} />
               ) : (
                 <Button
                   title={t(`bills.verify.${category === "cable_tv" ? "cable_tv" : "electricity"}`)}
@@ -367,7 +370,7 @@ function BillForm({ category }: { category: BillCategory }) {
   );
 }
 
-function verifiedText(t: ReturnType<typeof useTranslation>["t"], c: BillCustomer): string {
+function verifiedText(t: PlainT, c: BillCustomer): string {
   const address = detailText(c.details, "customer_address");
   const bouquet = detailText(c.details, "current_bouquet");
   return [

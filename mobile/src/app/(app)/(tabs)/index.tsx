@@ -5,7 +5,7 @@ import { View } from "react-native";
 import type { MyLease } from "@/api";
 import { Badge, Banner, Button, Card, EmptyState, MoneyText, Screen, SkeletonCard, Text } from "@/components";
 import { BillCategoryTiles } from "@/components/bills";
-import { useLeases, useOutstandingCharges } from "@/hooks/queries";
+import { useLeases, useMyEstates, useOutstandingCharges } from "@/hooks/queries";
 import { usePay } from "@/hooks/usePay";
 import { errorText } from "@/lib/api";
 import { groupCharges, summarise } from "@/lib/charges";
@@ -139,6 +139,7 @@ export default function Home() {
       refreshing={refreshing}
     >
       {content}
+      <EstateCard />
       {(leases.data ?? []).some((l) => l.status === "active") ? <RepairsCard /> : null}
       <BillsCard />
     </Screen>
@@ -155,6 +156,26 @@ function LeaseCard({ lease }: { lease: MyLease }) {
       </Text>
       {lease.property_address ? <Text className="text-ink-600">{lease.property_address}</Text> : null}
       <Text className="text-ink-600">{t("home.landlordLine", { name: lease.landlord })}</Text>
+    </Card>
+  );
+}
+
+/** Estate entry: the panic button is one tap away for verified residents; others can join. */
+function EstateCard() {
+  const { t } = useTranslation();
+  const estates = useMyEstates();
+  const mine = (estates.data ?? []).find((m) => m.status === "approved") ?? estates.data?.[0];
+  return (
+    <Card accessibilityLabel={t("estate.homeTitle")}>
+      <Text variant="heading" accessibilityRole="header">
+        {mine ? mine.estate_name : t("estate.homeTitle")}
+      </Text>
+      <Text className="text-ink-600">{mine ? t("estate.homeBody") : t("estate.homeJoinBody")}</Text>
+      <Button
+        title={mine ? t("estate.open") : t("estate.join")}
+        variant={mine ? "primary" : "secondary"}
+        onPress={() => router.push(mine ? "/estate" : "/estate/join")}
+      />
     </Card>
   );
 }
