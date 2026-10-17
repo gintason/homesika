@@ -164,3 +164,17 @@ def test_runner_end_to_end_with_mock_model():
     first = report["results"][0]
     assert "get_my_rent_summary" in first["tools"] and "440000.00" in first["reply"]
     json.dumps(report)  # serialisable
+
+
+def test_bills_scenario_matches_spec(world):
+    chidi = for_user(world.users["chidi"])
+    with scenarios.frozen_now():
+        lease = tools.get_my_lease(chidi, ctx())["leases"][0]
+        orders = tools.my_bill_orders(chidi, ctx())["orders"]
+        mtn = tools.list_bill_options(chidi, ctx(), category="data", biller_code="mtn")["billers"][0]
+    assert (lease["meter_number"], lease["disco"]) == ("45123456789", "ikeja-electric")
+    assert orders[0]["token"] == "1234-5678-9012-3456-7890" and orders[0]["receipt_number"] == "BIL-000001"
+    assert {p["name"]: p["price"] for p in mtn["plans"]} == {
+        "1GB, 30 days (sample)": "1000.00",
+        "5GB, 30 days (sample)": "4000.00",
+    }

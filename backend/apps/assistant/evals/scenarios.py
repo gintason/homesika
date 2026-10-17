@@ -283,6 +283,40 @@ def build_all() -> Built:
         )
         ReceiptCounter.objects.update_or_create(organization=obi, defaults={"last": 7})
 
+        # Bills: Chidi's meter and one earlier electricity purchase; sample data/TV plans.
+        from apps.bills import catalogue
+        from apps.bills.models import Biller, Order, Plan
+        from apps.bills.models import ReceiptCounter as BillCounter
+
+        Unit.objects.filter(pk=units["Flat 2B"].pk).update(meter_number="45123456789", disco="ikeja-electric")
+        catalogue.load_samples()
+        ikeja = Biller.objects.get(category="electricity", code="ikeja-electric")
+        Order.objects.create(
+            user=chidi_u,
+            phone_number="+2348031110001",
+            unit=units["Flat 2B"],
+            category="electricity",
+            biller=ikeja,
+            plan=Plan.objects.get(biller=ikeja, code="prepaid"),
+            customer_id="45123456789",
+            customer_name="CHIDI OKAFOR",
+            amount=5_000 * N,
+            fee=0,
+            total=5_000 * N,
+            status="delivered",
+            gateway="mock",
+            gateway_reference="BILEVAL1",
+            paid_amount=5_000 * N,
+            paid_at=at(2026, 10, 10),
+            delivered_at=at(2026, 10, 10),
+            expires_at=at(2026, 10, 10, 11),
+            token="1234-5678-9012-3456-7890",  # noqa: S106 - a fake electricity token in test data
+            units="42.5kWh",
+            receipt_number="BIL-000001",
+            provider="mock",
+        )
+        BillCounter.objects.update_or_create(key="bills", defaults={"last": 1})
+
         for key, phone, first, last, role in [
             ("staff_manager", "+2348031110020", "Bola", "Adeyemi", "manager"),
             ("staff_agent", "+2348031110021", "Yusuf", "Sani", "agent"),

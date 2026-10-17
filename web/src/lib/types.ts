@@ -332,6 +332,15 @@ export interface PublicStatus {
   receipt_number: string | null;
 }
 
+// ---- Bill payments (Phase 3) ----
+export type BillStatus = "awaiting_payment" | "processing" | "delivered" | "refund_pending" | "refunded" | "expired";
+
+/** Public GET /bills/{reference}/status/. The token/PIN is never returned here: it goes by SMS/WhatsApp and to the app. */
+export interface PublicBillStatus {
+  status: BillStatus;
+  receipt_number: string | null;
+}
+
 // ---- Listings (Phase 2) ----
 export type ListingStatus = "draft" | "published" | "let" | "archived";
 export type RentPeriod = "year" | "month";

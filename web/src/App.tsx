@@ -14,6 +14,8 @@ const StaffApp = lazy(() => import("./StaffApp"));
 // Public listing pages (shared on WhatsApp) are a separate small chunk too.
 const PublicListingPage = lazy(() => import("./screens/public").then((m) => ({ default: m.PublicListingPage })));
 const PublicSearch = lazy(() => import("./screens/public").then((m) => ({ default: m.PublicSearch })));
+// Bill-payment return page (airtime, data, TV, electricity): its own tiny chunk.
+const BillDone = lazy(() => import("./screens/bills/BillDone"));
 
 export function FullPageLoading() {
   return (
@@ -36,6 +38,14 @@ export function AppRoutes() {
         element={
           <Suspense fallback={<FullPageLoading />}>
             <PublicListingPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/bills/:reference/done"
+        element={
+          <Suspense fallback={<FullPageLoading />}>
+            <BillDone />
           </Suspense>
         }
       />

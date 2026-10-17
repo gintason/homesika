@@ -51,6 +51,7 @@ class Command(BaseCommand):
             SMS_PROVIDER="mock",
             WHATSAPP_PROVIDER="mock",
             PAYMENT_GATEWAYS="mock",
+            BILLS_PROVIDERS="mock",
             CELERY_TASK_ALWAYS_EAGER=True,
             ASSISTANT_USER_DAILY_CAP_USD="1000",
             ASSISTANT_PLATFORM_DAILY_CAP_USD="1000",

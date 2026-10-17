@@ -521,6 +521,29 @@ export const en = {
     body: "Your landlord recorded your payment. Open the receipt below to view, download or print it.",
     open: "Open receipt (PDF)",
   },
+  billDone: {
+    title: "Payment status",
+    checking: "Checking your payment…",
+    deliveredTitle: "Done!",
+    receiptNumber: "Your receipt number is {number}.",
+    deliveredBody:
+      "We've sent the token or details to your phone by SMS or WhatsApp. You can also find them in the Homesika app.",
+    processingTitle: "Being delivered",
+    processingBody:
+      "We've received your payment and are delivering it now. You'll get an SMS as soon as it's done. Don't pay again.",
+    refundTitle: "We couldn't deliver this",
+    refundBody:
+      "Sorry, we couldn't complete this purchase. Your money will be refunded to your card or account within 1 to 5 working days.",
+    refundedBody: "Sorry, we couldn't complete this purchase. We've refunded your money to your card or account. It can take 1 to 5 working days to show.",
+    awaitingTitle: "Payment not confirmed yet",
+    awaitingBody:
+      "We haven't confirmed your payment yet. If money was taken from your account, it will be confirmed automatically and you'll get an SMS. Don't pay again.",
+    expiredTitle: "This payment has expired",
+    expiredBody: "No payment was made in time. If you still need it, start a new purchase in the Homesika app.",
+    notFound: "We couldn't find this payment. Check the link, or open the Homesika app to see your purchases.",
+    checkAgain: "Check again",
+    poweredBy: "Secure payments by Homesika",
+  },
   listings: {
     title: "Listings",
     add: "New listing",

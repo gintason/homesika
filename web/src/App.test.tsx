@@ -72,6 +72,12 @@ describe("App routing", () => {
     expect(await screen.findByRole("heading", { name: "Self-contain in Akoka" })).toBeInTheDocument();
   });
 
+  it("opens the bill-payment return page without signing in", async () => {
+    mockFetch({ "GET /api/v1/bills/BIL-1/status/": { body: { status: "delivered", receipt_number: "BRC-9" } } });
+    renderApp("/bills/BIL-1/done");
+    expect(await screen.findByText("Your receipt number is BRC-9.")).toBeInTheDocument();
+  });
+
   it("first run: a user with no organization is asked to create one", async () => {
     window.localStorage.setItem("hs.refresh", "r");
     mockFetch({

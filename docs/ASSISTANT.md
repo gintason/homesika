@@ -46,6 +46,19 @@ strings in naira, for example `"250000.00"`, with `currency`.
 | `request_viewing` | `listing_ref`, `slot_id`, `name` | **Action:** books a viewing after confirmation |
 | `escalate_to_human` | `reason` (`dispute`, `payment_problem`, `emergency`, `user_request`, `complaint`, `low_confidence`), `summary` | Hands the conversation to a person |
 
+### Bills (every role, Phase 3)
+
+| Tool | Input | Does |
+|---|---|---|
+| `list_bill_options` | `category` (airtime, data, cable_tv, electricity), `biller_code` (string or null) | Networks, TV services and DisCos with plan codes and prices |
+| `check_meter_or_card` | `category`, `biller_code`, `plan_code` (null, or prepaid/postpaid for electricity), `number` | The registered name for a meter or smartcard |
+| `buy_bill` | `category`, `biller_code`, `plan_code`, `number`, `amount` (naira string, or null when the plan has a price) | **Action:** after a YES, creates the order and replies with a secure payment link |
+| `my_bill_orders` | — | Recent bill orders with status, receipt number and electricity token |
+
+* The person pays per purchase through the link, and nothing is held.
+* If the order can't be delivered, they're refunded automatically.
+* There is no betting, no credit, and no wallet top-up.
+
 ### Tenant
 
 | Tool | Input | Does |
@@ -165,6 +178,14 @@ rely on exactly this data.** Today's date in every scenario is **2026-10-15** (L
   | 2026-10-05 | ₦100,000 | RCT-000004 | Cash |
 
 * Obi Properties has a payout account, so payment links work.
+* **Electricity:** Flat 2B's meter is **45123456789** (Ikeja Electric, prepaid).
+* **Last electricity purchase:** ₦5,000 on 2026-10-10.
+  * Token **1234-5678-9012-3456-7890**, 42.5kWh.
+  * Receipt **BIL-000001**.
+* **Sample plans** (development catalogue):
+  * MTN data: "1GB, 30 days (sample)" ₦1,000 and "5GB, 30 days (sample)" ₦4,000.
+  * DStv: "Basic bouquet (sample)" ₦4,000 and "Premium bouquet (sample)" ₦29,000.
+* The bill provider is the mock in evaluation runs.
 
 ### `tenant_paid_up`: Amina Bello (+2348031110002)
 * **Landlord:** organization "Obi Properties".
