@@ -167,6 +167,35 @@ when you build the app, so sign-up links to it. The text is a **draft for legal 
 7. **WhatsApp:** optional new template `dues_reminder` (`docs/WHATSAPP_TEMPLATES.md`). Until it's
    approved, dues reminders go by SMS.
 
+## Phase 6: scale (hardening, analytics, referrals, airtime abroad, Abuja, Ghana)
+
+1. **Sync the blueprint.** It adds web security headers and the new settings (all off or safe by
+   default).
+2. **Encryption key and CORS:** the deploy check now **stops a deploy** if `FIELD_ENCRYPTION_KEYS` is
+   missing or invalid, and warns if `CORS_ALLOWED_ORIGINS` is empty. Both should already be set.
+3. **Referrals** are on (`REFERRALS_ENABLED=true`). They reward free bill service fees only, never
+   money. `REFERRAL_*` settings change the numbers.
+4. **Airtime abroad (Reloadly):**
+   1. Create a Reloadly account **funded in naira** (amounts are in the account's currency; Homesika
+      refuses operators priced in anything else).
+   2. Put the **sandbox** client ID and secret in Render (`RELOADLY_CLIENT_ID`, `RELOADLY_CLIENT_SECRET`;
+      never in chat). Add `reloadly` to `BILLS_PROVIDERS` and set `INTL_TOPUP_ENABLED=true` on staging.
+   3. Buy one sandbox top-up from the app and send me the order's attempt record from the admin
+      (Bills → Orders). I'll confirm the reply fields marked `TODO(verify)` in
+      `backend/apps/bills/providers/reloadly.py`.
+   4. For live: production keys and `RELOADLY_LIVE=true`. Production refuses Reloadly without it.
+5. **Abuja** is on (areas in forms; AEDC electricity already works). **Ghana** stays off until the
+   checklist in `docs/MARKETS.md` is done, then `MARKETS_COUNTRIES=NG,GH`.
+6. **iOS Critical Alerts** (after Apple approves the entitlement request):
+   1. Apply at developer.apple.com (Request a Critical Alerts entitlement; explain the estate panic
+      button).
+   2. When it's granted, add the entitlement `com.apple.developer.usernotifications.critical-alerts` to
+      `mobile/app.json` under `ios.entitlements`, rebuild with `EXPO_PUBLIC_IOS_CRITICAL_ALERTS=1`.
+   3. Set `PUSH_IOS_CRITICAL_ALERTS=true` on the API. Don't add the entitlement before Apple grants
+      it: the iOS build would fail to sign.
+7. **Runbook:** `docs/OPERATIONS.md` covers backups and the restore drill, key rotation, and what to do
+   when alerts, bills or payments go wrong.
+
 ## Every later release
 
 Just push to `main`. Render redeploys automatically; CI on GitHub runs the tests in parallel.

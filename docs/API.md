@@ -173,6 +173,23 @@ Panic alerts:
 
 Push: `POST` / `DELETE /me/push-devices/` `{token: "ExponentPushToken[…]", platform}`.
 
+## Phase 6: analytics, referrals, airtime abroad, markets [built]
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/orgs/{org}/analytics/?months=6` | Month by month: billed, collected, collection rate, paid on time, dues; plus today's occupancy, arrears, repairs, leads and alerts (`report.view`) |
+| GET | `/platform/metrics/?months=6` | Homesika's own numbers (staff accounts only) |
+| GET | `/me/referral/` | My code, share message, free fees left, invited/qualified counts |
+| POST | `/me/referral/redeem/` | `{code}`: a new account adds a friend's code (14 days, before a first purchase) |
+| POST | `/auth/register/` | Now takes an optional `referral_code` |
+| GET | `/bills/intl/countries/` | Countries for airtime abroad (503 `intl_unavailable` when off) |
+| POST | `/bills/intl/lookup/` | `{country, phone}` → the number in international format and its network, with naira limits and an fx estimate |
+| POST | `/bills/intl/orders/` | `{country, phone, amount}` (Idempotency-Key) → a bill order; then the usual `/bills/orders/{id}/` |
+| GET | `/markets/` | Countries and cities switched on, with areas and DisCos (public) |
+
+Bill orders now include `fee_waived` (a free service fee from an invite) and `intl` (country and
+network, for airtime abroad).
+
 ## Webhooks (no auth header; signature-verified, idempotent)
 
 | Path | Source | Verification |

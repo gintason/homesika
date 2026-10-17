@@ -216,6 +216,26 @@ erDiagram
 * **Delivery-time metric:** from the alert's `created_at` to the first `delivered_at` per channel
   (push: Expo receipt; SMS: the SMS provider accepted it; `acknowledged`: the app reported it).
 
+## 6b. Referrals [Phase 6]
+
+```mermaid
+erDiagram
+  USER ||--o| REFERRAL_CODE : has
+  USER ||--o{ REFERRAL : "invited (referrer)"
+  USER ||--o| REFERRAL : "was invited (referred)"
+  USER ||--o{ FEE_WAIVER : holds
+  FEE_WAIVER |o--o| BILL_ORDER : "used on"
+
+  REFERRAL_CODE { uuid id; uuid user_id FK; string code UK }
+  REFERRAL { uuid id; uuid referrer_id FK; uuid referred_id FK "unique"; string status "pending|qualified|capped|rejected"; datetime qualified_at; string qualified_by "bill|rent_payment" }
+  FEE_WAIVER { uuid id; uuid user_id FK; string reason "joined|referrer|goodwill"; uuid referral_id FK; datetime expires_at; uuid order_id FK "null = available"; datetime used_at }
+```
+
+* A fee waiver is a discount on Homesika's own service fee for one order. It is **not money**: it
+  can't be withdrawn or transferred, and it has no cash value.
+* `BILL_ORDER` gains `fee_waived` (kobo not charged) and `intl` (JSON: country, operator, fx estimate
+  for airtime abroad; category `intl_airtime`).
+
 ## 7. Platform: notifications and analytics [Phase 1+]
 
 * `NOTIFICATION { id, user_id, channel push|sms|email|whatsapp, template, payload, status,
