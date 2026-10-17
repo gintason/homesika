@@ -128,7 +128,12 @@ function whatOf(o: BillOrder): string {
 }
 
 function customerOf(o: BillOrder): string {
-  const id = o.category === "airtime" || o.category === "data" ? formatPhone(localToE164(o.customer_id)) : o.customer_id;
+  const id =
+    o.category === "airtime" || o.category === "data"
+      ? formatPhone(localToE164(o.customer_id))
+      : o.category === "intl_airtime" && o.intl?.operator_name
+        ? `${o.customer_id} · ${o.intl.operator_name}`
+        : o.customer_id;
   return o.customer_name ? `${id} (${o.customer_name})` : id;
 }
 

@@ -49,6 +49,10 @@ if ENVIRONMENT == "production" and NIN_PROVIDER == "smileid" and not SMILEID_PRO
     raise ImproperlyConfigured(
         "SMILEID_PRODUCTION must be true in production (it selects Smile ID's live server)."
     )
+if ENVIRONMENT == "production" and "reloadly" in BILLS_PROVIDERS and not RELOADLY_LIVE:  # noqa: F405
+    raise ImproperlyConfigured(
+        "RELOADLY_LIVE must be true in production (it selects Reloadly's live server)."
+    )
 # Panic alerts depend on push: the mock sends nothing.
 if ENVIRONMENT == "production" and PUSH_PROVIDER == "mock":  # noqa: F405
     raise ImproperlyConfigured("PUSH_PROVIDER must be 'expo' in production.")

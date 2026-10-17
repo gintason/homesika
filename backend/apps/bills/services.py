@@ -180,6 +180,55 @@ def create_order(
     return order
 
 
+def intl_biller() -> Biller:
+    biller, _made = Biller.objects.get_or_create(
+        category=Category.INTL_AIRTIME,
+        code="intl-airtime",
+        defaults={"name": "International airtime", "customer_label": "Phone number abroad", "sort_order": 99},
+    )
+    return biller
+
+
+def create_intl_order(
+    *, user, phone: str, country: str, recipient: str, amount: int | None, channel="app"
+) -> Order:
+    """Airtime for a phone abroad (Reloadly). The operator is detected here from the number, never sent in."""
+    from . import intl
+
+    recipient, op = intl.detect(country, recipient)
+    intl.check_amount(op, amount)
+    biller = intl_biller()
+    if not biller.is_active:
+        raise BillsUnavailable()
+    fee = fee_for(Category.INTL_AIRTIME, amount)
+    limit = settings.BILLS_DAILY_LIMIT
+    if limit and _spent_today(user, phone) + amount + fee > limit:
+        raise LimitReached()
+    if not any(providers.get(n).supports(biller, None) for n in providers.enabled()):
+        raise BillsUnavailable()
+    order = Order.objects.create(
+        user=user,
+        phone_number=phone,
+        category=Category.INTL_AIRTIME,
+        biller=biller,
+        customer_id=recipient,
+        amount=amount,
+        fee=fee,
+        total=amount + fee,
+        channel=channel,
+        intl={
+            "country": op.country,
+            "operator_id": op.operator_id,
+            "operator_name": op.name,
+            "local_currency": op.local_currency,
+            "fx_rate": op.fx_rate,
+            "sample": op.sample,
+        },
+        expires_at=timezone.now() + timedelta(minutes=settings.BILLS_PAYMENT_TTL_MINUTES),
+    )
+    return order
+
+
 def _payer_email(order: Order) -> str:
     email = getattr(order.user, "email", "") if order.user_id else ""
     return (
@@ -188,6 +237,11 @@ def _payer_email(order: Order) -> str:
 
 
 def describe(order: Order) -> str:
+    if order.category == Category.INTL_AIRTIME:
+        name = (order.intl or {}).get("operator_name") or order.biller.name
+        return (
+            f"{name} airtime {format_money(order.amount, order.currency, plain=True)} for {order.customer_id}"
+        )
     label = (
         order.plan.name
         if order.plan_id and order.plan.price

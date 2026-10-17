@@ -19,7 +19,16 @@ from apps.payments import gateways
 from . import receipts, services
 from .models import Biller, Order, ProviderEvent
 from .providers import vtung
-from .serializers import BillerSerializer, BillVerifySerializer, CreateOrderSerializer, OrderSerializer
+from .serializers import (
+    BillerSerializer,
+    BillVerifySerializer,
+    CreateOrderSerializer,
+    IntlCountrySerializer,
+    IntlLookupResultSerializer,
+    IntlLookupSerializer,
+    IntlOrderSerializer,
+    OrderSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -177,3 +186,55 @@ def vtung_webhook(request):
 
     process_provider_event.delay(str(event.pk))
     return HttpResponse(status=200)
+
+
+# ---- International airtime (Phase 6) ----------------------------------------------------------------
+
+
+class IntlCountriesView(APIView):
+    """Countries we can send airtime to (GET /bills/intl/countries/)."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    @extend_schema(responses=IntlCountrySerializer(many=True))
+    def get(self, request):
+        from . import intl
+
+        return Response(IntlCountrySerializer(intl.countries(), many=True).data)
+
+
+class IntlLookupView(APIView):
+    """Which network a number abroad is on, and the naira amounts it takes."""
+
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [BillsThrottle]
+
+    @extend_schema(request=IntlLookupSerializer, responses=IntlLookupResultSerializer)
+    def post(self, request):
+        from . import intl
+
+        s = IntlLookupSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        phone, op = intl.detect(s.validated_data["country"], s.validated_data["phone"])
+        return Response({"phone": phone, "operator": op.as_api()})
+
+
+class IntlOrdersView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [BillsThrottle]
+
+    @extend_schema(request=IntlOrderSerializer, responses={201: OrderSerializer})
+    @idempotent
+    def post(self, request):
+        s = IntlOrderSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        d = s.validated_data
+        order = services.create_intl_order(
+            user=request.user,
+            phone=request.user.phone_number,
+            country=d["country"],
+            recipient=d["phone"],
+            amount=d["amount"],
+        )
+        order = services.start_checkout(order)
+        return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)

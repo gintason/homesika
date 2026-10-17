@@ -348,7 +348,9 @@ export type BillOrderStatus = "awaiting_payment" | "processing" | "delivered" | 
 export type BillOrder = {
   id: string;
   reference: string;
-  category: BillCategory;
+  category: BillCategory | "intl_airtime";
+  /** International airtime only: the network found for the number. */
+  intl?: { country?: string; operator_name?: string; local_currency?: string };
   biller: string;
   biller_name: string;
   plan: string | null;
@@ -385,6 +387,23 @@ export type BillOrderInput = {
   unit?: string;
 };
 
+export type IntlCountry = { code: string; name: string; currency: string; calling_code: string };
+export type IntlOperator = {
+  operator_id: string;
+  name: string;
+  country: string;
+  denomination: "range" | "fixed";
+  min_amount: string | null;
+  max_amount: string | null;
+  fixed_amounts: string[];
+  local_currency: string;
+  /** Local currency per naira: an estimate only. */
+  fx_rate: number | null;
+  /** SAMPLE data: no real provider is connected (development). */
+  sample: boolean;
+};
+export type IntlLookup = { phone: string; operator: IntlOperator };
+
 export const billsApi = {
   /** Public. Not paginated. */
   catalogue: (category: BillCategory) =>
@@ -395,6 +414,12 @@ export const billsApi = {
   createOrder: (input: BillOrderInput, idempotencyKey: string) =>
     api<BillOrder>("/api/v1/bills/orders/", { method: "POST", body: input, idempotencyKey }),
   orders: (cursor?: string | null) => page<BillOrder>(cursor ?? "/api/v1/bills/orders/"),
+  /** International airtime (Reloadly): countries, network lookup, order. */
+  intlCountries: () => api<IntlCountry[]>("/api/v1/bills/intl/countries/"),
+  intlLookup: (country: string, phone: string) =>
+    api<IntlLookup>("/api/v1/bills/intl/lookup/", { method: "POST", body: { country, phone } }),
+  intlOrder: (input: { country: string; phone: string; amount: string }, idempotencyKey: string) =>
+    api<BillOrder>("/api/v1/bills/intl/orders/", { method: "POST", body: input, idempotencyKey }),
   /** Polling this also asks the gateway whether an unpaid order has been paid. */
   order: (id: string) => api<BillOrder>(`/api/v1/bills/orders/${encodeURIComponent(id)}/`),
   receiptPath: (id: string) => `/api/v1/bills/orders/${encodeURIComponent(id)}/receipt/`,

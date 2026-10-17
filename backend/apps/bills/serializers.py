@@ -61,6 +61,12 @@ class CreateOrderSerializer(BillVerifySerializer):
     unit = serializers.PrimaryKeyRelatedField(queryset=Unit.objects.all(), required=False, allow_null=True)
 
 
+class OrderIntlSerializer(serializers.Serializer):
+    country = serializers.CharField(required=False)
+    operator_name = serializers.CharField(required=False)
+    local_currency = serializers.CharField(required=False)
+
+
 class OrderSerializer(serializers.ModelSerializer):
     amount = MoneyField(read_only=True)
     fee = MoneyField(read_only=True)
@@ -69,6 +75,7 @@ class OrderSerializer(serializers.ModelSerializer):
     biller_name = serializers.CharField(source="biller.name", read_only=True)
     plan_name = serializers.CharField(source="plan.name", read_only=True, default=None)
     token = serializers.SerializerMethodField()
+    intl = serializers.SerializerMethodField(help_text="International airtime: country and network")
 
     class Meta:
         model = Order
@@ -86,6 +93,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "fee",
             "fee_waived",
             "total",
+            "intl",
             "currency",
             "status",
             "checkout_url",
@@ -100,5 +108,46 @@ class OrderSerializer(serializers.ModelSerializer):
             "expires_at",
         )
 
+    def get_intl(self, obj) -> OrderIntlSerializer(allow_null=True):
+        i = obj.intl or {}
+        return {k: i[k] for k in ("country", "operator_name", "local_currency") if k in i} or None
+
     def get_token(self, obj) -> str:
         return obj.token if obj.status == Order.Status.DELIVERED else ""
+
+
+# ---- International airtime (Phase 6) ----------------------------------------------------------------
+
+
+class IntlCountrySerializer(serializers.Serializer):
+    code = serializers.CharField()
+    name = serializers.CharField()
+    currency = serializers.CharField()
+    calling_code = serializers.CharField()
+
+
+class IntlLookupSerializer(serializers.Serializer):
+    country = serializers.CharField(max_length=2)
+    phone = serializers.CharField(max_length=24)
+
+
+class IntlOperatorSerializer(serializers.Serializer):
+    operator_id = serializers.CharField()
+    name = serializers.CharField()
+    country = serializers.CharField()
+    denomination = serializers.ChoiceField(choices=["range", "fixed"])
+    min_amount = serializers.CharField(allow_null=True)
+    max_amount = serializers.CharField(allow_null=True)
+    fixed_amounts = serializers.ListField(child=serializers.CharField())
+    local_currency = serializers.CharField()
+    fx_rate = serializers.FloatField(allow_null=True, help_text="Local currency per naira: an estimate only")
+    sample = serializers.BooleanField(help_text="True: SAMPLE data (no real provider connected)")
+
+
+class IntlLookupResultSerializer(serializers.Serializer):
+    phone = serializers.CharField(help_text="The number in international format")
+    operator = IntlOperatorSerializer()
+
+
+class IntlOrderSerializer(IntlLookupSerializer):
+    amount = MoneyField(allow_zero=False, help_text='Naira, e.g. "5000.00"')

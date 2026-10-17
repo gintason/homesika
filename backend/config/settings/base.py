@@ -266,6 +266,12 @@ ASSISTANT_PRICES = env.json("ASSISTANT_PRICES", default={})
 # Bills (airtime, data, TV, electricity). Providers in failover order; "mock" for development only.
 BILLS_PROVIDERS = env("BILLS_PROVIDERS", default="mock")
 VTUNG_BASE_URL = env("VTUNG_BASE_URL", default="https://vtu.ng/wp-json")
+# International airtime (Reloadly). Add "reloadly" to BILLS_PROVIDERS and set the keys to switch it on.
+INTL_TOPUP_ENABLED = env.bool("INTL_TOPUP_ENABLED", default=False)
+INTL_TOPUP_COUNTRIES = env("INTL_TOPUP_COUNTRIES", default="GH,KE,ZA,GB,US,CA,CM,BJ,TG,SN,CI,UG,RW,TZ,AE")
+RELOADLY_CLIENT_ID = env("RELOADLY_CLIENT_ID", default="")
+RELOADLY_CLIENT_SECRET = env("RELOADLY_CLIENT_SECRET", default="")
+RELOADLY_LIVE = env.bool("RELOADLY_LIVE", default=False)  # False = Reloadly's sandbox
 VTUNG_USERNAME = env("VTUNG_USERNAME", default="")
 VTUNG_PASSWORD = env("VTUNG_PASSWORD", default="")
 VTUNG_USER_PIN = env("VTUNG_USER_PIN", default="")  # signs VTU.ng webhooks

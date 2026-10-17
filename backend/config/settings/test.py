@@ -23,3 +23,5 @@ MIDDLEWARE = [m for m in MIDDLEWARE if "whitenoise" not in m]  # noqa: F405 - no
 import tempfile  # noqa: E402
 
 STORAGES["private"]["OPTIONS"]["location"] = tempfile.mkdtemp(prefix="homesika-private-")  # noqa: F405
+
+INTL_TOPUP_ENABLED = True  # sample catalogue + mock provider in tests

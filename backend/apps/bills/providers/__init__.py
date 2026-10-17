@@ -3,9 +3,10 @@ from django.conf import settings
 from .base import DELIVERED, FAILED, PROCESSING, REJECTED, UNKNOWN, ProviderError, Result, VtuProvider
 from .flutterwave import FlutterwaveBills
 from .mock import MockVtu
+from .reloadly import Reloadly
 from .vtung import VtuNg
 
-_REGISTRY = {"vtung": VtuNg, "flutterwave": FlutterwaveBills, "mock": MockVtu}
+_REGISTRY = {"vtung": VtuNg, "flutterwave": FlutterwaveBills, "reloadly": Reloadly, "mock": MockVtu}
 
 
 def get(name: str) -> VtuProvider:

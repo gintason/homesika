@@ -328,7 +328,8 @@
       "airtime": "Phone number",
       "data": "Phone number",
       "cable_tv": "Smartcard / IUC number",
-      "electricity": "Meter number"
+      "electricity": "Meter number",
+      "intl_airtime": "Phone abroad"
     },
     "phoneHint": "We've filled in your number. Change it to buy for someone else.",
     "phoneInvalid": "Enter a valid Nigerian phone number.",
@@ -435,6 +436,23 @@
       "bills_daily_limit": "You've reached today's limit for bill payments. Try again tomorrow.",
       "bills_unavailable": "Bill payments are temporarily unavailable. Please try again shortly.",
       "order_not_payable": "This order can no longer be paid. Please start a new one."
+    },
+    "intl": {
+      "title": "Airtime abroad",
+      "tile": "Airtime abroad",
+      "tileBody": "Top up a phone in Ghana, Kenya, the UK and more.",
+      "intro": "Send airtime to a phone in another country. You pay in naira; the network is found from the number.",
+      "country": "Country",
+      "phone": "Their phone number",
+      "phoneHint": "Starting with {{code}}, e.g. {{code}} …",
+      "find": "Find network",
+      "network": "Network: {{name}}",
+      "sample": "SAMPLE network data (no real provider connected).",
+      "amount": "Amount in naira",
+      "range": "Between ₦{{min}} and ₦{{max}}",
+      "estimate": "About {{amount}} {{currency}} (estimate; the network decides the exact amount)",
+      "continue": "Continue",
+      "unavailable": "Airtime abroad isn't available right now."
     }
   },
   "repairs": {

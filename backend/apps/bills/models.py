@@ -21,6 +21,7 @@ class Category(models.TextChoices):
     DATA = "data", _("Data")
     CABLE_TV = "cable_tv", _("Cable TV")
     ELECTRICITY = "electricity", _("Electricity")
+    INTL_AIRTIME = "intl_airtime", _("International airtime")
 
 
 def new_order_reference() -> str:
@@ -106,6 +107,13 @@ class Order(TimeStampedModel):
     amount = MoneyField(help_text=_("Face value delivered."))
     fee = MoneyField(default=0)
     fee_waived = MoneyField(default=0, help_text=_("Service fee waived (referral reward), not charged."))
+    intl = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=_(
+            "International airtime: country, operator_id, operator_name, local_currency, fx_rate (estimate)."
+        ),
+    )
     total = MoneyField(help_text=_("What the person pays: amount + fee."))
     currency = CurrencyField(default="NGN")
     status = models.CharField(

@@ -17,6 +17,7 @@ export default function AppLayout() {
       <Stack.Screen name="bills/index" />
       <Stack.Screen name="bills/[category]" />
       <Stack.Screen name="bills/history" />
+      <Stack.Screen name="bills/abroad" />
       <Stack.Screen name="bills/order/[id]" options={{ gestureEnabled: false }} />
       <Stack.Screen name="repairs/index" />
       <Stack.Screen name="repairs/new" />

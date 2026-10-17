@@ -9,3 +9,6 @@ CORS_ALLOWED_ORIGINS = env.list(
 )
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 LOGGING["handlers"]["console"]["formatter"] = env("LOG_FORMAT", default="plain")  # noqa: F405
+
+# International airtime with the labelled SAMPLE catalogue (no Reloadly keys needed in development).
+INTL_TOPUP_ENABLED = env.bool("INTL_TOPUP_ENABLED", default=True)

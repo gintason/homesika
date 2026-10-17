@@ -861,6 +861,76 @@ paths:
                 items:
                   $ref: '#/components/schemas/Biller'
           description: ''
+  /api/v1/bills/intl/countries/:
+    get:
+      operationId: bills_intl_countries_list
+      description: Countries we can send airtime to (GET /bills/intl/countries/).
+      tags:
+      - bills
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IntlCountry'
+          description: ''
+  /api/v1/bills/intl/lookup/:
+    post:
+      operationId: bills_intl_lookup_create
+      description: Which network a number abroad is on, and the naira amounts it takes.
+      tags:
+      - bills
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntlLookup'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IntlLookup'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IntlLookup'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntlLookupResult'
+          description: ''
+  /api/v1/bills/intl/orders/:
+    post:
+      operationId: bills_intl_orders_create
+      tags:
+      - bills
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntlOrder'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IntlOrder'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IntlOrder'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
   /api/v1/bills/orders/:
     get:
       operationId: bills_orders_list
@@ -8177,12 +8247,14 @@ components:
       - data
       - cable_tv
       - electricity
+      - intl_airtime
       type: string
       description: |-
         * `airtime` - Airtime
         * `data` - Data
         * `cable_tv` - Cable TV
         * `electricity` - Electricity
+        * `intl_airtime` - International airtime
     BillCustomer:
       type: object
       properties:
@@ -8874,6 +8946,14 @@ components:
       - drills
       - false_alarms
       - median_first_delivery_seconds
+    DenominationEnum:
+      enum:
+      - range
+      - fixed
+      type: string
+      description: |-
+        * `range` - range
+        * `fixed` - fixed
     DirectionEnum:
       enum:
       - in
@@ -9703,6 +9783,105 @@ components:
       - author_name
       - created_at
       - id
+    IntlCountry:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        currency:
+          type: string
+        calling_code:
+          type: string
+      required:
+      - calling_code
+      - code
+      - currency
+      - name
+    IntlLookup:
+      type: object
+      properties:
+        country:
+          type: string
+          maxLength: 2
+        phone:
+          type: string
+          maxLength: 24
+      required:
+      - country
+      - phone
+    IntlLookupResult:
+      type: object
+      properties:
+        phone:
+          type: string
+          description: The number in international format
+        operator:
+          $ref: '#/components/schemas/IntlOperator'
+      required:
+      - operator
+      - phone
+    IntlOperator:
+      type: object
+      properties:
+        operator_id:
+          type: string
+        name:
+          type: string
+        country:
+          type: string
+        denomination:
+          $ref: '#/components/schemas/DenominationEnum'
+        min_amount:
+          type: string
+          nullable: true
+        max_amount:
+          type: string
+          nullable: true
+        fixed_amounts:
+          type: array
+          items:
+            type: string
+        local_currency:
+          type: string
+        fx_rate:
+          type: number
+          format: double
+          nullable: true
+          description: 'Local currency per naira: an estimate only'
+        sample:
+          type: boolean
+          description: 'True: SAMPLE data (no real provider connected)'
+      required:
+      - country
+      - denomination
+      - fixed_amounts
+      - fx_rate
+      - local_currency
+      - max_amount
+      - min_amount
+      - name
+      - operator_id
+      - sample
+    IntlOrder:
+      type: object
+      properties:
+        country:
+          type: string
+          maxLength: 2
+        phone:
+          type: string
+          maxLength: 24
+        amount:
+          type: string
+          format: decimal
+          example: '1500000.00'
+          description: Naira, e.g. "5000.00"
+      required:
+      - amount
+      - country
+      - phone
     JobBrief:
       type: object
       properties:
@@ -10769,6 +10948,12 @@ components:
           format: decimal
           example: '1500000.00'
           readOnly: true
+        intl:
+          allOf:
+          - $ref: '#/components/schemas/OrderIntl'
+          nullable: true
+          readOnly: true
+          description: 'International airtime: country and network'
         currency:
           $ref: '#/components/schemas/CurrencyEnum'
         status:
@@ -10822,9 +11007,19 @@ components:
       - fee
       - fee_waived
       - id
+      - intl
       - plan_name
       - token
       - total
+    OrderIntl:
+      type: object
+      properties:
+        country:
+          type: string
+        operator_name:
+          type: string
+        local_currency:
+          type: string
     Organization:
       type: object
       properties:
