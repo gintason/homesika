@@ -345,7 +345,8 @@ def test_app_chat_confirm_button_and_erase(api_client, tenant):
     done = api_client.post(reverse("v1:assistant-action", args=[action["id"], "confirm"])).json()
     assert "/pay/HSK" in done["text"]
     history = api_client.get(reverse("v1:assistant-messages"), {"channel": "app"}).json()
-    assert [m["direction"] for m in history["messages"]] == ["in", "out", "out"]
+    assert [m["direction"] for m in history["messages"]] == ["in", "out", "in", "out"]
+    assert history["messages"][2]["body"] == "yes" and history["escalated"] is False
     assert api_client.delete(reverse("v1:assistant-messages")).status_code == 204
     assert api_client.get(reverse("v1:assistant-messages")).json()["messages"] == []
     stranger = make_user(phone="+2348055555555")

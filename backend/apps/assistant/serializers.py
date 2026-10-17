@@ -4,7 +4,7 @@ from .models import KbArticle, PendingAction
 
 
 class ChatSerializer(serializers.Serializer):
-    text = serializers.CharField(max_length=4000, trim_whitespace=True)
+    text = serializers.CharField(max_length=2000, trim_whitespace=True)
     channel = serializers.ChoiceField(choices=["app", "web"], default="app")
 
 

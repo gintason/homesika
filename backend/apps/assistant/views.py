@@ -4,6 +4,7 @@ from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.idempotency import idempotent
 from apps.messaging.models import Conversation
 from apps.messaging.serializers import MessageSerializer
 from apps.orgs.permissions import OrgScopedMixin
@@ -29,7 +30,8 @@ class ChatView(APIView):
 
     permission_classes = [permissions.IsAuthenticated]
 
-    @extend_schema(request=ChatSerializer, responses=ReplySerializer)
+    @extend_schema(request=ChatSerializer, responses={201: ReplySerializer})
+    @idempotent
     def post(self, request):
         s = ChatSerializer(data=request.data)
         s.is_valid(raise_exception=True)
@@ -45,6 +47,7 @@ class ChatView(APIView):
                 "conversation": serializers.UUIDField(allow_null=True),
                 "messages": MessageSerializer(many=True),
                 "pending_action": PendingActionSerializer(allow_null=True),
+                "escalated": serializers.BooleanField(),
             },
         )
     )
@@ -54,7 +57,9 @@ class ChatView(APIView):
             Conversation.objects.filter(user=request.user, channel=channel).exclude(status="closed").first()
         )
         if convo is None:
-            return Response({"conversation": None, "messages": [], "pending_action": None})
+            return Response(
+                {"conversation": None, "messages": [], "pending_action": None, "escalated": False}
+            )
         msgs = list(convo.messages.order_by("-created_at")[:50])[::-1]
         pending = PendingAction.objects.filter(conversation=convo, status="proposed").first()
         return Response(
@@ -62,6 +67,7 @@ class ChatView(APIView):
                 "conversation": str(convo.pk),
                 "messages": MessageSerializer(msgs, many=True).data,
                 "pending_action": PendingActionSerializer(pending).data if pending else None,
+                "escalated": convo.escalations.exclude(status="resolved").exists(),
             }
         )
 

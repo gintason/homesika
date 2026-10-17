@@ -436,6 +436,7 @@ def confirm_action(user, action_id, *, confirm: bool) -> Reply:
     if pending.status != "proposed":
         return Reply(text="")
     text = "yes" if confirm else "no"
+    Message.objects.create(conversation=convo, direction="in", sender="person", body=text, status="received")
     reply = handle_message(convo, for_user(user), text)
     Message.objects.create(
         conversation=convo, direction="out", sender="assistant", body=reply.text, status="delivered"

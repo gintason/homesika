@@ -67,7 +67,7 @@ paths:
       security:
       - jwtAuth: []
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
@@ -4300,8 +4300,11 @@ components:
           allOf:
           - $ref: '#/components/schemas/PendingAction'
           nullable: true
+        escalated:
+          type: boolean
       required:
       - conversation
+      - escalated
       - messages
       - pending_action
     CategoryEnum:
@@ -4473,7 +4476,7 @@ components:
       properties:
         text:
           type: string
-          maxLength: 4000
+          maxLength: 2000
         channel:
           allOf:
           - $ref: '#/components/schemas/ChatChannelEnum'
